@@ -1,0 +1,248 @@
+
+/* ---------- 지식 요소(개념) ----------
+   c:문자  v:모음 길이  r:규칙.  문제는 필요한 개념 목록(kcs)을 가진다. 단어 문제는 그 단어의 문자들(+8·16mm 모음)을 모두 익혀야 나온다. */
+const CURR=['c:가','c:나','c:마','v:4','c:다','c:사','c:라','r:6','r:11','c:차','c:자','c:아','v:8','c:하','c:바','c:타','r:7','r:5','c:이','c:파','c:카','v:16','r:3','r:4','r:8','r:9','r:10'];
+/* 문제로 확인하기 어려운 설명형 규칙: 카드를 읽으면 익힌 것으로 본다 */
+const INFO=new Set(['r:11','r:3','r:4','r:6','r:7','r:8','r:9','r:10']);
+const DD={'까':'가','따':'다','빠':'바','싸':'사','짜':'자'};
+const RNAME={11:'이어쓰기가 곤란할 때',3:'반소원(ㅑ계열)',4:'ㅑㅕ·ㅛㅠ 길이',5:'된소리',6:'이어쓰기',7:'정측·반측',8:'연습 방법',9:'획순',10:'창안자·연도'};
+const VNAME={4:'ㅏㅓ 4mm',8:'ㅗㅜ 8mm',16:'ㅡㅣ 16mm'};
+const kcName=k=>{const [t,v]=k.split(':');return t==='w'?'이어쓰기 단어':t==='c'?v:t==='v'?VNAME[v]:RNAME[v]};
+const LEARNED=2;
+let S={xp:0,streak:0,last:'',k:{},recent:[]};
+try{const o=JSON.parse(localStorage.getItem('steno2')||'{}');Object.assign(S,o)}catch(e){}
+if(!S.k)S.k={};if(!S.recent)S.recent=[];
+const save=()=>{try{localStorage.setItem('steno2',JSON.stringify(S))}catch(e){}};
+const strength=k=>(S.k[k]&&S.k[k].s)||0;
+const seen=k=>!!S.k[k];
+const learned=k=>strength(k)>=LEARNED;
+function markSeen(k){if(!S.k[k])S.k[k]={s:INFO.has(k)?3:1,n:1,w:0,t:Date.now()}}
+function recordKcs(kcs,ok){kcs.forEach(k=>{const m=S.k[k]||(S.k[k]={s:0,n:0,w:0,t:0});m.n++;m.t=Date.now();if(ok)m.s=Math.min(5,m.s+1);else{m.w++;m.s=Math.max(0,m.s-(kcs.length>1?1:2))}})}
+const wordKcs=w=>{const set=new Set();[...w].forEach(ch=>{const s=syl(ch);set.add('c:'+s.c);if(s.mm>4)set.add('v:'+s.mm);if(HALF.has(s.jung))set.add('r:3')});if(wordOffsets(w).some(Boolean))set.add('r:11');return [...set]};
+function kcsOf(id){const [t,key]=id.split(':');
+  if(t==='dd')return ['r:5','c:'+DD[key]];
+  if(t==='ddd')return ['r:5','r:7','c:'+DD[key]];
+  if(t==='sym'||t==='pick')return ['c:'+key];
+  if(t==='len')return ['v:'+key];
+  if(t==='txt')return [+key<3?'v:'+[4,8,16][+key]:'r:'+key];
+  return wordKcs(key);}
+const today=()=>new Date().toISOString().slice(0,10);
+function touchStreak(){const t=today();if(S.last===t)return;const y=new Date(Date.now()-864e5).toISOString().slice(0,10);S.streak=S.last===y?S.streak+1:1;S.last=t;save()}
+
+/* ---------- 문제 ---------- */
+const degH=d=>{const x=GROUPS.find(y=>y.deg===d);return '<span class="big" style="font-size:26px">'+x.chars.map(c=>c[0]).join(' ')+'</span>'};
+function fourGroups(g){return shuf([g,...shuf(GROUPS.filter(x=>x!==g)).slice(0,3)])}
+function mutants(word,n=3){
+  if(n<=0)return [];
+  const learnedL=Object.values(INIT).filter(c=>learned('c:'+c)),poolAll=Object.values(INIT);
+  const out=new Set();
+  for(let t=0;t<60&&out.size<n;t++){
+    const chars=[...word],i=Math.random()*chars.length|0,s=syl(chars[i]);
+    const pool=(t<30&&learnedL.length>2?learnedL:poolAll).filter(c=>c!==s.c);
+    chars[i]=compose(pool[Math.random()*pool.length|0],s.jung);
+    const m=chars.join('');if(m!==word)out.add(m)}
+  return [...out];
+}
+function itemQ0(id){
+  const [t,key]=id.split(':');
+  if(t==='len'){const mm=+key,VN={4:'ㅏ·ㅓ',8:'ㅗ·ㅜ',16:'ㅡ(으)'};
+    const ref=shuf([4,8,16].filter(m=>m!==mm))[0];
+    const bar=m=>`<span style="display:block;width:${m*7}px;height:5px;border-radius:3px;background:var(--stroke)"></span>`;
+    const prompt=`<span style="display:flex;flex-direction:column;align-items:center;gap:8px"><small style="color:var(--mute)">기준선: ${ref}mm</small>${bar(ref)}</span>`;
+    return {id,prompt,q:`위 선이 ${ref}mm일 때, ${VN[mm]} 모음에 맞는 선은?`,opts:shuf([4,8,16]).map(m=>({k:m,h:bar(m)})),ans:mm,why:`${VN[mm]}은(는) ${mm}mm입니다. ㅏㅓ : ㅗㅜ : ㅡ = 1 : 2 : 4 비율이에요. 실제 mm는 화면마다 달라서 비율로 기억하세요.`}}
+  if(t==='dd'){const base=ALL.find(x=>x.c===DD[key]),g=base.g;
+    const pool=shuf([...g.chars.map(([c,b])=>({c,b,g})).filter(x=>x.c!==base.c),...shuf(ALL.filter(x=>x.g!==g)).slice(0,2)]).slice(0,3);
+    return {id,prompt:`<span class="big">${key}</span>`,q:`된소리 「${key}」는 속기로 어떻게 쓸까요?`,opts:shuf([base,...pool]).map(o=>({k:o.c,h:sv(o,40)})),ans:base.c,why:`된소리는 정측 중앙에 점을 찍어 표기하나, 생략하는 것을 원칙으로 합니다. 그래서 ${key}=${base.c}처럼 평음과 같이 씁니다. 교육 중에는 점을 찍어 구별해 보기도 해요.`}}
+  if(t==='ddd'){const base=ALL.find(x=>x.c===DD[key]),g=base.g,other=shuf(g.chars.map(([c,b])=>({c,b,g})).filter(x=>x.c!==base.c))[0];
+    const opts=shuf([{k:'ok',h:strokeDot(base,40,'in')},{k:'x1',h:strokeDot(base,40,'out')},{k:'x2',h:strokeDot(other,40,'in')},{k:'x3',h:strokeDot(other,40,'out')}]);
+    return {id,prompt:`<span class="big">${key}</span>`,q:`된소리 「${key}」를 점을 찍어 표기한다면?`,opts,ans:'ok',why:`${key}은(는) ${base.c}에 정측(곡선의 안쪽, 직선은 위·왼쪽) 중앙에 점을 찍습니다. 원칙은 점을 생략하고 ${base.c}와 같이 쓰는 것이에요.`}}
+  if(t==='txt'){const c=CONCEPTS[+key];
+    return {id,prompt:`<div class="txt">${c.q}</div>`,q:'책의 내용을 떠올려 보세요',one:true,opts:shuf(c.o.map(x=>({k:x,h:x}))),ans:c.o[c.a],why:c.w}}
+  if(t==='wsym'||t==='wpick'){
+    const dist=w=>Math.abs(w.length-key.length)*2+(wordKcs(w).every(learned)?0:1)+Math.random();
+    const real=ALLW.filter(w=>w!==key).sort((a,b)=>dist(a)-dist(b)).slice(0,3);
+    const ws=shuf([key,...real]);
+    const tag='';
+    const bx=ws.map(wordBox),sc=Math.min(1.5,150/Math.max(...bx.map(b=>b.w)),80/Math.max(...bx.map(b=>b.h)));
+    if(t==='wsym')return {id,prompt:wordSVG(key,130),q:'이 속기 단어는 무엇일까요?'+tag,opts:ws.map(w=>({k:w,h:`<span class="big" style="font-size:24px">${w}</span>`})),ans:key,why:wordWhy(key)};
+    return {id,prompt:`<span class="big" style="font-size:48px">${key}</span>`,q:`「${key}」을(를) 이어 쓴 모양을 고르세요`+tag,opts:ws.map(w=>({k:w,h:wordSVG(w,0,sc)})),ans:key,why:wordWhy(key)}}
+  const it=ALL.find(x=>x.c===key),g=it.g,mine=g.chars.map(([c,b])=>({c,b,g})),others=ALL.filter(x=>x.g!==g);
+  if(t==='sym')
+    return {id,prompt:sv(it,48),q:'이 속기 문자는 무엇일까요?',opts:shuf([it,...shuf(mine.filter(m=>m.c!==it.c)),...shuf(others).slice(0,1)]).map(o=>({k:o.c,h:`<span class="big">${o.c}</span>`})),ans:it.c,why:`${it.c}은(는) ${g.deg} 묶음(${g.title})의 문자입니다.`};
+  if(t==='pick'){const pool=shuf([...shuf(mine.filter(m=>m.c!==it.c)),...shuf(others).slice(0,2)]).slice(0,3);
+    return {id,prompt:`<span class="big">${it.c}</span>`,q:`「${it.c}」에 해당하는 모양을 고르세요`,opts:shuf([it,...pool]).map(o=>({k:o.c,h:sv(o,40)})),ans:it.c,why:`${it.c}은(는) ${it.b===0?'곧은 선':'굽은 선'}으로, ${g.deg} 방향에 씁니다.`}}
+}
+function itemQ(id){
+  const q=itemQ0(id),t=id.split(':')[0];q.kcs=kcsOf(id);
+  if(t==='wsym'||t==='wpick'){const w=id.split(':')[1];q.why=`<span style="display:flex;align-items:center;gap:10px"><span style="width:96px;flex:none;border:1px solid var(--line);border-radius:10px;background:var(--card);padding:4px">${wordSVG(w,44)}</span><span>${q.why}</span></span>`}
+  if(['sym','pick'].includes(t)){const it=ALL.find(x=>x.c===id.split(':')[1]);
+    q.why=`<span style="display:flex;align-items:center;gap:10px"><span style="width:52px;height:52px;flex:none;border:1px solid var(--line);border-radius:10px;background:var(--card)">${sv(it,44)}</span><span>${q.why}</span></span>`}
+  return q;
+}
+/* 새 개념을 처음 만날 때 보여 주는 설명 카드 */
+function introQ(kc){
+  const [t,v]=kc.split(':');let prompt,text;
+  if(t==='c'){const it=ALL.find(x=>x.c===v),g=it.g;
+    prompt=sv(it,56);
+    text=`<b>새 문자 「${v}」</b><br>${it.b===0?'곧은 선':'굽은 선'} · ${g.deg} · 쓰는 방향 ${DIR[g.id][2]}<br>같은 묶음: ${g.title}`}
+  else if(t==='w'){prompt=wordSVG('가사',110);text=`<b>단어 이어쓰기</b><br>앞 글자의 끝에서 연필을 떼지 않고 다음 글자를 이어 씁니다.<br>글자마다 쓰는 방향이 있어요: 가나마 →, 다사라 ↙, 차자아 ↗, 하바타 ↘, 이파카 ↓<br>길이는 모음이 정합니다: ㅏㅓ 4mm · ㅗㅜ 8mm · ㅡ 16mm<br>예) 가사 = 가(→ 4mm) + 사(↙ 4mm)`}
+  else if(t==='v'){prompt=ratioSVG(1,true);text=`<b>모음 길이</b><br>ㅏㅓ 4mm · ㅗㅜ 8mm · ㅡ 16mm, 즉 <b>1 : 2 : 4</b> 비율로 씁니다.<br><small>책의 mm는 실제 종이 기준이라 화면마다 크기가 달라요. 비율로 기억하세요.</small>`}
+  else{const c=CONCEPTS[+v];prompt=+v===6?wordSVG('가사',110):+v===3?wordSVG('고기',110):+v===5?`<span style="display:flex;gap:16px;align-items:center"><span style="width:96px;text-align:center">${sv(ALL[0],40)}<small>가</small></span><span style="width:96px;text-align:center">${strokeDot(ALL.find(x=>x.c==='사'),40,'in')}<small>싸 (점 표기)</small></span></span>`:`<div class="txt"><b>${RNAME[v]}</b></div>`;text=`<b>${RNAME[v]}</b><br>${c.w}`}
+  return {intro:true,kc,prompt,q:'새로 배워요',text,opts:[],kcs:[kc]};
+}
+const kcQuestions=kc=>{const [t,v]=kc.split(':');
+  if(t==='c')return ['sym:'+v,'pick:'+v];
+  if(t==='v')return ['len:'+v];
+  return +v===5?Object.keys(DD).flatMap(k=>['dd:'+k,'ddd:'+k]):[]};
+
+/* ---------- 맞춤 선택: 필요한 개념을 익혔다면 그 개념들로 만든 문제도 나온다 ---------- */
+function candidates(){
+  const ids=[];
+  ALL.forEach(x=>['sym','pick'].forEach(t=>ids.push(t+':'+x.c)));
+  [4,8,16].forEach(m=>ids.push('len:'+m));Object.keys(DD).forEach(k=>ids.push('dd:'+k,'ddd:'+k));
+  ALLW.forEach(w=>ids.push('wsym:'+w,'wpick:'+w));
+  return [...new Set(ids)];
+}
+const avgS=kcs=>kcs.reduce((a,k)=>a+strength(k),0)/kcs.length;
+function eligible(id){const k=kcsOf(id);return k.every(seen)&&(k.length===1||k.every(learned))}
+function makeSession(focus){
+  const recent=new Set(S.recent||[]);
+  let pool=candidates().filter(eligible);
+  if(focus)pool=pool.filter(id=>kcsOf(id).includes(focus));
+  const weakN=CURR.filter(k=>seen(k)&&strength(k)<LEARNED).length;
+  const cap=focus?(seen(focus)?0:1):(pool.length<6?3:weakN>=4?1:2);
+  const newK=focus?(seen(focus)?[]:[focus]):CURR.filter(k=>!seen(k)).slice(0,cap);
+  const target=(focus?8:10),N=Math.max(3,target-newK.length*2);
+  const score=id=>avgS(kcsOf(id))+(recent.has(id)?0.8:0)+Math.random()*0.5;
+  const hard=pool.filter(id=>avgS(kcsOf(id))<2.2).sort((a,b)=>score(a)-score(b));
+  const mid=shuf(pool.filter(id=>{const a=avgS(kcsOf(id));return a>=2.2&&a<3.6}));
+  const easy=pool.filter(id=>avgS(kcsOf(id))>=3.6).sort((a,b)=>score(a)-score(b));
+  const used={},picked=[];
+  const take=(list,n,ignoreCap)=>{for(const id of list){if(n<=0)break;if(picked.includes(id))continue;const ks=kcsOf(id);if(!ignoreCap&&ks.some(k=>(used[k]||0)>=3))continue;picked.push(id);ks.forEach(k=>used[k]=(used[k]||0)+1);n--}};
+  const nh=Math.ceil(N*.4),nm=Math.round(N*.3);
+  take(hard,nh);take(mid,nm);take(easy,N-nh-nm);
+  take(hard,N-picked.length);take(mid,N-picked.length);take(easy,N-picked.length);
+  take(shuf(pool),N-picked.length,true);
+  const qs=picked.map(itemQ);
+  const first=qs.findIndex(q=>avgS(q.kcs)>=3.6),lead=first>=0?qs.splice(first,1):[];
+  const intro=newK.flatMap(k=>[introQ(k),...shuf(kcQuestions(k).filter(id=>kcsOf(id).every(x=>x===k||seen(x)))).slice(0,2).map(itemQ)]);
+  const out=[...lead,...intro,...shuf(qs)];
+  if(!seen('w:1')){const wi=out.findIndex(q=>q.id&&q.id[0]==='w');if(wi>=0)out.splice(wi,0,introQ('w:1'))}
+  return out;
+}
+
+/* ---------- 화면 ---------- */
+const app=document.getElementById('app');
+const topbar=(extra)=>`<div class="top">${extra||''}<span class="sp"></span><span class="stat" title="연속 학습일">${ICON.flame}${S.streak}</span><span class="stat" title="경험치">${ICON.xp}${S.xp}</span></div>`;
+const dots=s=>'<span class="dots" aria-label="숙련도 '+s+'/5">'+[1,2,3,4,5].map(i=>`<i class="${i<=s?'on':''}"></i>`).join('')+'</span>';
+const tile=(kc,inner)=>{const s=strength(kc),sn=seen(kc);return `<button class="tl ${sn?(s>=LEARNED?'ok':'wk'):'new'}" data-kc="${kc}" title="${kcName(kc)}">${inner}<span class="nm">${sn?'':'<small>아직 안 배움</small>'}</span>${dots(s)}</button>`};
+
+function home(){
+  const total=CURR.length,lc=CURR.filter(learned).length,sc=CURR.filter(seen).length;
+  const wUnlocked=WORDS.filter(w=>wordKcs(w).every(learned)),wLocked=WORDS.filter(w=>!wordKcs(w).every(learned));
+  const hint=wLocked.map(w=>({w,need:wordKcs(w).filter(k=>!learned(k))})).sort((a,b)=>a.need.length-b.need.length).slice(0,3);
+  const tried=CURR.filter(seen),tot=tried.reduce((a,k)=>a+S.k[k].n,0),wr=tried.reduce((a,k)=>a+S.k[k].w,0);
+  const hard=tried.filter(k=>S.k[k].w).sort((a,b)=>S.k[b].w-S.k[a].w).slice(0,3);
+  const rules=CURR.filter(k=>k[0]==='r');
+  app.innerHTML=`${topbar('<b>동방속기</b>')}
+  <div class="hero"><h1>동방속기 연습장</h1><p>외운 것과 헷갈리는 것을 섞어 풀어요. 배운 문자로 쓸 수 있는 단어는 저절로 열립니다.</p></div>
+  <button class="go" id="adp">${sc===0?'맞춤 학습 시작':'맞춤 학습 계속하기'}</button>
+  <div class="card"><h3>익힌 개념 ${lc} / ${total}</h3><div class="bar" style="height:12px"><i style="width:${lc/total*100}%"></i></div>
+   <p class="sub">배운 개념 ${sc}개 · 정답률 ${tot?Math.round((tot-wr)/tot*100):0}% (${tot}회)${hard.length?` · 자주 틀림: ${hard.map(k=>kcName(k)).join(', ')}`:''}</p></div>
+  <div class="card"><h3>기본 문자</h3><p class="sub">칸을 누르면 설명을 다시 보고 그 문자만 연습할 수 있어요.</p>
+   ${GROUPS.map(g=>`<div class="grow"><span class="gl">${g.deg}</span><div class="tg">${g.chars.map(([c,b])=>tile('c:'+c,`<span class="gi">${stroke(g.a,b,44)}</span><b>${c}</b>`)).join('')}</div></div>`).join('')}</div>
+  <div class="card"><h3>모음 길이</h3><div class="tg">${[4,8,16].map(m=>tile('v:'+m,`<span class="gi" style="width:72px">${ruler(m)}</span><b style="font-size:14px">${VNAME[m]}</b>`)).join('')}</div></div>
+  <div class="card"><h3>단어 이어쓰기 <small>${wUnlocked.length}/${WORDS.length}개 열림</small></h3>
+   <p class="sub">책 17·18쪽 단어 중 필요한 문자를 모두 익힌 것만 문제로 나옵니다. 배운 글자로 만든 연습 단어(예: 가가)도 나와요.</p>
+   <button class="link" data-show="w:1" style="margin:6px 0 0">이어쓰기 설명 보기</button><div class="chips">${wUnlocked.slice(0,8).map(w=>`<span class="chip">${w}</span>`).join('')||'<span class="sub">아직 열린 단어가 없어요.</span>'}${wUnlocked.length>8?`<span class="chip mute">+${wUnlocked.length-8}</span>`:''}</div>
+   ${hint.length?`<p class="sub" style="margin-top:10px">다음에 열릴 단어: ${hint.map(h=>`<b>${h.w}</b> (${h.need.map(kcName).join(', ')} 필요)`).join(' · ')}</p>`:''}</div>
+  <button class="unit" id="galb" style="margin:14px 0"><span class="badge" style="font-size:18px">✎</span><span><b>속기 단어 그림 보기</b><span>교재 단어의 이어쓰기 모양만 모아 봅니다.</span></span></button>
+  <details class="card"><summary><b>쓰기 규칙</b> <small>${rules.filter(learned).length}/${rules.length} 익힘</small></summary>
+   <div style="margin-top:8px">${rules.map(k=>`<button class="rr" data-show="${k}"><span>${kcName(k)}</span>${seen(k)?(INFO.has(k)?'<small>✓ 읽음</small>':dots(strength(k))):'<small>아직 안 읽음</small>'}</button>`).join('')}</div></details>
+  <p class="src">내용 출처: 「동방속기 기초편」(이동근, 크라운출판사) 제1장. 문자와 단어 그림은 책의 도해(방향 화살표, 4·8·16mm 길이)를 바탕으로 다시 그린 것이라 손글씨 곡선과는 다릅니다.</p>`;
+  app.querySelector('#adp').onclick=()=>start();
+  app.querySelector('#galb').onclick=gallery;
+  app.querySelectorAll('.tl').forEach(b=>b.onclick=()=>showConcept(b.dataset.kc));
+  app.querySelectorAll('[data-show]').forEach(b=>b.onclick=()=>showConcept(b.dataset.show));
+  window.scrollTo(0,0);
+}
+
+function showConcept(kc){
+  const q=introQ(kc),sn=seen(kc);
+  app.innerHTML=`${topbar('<button class="x" id="back" aria-label="돌아가기">←</button>')}<div class="q"><h2>${kcName(kc)}</h2><div class="prompt">${q.prompt}</div><div class="introtx">${q.text}</div></div><div class="fb"><div class="in"><button class="go" id="go">${sn?'이 개념 연습하기':'배우기'}</button></div></div>`;
+  app.querySelector('#back').onclick=home;
+  app.querySelector('#go').onclick=()=>start(kc==='w:1'?undefined:kc);
+  window.scrollTo(0,0);
+}
+const GALLERY=['아라','라아','가라고','나가보라','다가서다','라오스'];
+function gallery(){
+  try{history.replaceState(null,'','#gallery')}catch(e){}
+  app.innerHTML=`${topbar('<button class="x" id="back" aria-label="돌아가기">←</button><b>속기 단어 그림</b>')}
+  <p class="sub" style="margin:14px 0">교재 18쪽 단어를 같은 규칙(글자별 방향, 모음 길이 1 : 2 : 4, 반소원, 들여 쓰기)으로 그렸습니다. 그림은 모두 같은 배율이에요.</p>
+  <div class="gal">${GALLERY.map(w=>`<div class="gc"><b>${w}</b><div class="gi2">${wordSVG(w,0,3)}</div></div>`).join('')}</div>`;
+  app.querySelector('#back').onclick=()=>{try{history.replaceState(null,'',location.pathname)}catch(e){}home()};
+  window.scrollTo(0,0);
+}
+let R=null;
+function start(focus){
+  const qs=makeSession(focus);
+  S.recent=qs.filter(q=>q.id).map(q=>q.id);save();
+  R={focus:focus||null,qs,i:0,hearts:5,right:0,xp:0,sel:null,checked:false,step:0};
+  R.total=qs.filter(q=>!q.intro).length;
+  render();
+}
+function render(){
+  const q=R.qs[R.i];
+  if(!q)return finish(true);
+  const pct=R.total?R.step/R.total*100:0;
+  const head='<div class="top"><button class="x" id="quit" aria-label="나가기">×</button><div class="bar"><i style="width:'+pct+'%"></i></div><span class="stat">'+ICON.heart+R.hearts+'</span></div>';
+  if(q.intro){
+    app.innerHTML=`${head}<div class="q"><h2>${q.q}</h2><div class="prompt">${q.prompt}</div><div class="introtx">${q.text}</div></div><div class="fb"><div class="in"><button class="go" id="go">알겠어요</button></div></div>`;
+    app.querySelector('#quit').onclick=home;
+    app.querySelector('#go').onclick=()=>{markSeen(q.kc);save();R.i++;render()};
+    window.scrollTo(0,0);return;
+  }
+  app.innerHTML=`${head}
+  <div class="q"><h2>${q.q}</h2><div class="prompt">${q.prompt}</div>
+  <div class="opts ${q.one?'one':''}">${q.opts.map((o,i)=>`<button class="opt" data-i="${i}">${o.h}</button>`).join('')}</div></div>
+  <div class="fb" id="fb"><div class="in"><button class="go" id="go" disabled>확인</button></div></div>`;
+  R.sel=null;R.checked=false;
+  app.querySelector('#quit').onclick=home;
+  app.querySelectorAll('.opt').forEach(b=>b.onclick=()=>{if(R.checked){if(Date.now()-R.at>400)next();return}if(R.sel===+b.dataset.i)return check();R.sel=+b.dataset.i;app.querySelectorAll('.opt').forEach(x=>x.classList.toggle('sel',x===b));app.querySelector('#go').disabled=false});
+  app.querySelector('#go').onclick=check;
+  window.scrollTo(0,0);
+}
+function check(){
+  const q=R.qs[R.i],fb=app.querySelector('#fb');
+  if(R.checked)return next();
+  R.checked=true;
+  const ok=q.opts[R.sel].k===q.ans;
+  R.at=Date.now();
+  app.querySelectorAll('.opt').forEach((b,i)=>{b.classList.remove('sel');if(q.opts[i].k===q.ans)b.classList.add('right');else if(i===R.sel)b.classList.add('wrong')});
+  const first=!q.retried;if(first){recordKcs(q.kcs,ok);save()}
+  if(ok){R.right++;if(first){R.xp+=10}R.step++}
+  else{R.hearts--;if(first){q.retried=true;R.qs.push({...q,opts:shuf(q.opts)});R.total++}R.step++}
+  fb.className='fb '+(ok?'good':'bad');
+  fb.innerHTML=`<div class="in"><div class="msg">${ok?'정답입니다!'+(first?' +10 XP':''):'아쉬워요. 다시 나올 거예요.'}<div class="why">${q.why}</div></div><button class="go" id="go">계속하기</button></div>`;
+  app.querySelector('#go').onclick=next;
+  app.querySelector('.bar i').style.width=(R.step/R.total*100)+'%';
+  app.querySelector('.stat').innerHTML=ICON.heart+R.hearts;
+}
+function next(){
+  if(R.hearts<=0)return finish(false);
+  R.i++;render();
+}
+function finish(win){
+  if(win){const bonus=R.hearts===5?10:0;R.xp+=bonus;S.xp+=R.xp;touchStreak();save()}
+  app.innerHTML=`${topbar('<b>동방속기</b>')}<div class="end"><h2>${win?'학습 완료!':'하트를 모두 썼어요'}</h2>
+  <p style="color:var(--mute)">${win?'개념별 숙련도가 갱신됐어요.':'틀린 문제를 다시 보고 도전해 보세요. XP는 끝까지 풀어야 쌓입니다.'}</p>
+  <div class="tiles"><div class="tile"><b>${R.xp}</b><span>획득 XP${win&&R.hearts===5?' (만점 +10)':''}</span></div><div class="tile"><b>${R.hearts}</b><span>남은 하트</span></div><div class="tile"><b>${S.streak}</b><span>연속 학습일</span></div></div>
+  <button class="go" id="again" style="max-width:320px">${win?'대시보드로':'다시 도전'}</button>${win?'<br><button class="link" id="more">한 번 더</button>':'<br><button class="link" id="h">대시보드로</button>'}</div>`;
+  app.querySelector('#again').onclick=win?home:()=>start(R.focus||undefined);
+  const m=app.querySelector('#more');if(m)m.onclick=()=>start(R.focus||undefined);
+  const h=app.querySelector('#h');if(h)h.onclick=home;
+  window.scrollTo(0,0);
+}
+window.claude?.hot?.snapshot(()=>({R,S}));
+function boot(d){if(location.hash==='#gallery')return gallery();if(d&&d.S)S=d.S;if(d&&d.R&&d.R.qs&&d.R.qs[d.R.i]){R=d.R;render()}else home()}
+window.claude?.hot?.ready?window.claude.hot.ready(boot):boot(window.claude?.hot?.data);
