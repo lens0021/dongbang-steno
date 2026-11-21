@@ -8,7 +8,7 @@ const ICON={
 function stroke(a,bulge,len=44,w=4){
   const r=a*Math.PI/180,dx=Math.cos(r),dy=-Math.sin(r),px=Math.sin(r),py=Math.cos(r);
   const c=40,x1=c-dx*len/2,y1=c-dy*len/2,x2=c+dx*len/2,y2=c+dy*len/2;
-  const k=bulge*len*0.42,cx=c+px*k*2,cy=c+py*k*2;
+  const k=bulge*len*0.22,cx=c+px*k*2,cy=c+py*k*2;
   const d=bulge?`M${x1.toFixed(1)} ${y1.toFixed(1)}Q${cx.toFixed(1)} ${cy.toFixed(1)} ${x2.toFixed(1)} ${y2.toFixed(1)}`:`M${x1.toFixed(1)} ${y1.toFixed(1)}L${x2.toFixed(1)} ${y2.toFixed(1)}`;
   return `<svg viewBox="0 0 80 80" aria-hidden="true"><path d="${d}" fill="none" stroke="var(--stroke)" stroke-width="${w}" stroke-linecap="round"/></svg>`;
 }
@@ -18,7 +18,7 @@ function ratioSVG(mult,showAll){
   return `<svg viewBox="0 0 200 ${h}" style="width:100%;max-width:300px;height:${h*1.5}px" aria-hidden="true">${rows.map((r,i)=>`<line x1="80" y1="${18+i*26}" x2="${80+U*r[0]}" y2="${18+i*26}" stroke="var(--stroke)" stroke-width="4" stroke-linecap="round"/><text x="2" y="${21+i*26}" font-size="9" fill="var(--mute)">${r[1]}</text>`).join('')}</svg>`;
 }
 function strokeDot(it,len=44,side='in'){
-  const a=it.g.a,bulge=it.b,r=a*Math.PI/180,px=Math.sin(r),py=Math.cos(r),k=bulge*len*0.42;
+  const a=it.g.a,bulge=it.b,r=a*Math.PI/180,px=Math.sin(r),py=Math.cos(r),k=bulge*len*0.22;
   let dx,dy;
   if(bulge){const sg=Math.sign(bulge)*(side==='in'?-1:1);dx=40+px*k+px*sg*10;dy=40+py*k+py*sg*10}
   else{let nx=px,ny=py;if(nx+ny>0){nx=-nx;ny=-ny}const sg=side==='in'?1:-1;dx=40+nx*sg*10;dy=40+ny*sg*10}
@@ -61,7 +61,7 @@ function wordPath(word){
       if(!it.b){nx=Math.sin(a);ny=Math.cos(a);if(nx+ny>0){nx=-nx;ny=-ny}}
       const D=6,ex=x-nx*D,ey=y-ny*D,bx=-v[0],by=-v[1],dx=-nx,dy=-ny,sweep=(dx*by-dy*bx)<0?1:0;
       d+=`A${D/2} ${D/2} 0 0 ${sweep} ${ex.toFixed(1)} ${ey.toFixed(1)}`;pts.push([ex,ey],[(x+ex)/2+bx*D/2,(y+ey)/2+by*D/2]);x=ex;y=ey}
-    const x1=x+v[0]*L,y1=y+v[1]*L,k=it.b*Math.min(L,20)*0.3,cx=(x+x1)/2+Math.sin(a)*k,cy=(y+y1)/2+Math.cos(a)*k;
+    const x1=x+v[0]*L,y1=y+v[1]*L,k=it.b*L*0.44,cx=(x+x1)/2+Math.sin(a)*k,cy=(y+y1)/2+Math.cos(a)*k;
     d+=it.b?`Q${cx.toFixed(1)} ${cy.toFixed(1)} ${x1.toFixed(1)} ${y1.toFixed(1)}`:`L${x1.toFixed(1)} ${y1.toFixed(1)}`;
     pts.push([x1,y1],[0.25*x+0.5*cx+0.25*x1,0.25*y+0.5*cy+0.25*y1]);x=x1;y=y1;prev=sy}
   return {d,pts};
