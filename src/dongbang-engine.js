@@ -54,7 +54,7 @@ function wordPath(word){
   for(const ch of word){const sy=syl(ch),it=ALL.find(a=>a.c===sy.c),g=it.g,v=DIR[g.id],L=LEN[sy.mm];
     let hooked=false;
     if(needsOffset(prev,sy)){const a0=g.a*Math.PI/180;let nx=Math.sin(a0),ny=Math.cos(a0);if(nx+ny>0){nx=-nx;ny=-ny}
-            else{x=x+nx*5-v[0]*3;y=y+ny*5-v[1]*3;d+=`M${x.toFixed(1)} ${y.toFixed(1)}`;pts.push([x,y])}}
+            x=x+nx*5-v[0]*3;y=y+ny*5-v[1]*3;d+=`M${x.toFixed(1)} ${y.toFixed(1)}`;pts.push([x,y])}
     const a=g.a*Math.PI/180;
     if(HALF.has(sy.jung)){ /* ㅑㅕㅛㅠㅣ: 시작할 때 정측에 반소원. 책처럼 12시에서 반시계 방향으로 6시까지 그리고, 거기서 선이 이어진다 */
       let nx=-Math.sin(a)*Math.sign(it.b),ny=-Math.cos(a)*Math.sign(it.b);
