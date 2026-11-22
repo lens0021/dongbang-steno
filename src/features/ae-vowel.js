@@ -57,6 +57,7 @@ const AEW0=[...new Set([...BOOKW,...OWNW])].filter(w=>okAE(w)&&[...w].some(isAE)
 /* 교재에서 모은 단어(BOOKCAND, src/data/book-words.js)는 개모음 그리기 규칙으로 그릴 수 있고 선이 겹치지 않을 때만 쓴다 */
 const aeOk=w=>okAE(w)&&[...w].some(isAE)&&pathSelfTouch(aePath(itemsOf(w)).d).length===0;
 (window.WORDCHECK=window.WORDCHECK||{}).ae=aeOk;
+(window.WORDSIG=window.WORDSIG||{}).ae=shapeKey;
 const AEW=[...new Set([...AEW0,...(typeof BOOKCAND!=='undefined'?BOOKCAND:[]).filter(aeOk)])];
 const wordKcsAE=w=>{const set=new Set(),fl=flagsOf(w);
   [...w].forEach(ch=>{const s=syl(ch),j=s.jung;set.add('c:'+s.c);

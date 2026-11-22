@@ -115,6 +115,7 @@ const BW0=BWORDS.filter(okB).filter(w=>hasB(w)&&(TB.has(w)||hasLoop(w)||typeof p
 /* 교재에서 모은 단어(BOOKCAND)는 받침 규칙으로 그릴 수 있고 선이 겹치지 않을 때만 쓴다(원 모양은 규칙이라 예외) */
 const bOkNew=w=>okB(w)&&hasB(w)&&(hasLoop(w)||typeof pathSelfTouch!=='function'||pathSelfTouch(bPath(w).d).length===0);
 (window.WORDCHECK=window.WORDCHECK||{}).b=bOkNew;
+(window.WORDSIG=window.WORDSIG||{}).b=w=>bPath(w).d;
 const BW=[...new Set([...BW0,...(typeof BOOKCAND!=='undefined'?BOOKCAND:[]).filter(bOkNew)])];
 /* 단어가 쓰는 개념 */
 function bKcs(w){const set=new Set(),cs=[...w].map(BSYL);
@@ -177,7 +178,7 @@ function bhBuild(key,id){
   return {id,prompt:`<span class="big" style="font-size:30px">${KNAME[kind]}받침 · ${ae?'ㅐ계열':'ㅏ계열'}</span>`,q:`맨 앞 글자에 ${KNAME[kind]}받침이 붙을 때(${ae?'ㅐ계열':'ㅏ계열'}) 글자 머리 모양은?`,opts,ans:kind+'|'+(ae?1:0),why:INTRO[HK[kind]]().text};
 }
 function bwBuild(t,w,id){
-  const ws=shuf([w,...pickDistractors(w,BW,3,x=>bKcs(x))]);
+  const ws=shuf([w,...pickDistractors(w,BW,3,x=>bKcs(x),x=>bPath(x).d)]);
   const why=bWhy(w);
   if(t==='bsym')return {id,prompt:bSVG(w,130),q:'이 속기 단어는 무엇일까요?',opts:ws.map(x=>({k:x,h:`<span class="big" style="font-size:24px">${x}</span>`})),ans:w,why};
   const bx=ws.map(bBox),sc=Math.min(RS(),150/Math.max(...bx.map(b=>b.w)),80/Math.max(...bx.map(b=>b.h)));

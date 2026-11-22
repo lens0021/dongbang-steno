@@ -74,7 +74,7 @@ function itemQ0(id){{const ft=featType(id.split(':')[0]);if(ft)return ft.build(i
   if(t==='txt'){const c=CONCEPTS[+key];
     return {id,prompt:`<div class="txt">${c.q}</div>`,q:'책의 내용을 떠올려 보세요',one:true,opts:shuf(c.o.map(x=>({k:x,h:x}))),ans:c.o[c.a],why:c.w}}
   if(t==='wsym'||t==='wpick'){
-    const real=pickDistractors(key,ALLW,3,wordKcs);
+    const real=pickDistractors(key,ALLW,3,wordKcs,w=>wordPath(w).d);
     const ws=shuf([key,...real]);
     const tag='';
     const bx=ws.map(wordBox),sc=Math.min(RS(),150/Math.max(...bx.map(b=>b.w)),80/Math.max(...bx.map(b=>b.h)));
@@ -140,11 +140,26 @@ function wordSim(a,b){
     if(x.jong===y.jong)s+=1;else if((x.jong>0)===(y.jong>0))s+=.5}
   const sh=new Set(A.map(c=>c.charCodeAt(0)>=0xAC00?CHO[Math.floor((c.charCodeAt(0)-0xAC00)/588)]:c));B.forEach(c=>{if(sh.has(c.charCodeAt(0)>=0xAC00?CHO[Math.floor((c.charCodeAt(0)-0xAC00)/588)]:c))s+=.5});
   return s}
+/* 그림이 같거나 거의 구별되지 않는 보기 쌍을 막는다. sig(w)는 경로 문자열 또는 [{d,tx}] 목록.
+   두 그림을 일정 간격으로 찍은 점들 사이의 최대 거리(양방향)가 TOL(약 1.2mm) 미만이면 같은 그림으로 본다. */
+const SIGPTS=new Map();
+function sigPts(sig){const key=typeof sig==='string'?sig:JSON.stringify(sig);let r=SIGPTS.get(key);if(r)return r;
+  r=[];const parts=typeof sig==='string'?[{d:sig,tx:0}]:sig;
+  for(const {d,tx} of parts)for(const sub of d.split(/(?=M)/).filter(Boolean)){
+    const el=document.createElementNS('http://www.w3.org/2000/svg','path');el.setAttribute('d',sub);const L=el.getTotalLength();
+    for(let t=0;t<=L+.01;t+=1.5){const q=el.getPointAtLength(Math.min(t,L));r.push([q.x+(tx||0),q.y])}}
+  SIGPTS.set(key,r);return r}
+const SIGTOL=3.6;
+function sigNear(a,b){const A=sigPts(a),B=sigPts(b);
+  const far=(P,Q)=>{for(const p of P){let m=1e9;for(const q of Q){const d=Math.hypot(p[0]-q[0],p[1]-q[1]);if(d<m)m=d;if(m<SIGTOL)break}if(m>=SIGTOL)return true}return false};
+  return !far(A,B)&&!far(B,A)}
+window.sigNear=sigNear;
 function pickDistractors(key,pool,n=3,kcsFn=wordKcs,distinct){
-  const cand=[...new Set(pool)].filter(w=>w!==key&&(!distinct||distinct(w)!==distinct(key)));
+  const same=(x,y)=>distinct?sigNear(distinct(x),distinct(y)):x===y;
+  const cand=[...new Set(pool)].filter(w=>w!==key&&!same(w,key));
   const sc=new Map(cand.map(w=>[w,wordSim(key,w)+Math.random()*.8]));
   const ok=w=>{try{return kcsFn(w).every(learned)}catch(e){return true}};
-  const out=[],seen=new Set(),take=list=>{for(const w of list){if(out.length>=n)break;const dk=distinct?distinct(w):w;if(seen.has(dk))continue;seen.add(dk);out.push(w)}};
+  const out=[],take=list=>{for(const w of list){if(out.length>=n)break;if(out.some(o=>same(o,w)))continue;out.push(w)}};
   take(cand.filter(ok).sort((x,y)=>sc.get(y)-sc.get(x)));take(cand.filter(w=>!out.includes(w)).sort((x,y)=>sc.get(y)-sc.get(x)));
   return out}
 /* 새 개념의 첫 연습 문제 4개(문제 종류가 적으면 되풀이한다) */

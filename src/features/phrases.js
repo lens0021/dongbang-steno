@@ -12,8 +12,9 @@ function phraseSVG(ph,h=90,S){const L=phraseLayout(ph.split(' '));S=Math.min(S||
   return `<svg viewBox="0 ${L.y0.toFixed(1)} ${L.w.toFixed(1)} ${L.h.toFixed(1)}" style="${size}" aria-hidden="true"><g fill="none" stroke="var(--stroke)" stroke-width="${S?(3.4/S).toFixed(2):2.6}" stroke-linecap="round" stroke-linejoin="round">${L.parts.map(p=>`<path transform="translate(${p.tx.toFixed(1)} 0)" d="${p.d}"/>`).join('')}</g></svg>`}
 const kcsP=p=>['p:1',...new Set(p.split(' ').flatMap(wordKcs))];
 const why=p=>`${p} = ${p.split(' ').join(' / ')}. 띄어쓰는 곳에서는 펜을 떼고 옆에 따로 씁니다.`;
-const others=p=>pickDistractors(p,PHR,3,x=>kcsP(x).slice(1));
+const others=p=>pickDistractors(p,PHR,3,x=>kcsP(x).slice(1),x=>phraseLayout(x.split(' ')).parts);
 window.phraseSVG=phraseSVG;
+(window.WORDSIG=window.WORDSIG||{}).p=x=>phraseLayout(x.split(' ')).parts;
 (window.FEATURES=window.FEATURES||[]).push({
   name:'어구',curr:['p:1'],info:['p:1'],after:'c:이',names:{'p:1':'띄어쓰기(어구)'},
   intro:{'p:1':()=>({prompt:phraseSVG(PHR[0]||'가자',110),text:'<b>띄어쓰기</b><br>속기에서도 적당히 띄어 쓰고, 문장부호는 쓰지 않습니다(교재 40쪽). 띄어쓰는 곳에서는 펜을 떼고 다음 단어를 옆에 따로 씁니다.<br><small>단어 사이 간격은 정해진 길이가 없어서 이 연습장에서는 일정하게 그려요.</small>'})},
