@@ -12,7 +12,7 @@ const AE_NAME={'e:hook':'개모음: 반측 반소원','e:4':'ㅐㅔ 4mm','e:8':'
 const isAE=ch=>{const n=ch.charCodeAt(0)-0xAC00;return n>=0&&n%28===0&&(Math.floor(n%588/28) in AEMM)};
 const okAE=w=>[...w].every(ch=>{const n=ch.charCodeAt(0)-0xAC00;if(!(n>=0&&n%28===0))return false;const j=Math.floor(n%588/28),ci=CHO[Math.floor(n/588)];
   if(!INIT[ci])return false;if(j in AEMM)return ci!=='ㅇ';return j in MM});
-const item=(ch)=>{const s=syl(ch),j=s.jung;if(j in AEMM)return {c:s.c,mm:AEMM[j],kind:'ae'};return {c:s.c,mm:MM[j],kind:HALF.has(j)?'hook':'plain'}};
+const item=(ch)=>{const s=syl(ch),j=s.jung;if(j in AEMM)return {c:s.c,mm:AEMM[j],kind:'ae'};return {c:s.c,mm:MM[j],kind:isHook(s)?'hook':'plain'}};
 const grp=c=>ALL.find(x=>x.c===c);
 const straight=c=>grp(c).b===0;
 /* 그리기: 책 4-1(반측 반소원), 4-2(연필을 떼고 1mm 들어가 반소원 없이), 4-3(앞 글자 끝에서 제 문자 그대로) */
@@ -61,7 +61,7 @@ const aeOk=w=>okAE(w)&&[...w].some(isAE)&&pathSelfTouch(aePath(itemsOf(w)).d).le
 const AEW=[...new Set([...AEW0,...(typeof BOOKCAND!=='undefined'?BOOKCAND:[]).filter(aeOk)])];
 const wordKcsAE=w=>{const set=new Set(),fl=flagsOf(w);
   [...w].forEach(ch=>{const s=syl(ch),j=s.jung;set.add('c:'+s.c);
-    if(j in AEMM){set.add('e:hook');set.add(KC[AEMM[j]])}else{if(MM[j]>4)set.add('v:'+MM[j]);if(HALF.has(j))set.add('r:3')}});
+    if(j in AEMM){set.add('e:hook');set.add(KC[AEMM[j]])}else{if(MM[j]>4)set.add('v:'+MM[j]);if(isHook(s)&&!s.sp)set.add('r:3')}});
   if(fl.link)set.add('e:link');if(fl.sep)set.add('e:sep');if(fl.off)set.add('r:11');
   return [...set]};
 const wordWhyAE=w=>{const fl=flagsOf(w);

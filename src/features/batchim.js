@@ -73,7 +73,7 @@ function bPath(word){
       else if(loop==='g'){const hx=x+s[0]*5.5-v[0]*1.5,hy=y+s[1]*5.5-v[1]*1.5;d+=`L${fx(hx)} ${fx(hy)}L${fx(x)} ${fx(y)}`;pts.push([hx,hy])}
     }
     if(hook||afterHook)aeHook(it,v,a,true);
-    else if(HALF.has(sy.jung)&&!sy.kind){
+    else if(isHook(sy)&&!sy.kind){
       aeHook(it,v,a,false)}
     const sx=x,sy0=y,x1=x+v[0]*L,y1=y+v[1]*L,kk=it.b*L*0.44,cx=(x+x1)/2+Math.sin(a)*kk,cy=(y+y1)/2+Math.cos(a)*kk;
     d+=it.b?`Q${fx(cx)} ${fx(cy)} ${fx(x1)} ${fx(y1)}`:`L${fx(x1)} ${fx(y1)}`;
@@ -113,13 +113,14 @@ const hasLoop=w=>[...w].some((ch,i)=>{const s=BSYL(ch);return s.kind&&((i===0)||
 const TB=new Set('모든 그간 시간 차분한 노동 고궁 고향 고충 차창 그들 수출 소홀 추출 도달 그걸 고갈 두돌 차출 가감 고급 소감 차츰 보람 가각 고국 도둑 차축 고독 다목적 호박죽 고된 사관 주된 나뇐 이권 고관 가관 교황 로댕 비행장 투쟁 고갱 호황 후생 보낼 사활 부활 대궐 초과될 하겠다 오랬다 노랫말 어쨌든 헤맸다 되겠다 보냄 도마뱀 스냅 보탬 대책 시책 수확 구획 어획 주객 가객 고객 과객 개국'.split(' '));
 const BW0=BWORDS.filter(okB).filter(w=>hasB(w)&&(TB.has(w)||hasLoop(w)||typeof pathSelfTouch!=='function'||pathSelfTouch(bPath(w).d).length===0));
 /* 교재에서 모은 단어(BOOKCAND)는 받침 규칙으로 그릴 수 있고 선이 겹치지 않을 때만 쓴다(원 모양은 규칙이라 예외) */
-const bOkNew=w=>okB(w)&&hasB(w)&&(hasLoop(w)||typeof pathSelfTouch!=='function'||pathSelfTouch(bPath(w).d).length===0);
+/* 특별문자(이·히)에 받침을 붙이는 방법은 확인하지 못해 제외한다 */
+const bOkNew=w=>okB(w)&&hasB(w)&&![...w].some(ch=>syl(ch).sp&&(ch.charCodeAt(0)-0xAC00)%28)&&(hasLoop(w)||typeof pathSelfTouch!=='function'||pathSelfTouch(bPath(w).d).length===0);
 (window.WORDCHECK=window.WORDCHECK||{}).b=bOkNew;
 (window.WORDSIG=window.WORDSIG||{}).b=w=>bPath(w).d;
 const BW=[...new Set([...BW0,...(typeof BOOKCAND!=='undefined'?BOOKCAND:[]).filter(bOkNew)])];
 /* 단어가 쓰는 개념 */
 function bKcs(w){const set=new Set(),cs=[...w].map(BSYL);
-  cs.forEach((s,i)=>{set.add('c:'+s.c);if(s.ae){set.add('e:'+s.mm);set.add('e:hook')}else if(s.mm>4)set.add('v:'+s.mm);if(HALF.has(s.jung))set.add('r:3');
+  cs.forEach((s,i)=>{set.add('c:'+s.c);if(s.ae){set.add('e:'+s.mm);set.add('e:hook')}else if(s.mm>4)set.add('v:'+s.mm);if(isHook(s)&&!s.sp)set.add('r:3');
     if(s.kind&&i===0){set.add(s.kind==='m'?'b:21':s.kind==='g'?'b:22':'b:20');if(s.kind==='g'&&grp(s.c).b)set.add('b:23')}
     else if(s.kind){const pg=grp(cs[i-1].c).g,par=pg.id===grp(s.c).g.id;set.add(conceptOf(s.kind,par,s.ae))}
     else if(i>0&&!cs[i-1].kind&&needsOffset(cs[i-1],s))set.add('r:11')});

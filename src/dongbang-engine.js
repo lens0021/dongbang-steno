@@ -45,10 +45,14 @@ const HALF=new Set([2,6,12,17,20]);
 const MM={0:4,4:4,2:4,6:4,8:8,13:8,12:8,17:8,18:16,20:16};
 /* 단위 3개 = 1mm (4mm=12, 8mm=24, 16mm=48). 화면 배율은 RS() */
 const LEN={4:12,8:24,16:48};
-function syl(ch){const n=ch.charCodeAt(0)-0xAC00,cho=Math.floor(n/588),jung=Math.floor(n%588/28);return {c:INIT[CHO[cho]],mm:MM[jung],jung,ch}}
+/* 교재 19쪽 특별문자(4mm): 「이(의)」=세로선, 「히(희)」=머리에 작은 갈고리가 달린 세로선. ㅇ+ㅣ, ㅎ+ㅣ는 일반 규칙(16mm 반소원)이 아니라 이 글자를 쓴다. */
+function syl(ch){const n=ch.charCodeAt(0)-0xAC00,cho=Math.floor(n/588),jung=Math.floor(n%588/28);
+  if(jung===20&&(CHO[cho]==='ㅇ'||CHO[cho]==='ㅎ'))return {c:'이',mm:4,jung,ch,sp:CHO[cho]==='ㅇ'?'i':'hi',nohook:CHO[cho]==='ㅇ'};
+  return {c:INIT[CHO[cho]],mm:MM[jung],jung,ch}}
+const isHook=s=>HALF.has(s.jung)&&!s.nohook;
 const compose=(c,jung)=>String.fromCharCode(0xAC00+CHO.indexOf(REV[c])*588+jung*28);
 /* 책 3-3-1: 같은 방향의 곧은 선이 이어지면 구별이 안 되므로, 다음 글자를 앞 글자의 정측(위·왼쪽)으로 조금 들어가 띄어 쓴다 */
-function needsOffset(prev,cur){if(!prev)return false;const a=ALL.find(x=>x.c===prev.c),b=ALL.find(x=>x.c===cur.c);return a.g===b.g&&a.b===0&&b.b===0&&!HALF.has(cur.jung)}
+function needsOffset(prev,cur){if(!prev)return false;const a=ALL.find(x=>x.c===prev.c),b=ALL.find(x=>x.c===cur.c);return a.g===b.g&&a.b===0&&b.b===0&&!isHook(cur)}
 /* 직선의 정측(위·왼쪽) 법선. 교재 27쪽 도해: 수평은 위, 그 밖은 왼쪽 (45° 기준 ↘는 왼쪽 아래) */
 function jeong(a){const r=a*Math.PI/180;let nx=Math.sin(r),ny=Math.cos(r);if(Math.abs(nx)<1e-6)return [0,-1];return nx>0?[-nx,-ny]:[nx,ny]}
 const wordOffsets=w=>[...w].map((ch,i,arr)=>i>0&&needsOffset(syl(arr[i-1]),syl(ch)));
@@ -59,7 +63,7 @@ function wordPath(word){
     if(needsOffset(prev,sy)){const [nx,ny]=jeong(g.a);
             x=x+nx*4-v[0]*2.5;y=y+ny*4-v[1]*2.5;d+=`M${x.toFixed(1)} ${y.toFixed(1)}`;pts.push([x,y])}
     const a=g.a*Math.PI/180;
-    if(HALF.has(sy.jung)){ /* ㅑㅕㅛㅠㅣ: 시작할 때 정측에 반소원. 책처럼 12시에서 반시계 방향으로 6시까지 그리고, 거기서 선이 이어진다 */
+    if(isHook(sy)){ /* ㅑㅕㅛㅠㅣ: 시작할 때 정측에 반소원. 책처럼 12시에서 반시계 방향으로 6시까지 그리고, 거기서 선이 이어진다 */
       let nx=-Math.sin(a)*Math.sign(it.b),ny=-Math.cos(a)*Math.sign(it.b);
       if(!it.b){nx=Math.sin(a);ny=Math.cos(a);if(nx+ny>0){nx=-nx;ny=-ny}}
       const D=4,ex=x-nx*D,ey=y-ny*D,bx=-v[0],by=-v[1],dx=-nx,dy=-ny,sweep=(dx*by-dy*bx)<0?1:0;

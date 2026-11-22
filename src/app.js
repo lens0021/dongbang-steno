@@ -33,7 +33,7 @@ const seen=k=>!!S.k[k];
 const learned=k=>strength(k)>=LEARNED;
 function markSeen(k){if(!S.k[k])S.k[k]={s:INFO.has(k)?3:1,n:1,w:0,t:Date.now()}}
 function recordKcs(kcs,ok){kcs.forEach(k=>{const m=S.k[k]||(S.k[k]={s:0,n:0,w:0,t:0});m.n++;m.t=Date.now();if(ok)m.s=Math.min(5,m.s+1);else{m.w++;m.s=Math.max(0,m.s-(kcs.length>1?1:2))}})}
-const wordKcs=w=>{const set=new Set();[...w].forEach(ch=>{const s=syl(ch);set.add('c:'+s.c);if(s.mm>4)set.add('v:'+s.mm);if(HALF.has(s.jung))set.add('r:3')});FEATURES.forEach(f=>f.wordKcs&&f.wordKcs(w,set));if(wordOffsets(w).some(Boolean))set.add('r:11');return [...set]};
+const wordKcs=w=>{const set=new Set();[...w].forEach(ch=>{const s=syl(ch);set.add('c:'+s.c);if(s.mm>4)set.add('v:'+s.mm);if(isHook(s)&&!s.sp)set.add('r:3')});FEATURES.forEach(f=>f.wordKcs&&f.wordKcs(w,set));if(wordOffsets(w).some(Boolean))set.add('r:11');return [...set]};
 function kcsOf(id){const [t,key]=id.split(':');const ft=featType(t);if(ft)return ft.kcs(key,id);
   if(t==='dd')return ['r:5','c:'+DD[key]];
   if(t==='ddd')return ['r:5','r:7','c:'+DD[key]];
