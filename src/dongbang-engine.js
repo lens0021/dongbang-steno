@@ -98,3 +98,15 @@ function pathSelfTouch(d){
   return n>=7?[n]:[];
 }
 const drawsClean=word=>pathSelfTouch(wordPath(word).d).length===0;
+
+/* ---------- 실제 길이(mm) 배율 ----------
+   화면에서 1mm가 몇 CSS px인지(PXMM). 안드로이드 웹뷰는 1 CSS px를 1/160인치로 다뤄 기본값을 6.3으로 두고, 그 밖은 96dpi 기준 3.78.
+   기기마다 다르므로 홈 화면의 "화면 길이 보정"에서 카드(짧은 변 54mm)에 맞춰 조정하면 저장되어 모든 그림에 적용된다.
+   mm 길이를 보여 주는 그림은 반드시 mmPx(mm) 또는 svMM을 쓴다(새 영역 파일도 같다). */
+const DEFAULT_PXMM=(typeof navigator!=='undefined'&&/Android/i.test(navigator.userAgent))?6.3:3.78;
+let PXMM=(()=>{try{const v=parseFloat(localStorage.getItem('dongbang-pxmm'));if(v>1&&v<20)return v}catch(e){}return DEFAULT_PXMM})();
+function setPxmm(v){PXMM=v;try{localStorage.setItem('dongbang-pxmm',String(v))}catch(e){}}
+const mmPx=mm=>mm*PXMM;
+/* 문자 하나를 실제 mm 길이로 그린다. 단위 3개 = 1mm, 그림 칸은 60단위(=20mm) 정사각형 */
+function svMM(it,mm){const px=60*PXMM/3;
+  return stroke(it.g.a,it.b,3*mm,1.4).replace('viewBox="0 0 80 80"',`viewBox="10 10 60 60" style="width:${px.toFixed(0)}px;height:${px.toFixed(0)}px"`)}

@@ -16,7 +16,7 @@ FEATURES.forEach(f=>{const at=f.after?CURR.indexOf(f.after):-1;if(at>=0)CURR.spl
 /* 문제 보기들이 모두 같은 길이로 그려질 때 붙이는 안내(길이가 서로 다르면 붙이지 않는다). 새 영역의 문제도 이 함수를 쓴다. */
 /* 기준 막대: 보기 그림(.opt svg는 viewBox 80 → 64px, 즉 0.8px/단위)과 같은 배율로 4·8·16mm 길이를 직접 그려 보여 준다.
    lenNote가 붙은 문제는 itemQ가 자동으로 q.ref에 이것을 넣는다. */
-const lenRef=mm=>`<div class="lenref" aria-hidden="true"><small>기준 길이 (보기와 같은 배율)</small>${[4,8,16].map(m=>`<div class="lr${m===mm?' on':''}"><i style="width:${(LEN[m]*0.8).toFixed(0)}px"></i><span>${m}mm</span></div>`).join('')}</div>`;
+const lenRef=mm=>`<div class="lenref" aria-hidden="true"><small>실제 길이 기준 (화면 길이 보정 기준)</small>${[4,8,16].map(m=>`<div class="lr${m===mm?' on':''}"><i style="width:${mmPx(m).toFixed(0)}px"></i><span>${m}mm</span></div>`).join('')}</div>`;
 const lenNote=mm=>` <small class="lennote">(모든 보기는 ${mm}mm)</small>`;
 const featType=t=>{for(const f of FEATURES){if(f.types&&f.types[t])return f.types[t]}};
 const DD={'까':'가','따':'다','빠':'바','싸':'사','짜':'자'};
@@ -62,9 +62,9 @@ function itemQ0(id){{const ft=featType(id.split(':')[0]);if(ft)return ft.build(i
   const [t,key]=id.split(':');
   if(t==='len'){const mm=+key,VN={4:'ㅏ·ㅓ',8:'ㅗ·ㅜ',16:'ㅡ(으)'};
     const ref=shuf([4,8,16].filter(m=>m!==mm))[0];
-    const bar=m=>`<span style="display:block;width:${m*7}px;height:5px;border-radius:3px;background:var(--stroke)"></span>`;
+    const bar=m=>`<span style="display:block;width:${mmPx(m).toFixed(0)}px;height:4px;border-radius:3px;background:var(--stroke)"></span>`;
     const prompt=`<span style="display:flex;flex-direction:column;align-items:center;gap:8px"><small style="color:var(--mute)">기준선: ${ref}mm</small>${bar(ref)}</span>`;
-    return {id,prompt,q:`위 선이 ${ref}mm일 때, ${VN[mm]} 모음에 맞는 선은?`,opts:shuf([4,8,16]).map(m=>({k:m,h:bar(m)})),ans:mm,why:`${VN[mm]}은(는) ${mm}mm입니다. ㅏㅓ : ㅗㅜ : ㅡ = 1 : 2 : 4 비율이에요. 실제 mm는 화면마다 달라서 비율로 기억하세요.`}}
+    return {id,prompt,q:`위 선이 ${ref}mm일 때, ${VN[mm]} 모음에 맞는 선은?`,opts:shuf([4,8,16]).map(m=>({k:m,h:bar(m)})),ans:mm,why:`${VN[mm]}은(는) ${mm}mm입니다. ㅏㅓ : ㅗㅜ : ㅡ = 1 : 2 : 4 비율이에요. 화면 길이를 보정하면 실제 mm에 가깝게 보여요. 그래도 비율로 기억하세요.`}}
   if(t==='dd'){const base=ALL.find(x=>x.c===DD[key]),g=base.g;
     const pool=shuf([...g.chars.map(([c,b])=>({c,b,g})).filter(x=>x.c!==base.c),...shuf(ALL.filter(x=>x.g!==g)).slice(0,2)]).slice(0,3);
     return {id,prompt:`<span class="big">${key}</span>`,q:`된소리 「${key}」는 속기로 어떻게 쓸까요?`,opts:shuf([base,...pool]).map(o=>({k:o.c,h:sv(o,40)})),ans:base.c,why:`된소리는 정측 중앙에 점을 찍어 표기하나, 생략하는 것을 원칙으로 합니다. 그래서 ${key}=${base.c}처럼 평음과 같이 씁니다.`}}
@@ -87,9 +87,9 @@ function itemQ0(id){{const ft=featType(id.split(':')[0]);if(ft)return ft.build(i
   const [vmm,vj]=VOWS[Math.floor(Math.random()*VOWS.length)],L=LEN[vmm],sy=o=>compose(o.c,vj),vn={4:'ㅏㅓ 4mm',8:'ㅗㅜ 8mm',16:'ㅡ 16mm'}[vmm];
   const lines=o=>`${o.b===0?'곧은 선':'굽은 선'}(${o.g.deg}) × ${vn}`;
   if(t==='sym')
-    return {id,prompt:sv(it,L),q:'이 속기 글자는 무엇일까요?',opts:shuf([it,...shuf(mine.filter(m=>m.c!==it.c)),...shuf(others).slice(0,1)]).map(o=>({k:o.c,h:`<span class="big">${sy(o)}</span>`})),ans:it.c,why:`${sy(it)}은(는) ${it.c} 문자(${g.deg} 방향)에 모음 ${vn} 길이로 씁니다.`};
+    return {id,prompt:svMM(it,vmm),q:'이 속기 글자는 무엇일까요?',opts:shuf([it,...shuf(mine.filter(m=>m.c!==it.c)),...shuf(others).slice(0,1)]).map(o=>({k:o.c,h:`<span class="big">${sy(o)}</span>`})),ans:it.c,why:`${sy(it)}은(는) ${it.c} 문자(${g.deg} 방향)에 모음 ${vn} 길이로 씁니다.`};
   if(t==='pick'){const pool=shuf([...shuf(mine.filter(m=>m.c!==it.c)),...shuf(others).slice(0,2)]).slice(0,3);
-    return {id,prompt:`<span class="big">${sy(it)}</span>`,q:`「${sy(it)}」에 해당하는 모양을 고르세요${lenNote(vmm)}`,opts:shuf([it,...pool]).map(o=>({k:o.c,h:sv(o,L)})),ans:it.c,why:`${sy(it)}은(는) ${lines(it)}으로 씁니다.`}}
+    return {id,prompt:`<span class="big">${sy(it)}</span>`,q:`「${sy(it)}」에 해당하는 모양을 고르세요${lenNote(vmm)}`,opts:shuf([it,...pool]).map(o=>({k:o.c,h:svMM(o,vmm)})),ans:it.c,why:`${sy(it)}은(는) ${lines(it)}으로 씁니다.`}}
 }
 function itemQ(id){
   const q=itemQ0(id),t=id.split(':')[0];q.kcs=kcsOf(id);
@@ -182,8 +182,17 @@ function home(){
   <details class="card"><summary><b>쓰기 규칙</b> <small>${rules.filter(learned).length}/${rules.length} 익힘</small></summary>
    <div style="margin-top:8px">${rules.map(k=>`<button class="rr" data-show="${k}"><span>${kcName(k)}</span>${seen(k)?(INFO.has(k)?'<small>✓ 읽음</small>':dots(strength(k))):'<small>아직 안 읽음</small>'}</button>`).join('')}</div></details>
   ${FEATURES.filter(f=>f.section).map(f=>`<details class="card"><summary><b>${f.section.title}</b> <small>${f.section.kcs.filter(learned).length}/${f.section.kcs.length} 익힘</small></summary><div style="margin-top:8px">${f.section.kcs.map(k=>`<button class="rr" data-show="${k}"><span>${kcName(k)}</span>${seen(k)?(INFO.has(k)?'<small>✓ 읽음</small>':dots(strength(k))):'<small>아직 안 배움</small>'}</button>`).join('')}</div></details>`).join('')}
+  <details class="card" id="calib"><summary><b>화면 길이 보정</b> <small>${PXMM.toFixed(2)}px = 1mm</small></summary>
+   <p class="sub">카드(신용·체크카드)를 화면에 대고, 아래 막대 길이가 <b id="calref">카드 짧은 변(54mm)</b>과 같아지도록 슬라이더를 움직이세요. 기기와 앱마다 화면 크기 단위가 달라 한 번만 맞춰 두면 됩니다.</p>
+   <div style="margin:12px 0 6px"><span id="calbar" style="display:block;height:10px;border-radius:5px;background:var(--stroke);width:${(54*PXMM).toFixed(0)}px"></span></div>
+   <input id="calsl" type="range" min="3" max="9" step="0.05" value="${PXMM}" style="width:100%"><p class="sub"><span id="calv">54mm</span> · <button class="link" id="calreset" style="margin:0">기본값으로</button></p></details>
   <p class="src">내용 출처: 「동방속기 기초편」(이동근, 크라운출판사) 제1장. 문자와 단어 그림은 책의 도해(방향 화살표, 4·8·16mm 길이)를 바탕으로 다시 그린 것이라 손글씨 곡선과는 다릅니다.</p>`;
   app.querySelector('#adp').onclick=()=>start();
+  {const sl=app.querySelector('#calsl'),bar=app.querySelector('#calbar'),sm=app.querySelector('#calib summary small');
+   const cr=app.querySelector('#calref'),cv=app.querySelector('#calv');
+   const ap=v=>{setPxmm(v);const w=bar.parentElement.clientWidth||300,mm=54*v<=w?54:27;bar.style.width=(mm*v).toFixed(0)+'px';cr.textContent=mm===54?'카드 짧은 변(54mm)':'카드 짧은 변의 절반(27mm)';cv.textContent=mm+'mm';sm.textContent=v.toFixed(2)+'px = 1mm'};
+   sl.oninput=()=>ap(+sl.value);app.querySelector('#calib').addEventListener('toggle',()=>ap(PXMM));
+   app.querySelector('#calreset').onclick=()=>{try{localStorage.removeItem('dongbang-pxmm')}catch(e){}PXMM=DEFAULT_PXMM;sl.value=PXMM;ap(PXMM)}}
   app.querySelector('#galb').onclick=gallery;
   app.querySelectorAll('.tl').forEach(b=>b.onclick=()=>showConcept(b.dataset.kc));
   app.querySelectorAll('[data-show]').forEach(b=>b.onclick=()=>showConcept(b.dataset.show));
