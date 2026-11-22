@@ -12,7 +12,7 @@ const INFO=new Set(['r:12','r:13','r:11','r:3','r:4','r:6','r:7','r:8','r:9','r:
     section:{title,kcs:[...]}, wordKcs:(word,set)=>void}
    개념 id는 영역마다 겹치지 않게 접두어를 쓴다(받침 b:, ㅐ모음 e:, 약기법 a:). */
 const FEATURES=window.FEATURES||[];
-FEATURES.forEach(f=>{CURR.push(...(f.curr||[]));(f.info||[]).forEach(k=>INFO.add(k))});
+FEATURES.forEach(f=>{const at=f.after?CURR.indexOf(f.after):-1;if(at>=0)CURR.splice(at+1,0,...(f.curr||[]));else CURR.push(...(f.curr||[]));(f.info||[]).forEach(k=>INFO.add(k))});
 /* 문제 보기들이 모두 같은 길이로 그려질 때 붙이는 안내(길이가 서로 다르면 붙이지 않는다). 새 영역의 문제도 이 함수를 쓴다. */
 const lenNote=mm=>` <small class="lennote">(모든 보기는 ${mm}mm)</small>`;
 const featType=t=>{for(const f of FEATURES){if(f.types&&f.types[t])return f.types[t]}};
