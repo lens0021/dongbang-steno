@@ -14,6 +14,9 @@ const INFO=new Set(['r:12','r:13','r:11','r:3','r:4','r:6','r:7','r:8','r:9','r:
 const FEATURES=window.FEATURES||[];
 FEATURES.forEach(f=>{const at=f.after?CURR.indexOf(f.after):-1;if(at>=0)CURR.splice(at+1,0,...(f.curr||[]));else CURR.push(...(f.curr||[]));(f.info||[]).forEach(k=>INFO.add(k))});
 /* 문제 보기들이 모두 같은 길이로 그려질 때 붙이는 안내(길이가 서로 다르면 붙이지 않는다). 새 영역의 문제도 이 함수를 쓴다. */
+/* 기준 막대: 보기 그림(.opt svg는 viewBox 80 → 64px, 즉 0.8px/단위)과 같은 배율로 4·8·16mm 길이를 직접 그려 보여 준다.
+   lenNote가 붙은 문제는 itemQ가 자동으로 q.ref에 이것을 넣는다. */
+const lenRef=mm=>`<div class="lenref" aria-hidden="true"><small>기준 길이 (보기와 같은 배율)</small>${[4,8,16].map(m=>`<div class="lr${m===mm?' on':''}"><i style="width:${(LEN[m]*0.8).toFixed(0)}px"></i><span>${m}mm</span></div>`).join('')}</div>`;
 const lenNote=mm=>` <small class="lennote">(모든 보기는 ${mm}mm)</small>`;
 const featType=t=>{for(const f of FEATURES){if(f.types&&f.types[t])return f.types[t]}};
 const DD={'까':'가','따':'다','빠':'바','싸':'사','짜':'자'};
@@ -90,6 +93,7 @@ function itemQ0(id){{const ft=featType(id.split(':')[0]);if(ft)return ft.build(i
 }
 function itemQ(id){
   const q=itemQ0(id),t=id.split(':')[0];q.kcs=kcsOf(id);
+  {const m=/lennote">\(모든 보기는 (\d+)mm/.exec(q.q||'');if(m)q.ref=lenRef(+m[1])}
   if(t==='wsym'||t==='wpick'){const w=id.split(':')[1];q.why=`<span style="display:flex;align-items:center;gap:10px"><span style="width:96px;flex:none;border:1px solid var(--line);border-radius:10px;background:var(--card);padding:4px">${wordSVG(w,44)}</span><span>${q.why}</span></span>`}
   if(['sym','pick'].includes(t)){const it=ALL.find(x=>x.c===id.split(':')[1]);
     q.why=`<span style="display:flex;align-items:center;gap:10px"><span style="width:52px;height:52px;flex:none;border:1px solid var(--line);border-radius:10px;background:var(--card)">${sv(it,44)}</span><span>${q.why}</span></span>`}
@@ -222,7 +226,7 @@ function render(){
     window.scrollTo(0,0);return;
   }
   app.innerHTML=`${head}
-  <div class="q"><h2>${q.q}</h2><div class="prompt">${q.prompt}</div>
+  <div class="q"><h2>${q.q}</h2><div class="prompt">${q.prompt}</div>${q.ref||''}
   <div class="opts ${q.one?'one':''}">${q.opts.map((o,i)=>`<button class="opt" data-i="${i}">${o.h}</button>`).join('')}</div></div>
   <div class="fb" id="fb"><div class="in"><button class="go" id="go" disabled>확인</button></div></div>`;
   R.sel=null;R.checked=false;

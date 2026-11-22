@@ -95,3 +95,7 @@ details summary{cursor:pointer}
 .introtx{background:var(--card);border:2px solid var(--line);border-radius:14px;padding:14px;line-height:1.7}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 .lennote{font-size:13px;font-weight:500;color:var(--mute);white-space:nowrap}
+.lenref{margin:-4px 0 14px;padding:8px 12px;border:1px dashed var(--line);border-radius:12px;font-size:13px;color:var(--mute)}
+.lenref .lr{display:flex;align-items:center;gap:10px;margin-top:4px}
+.lenref .lr i{display:block;height:3px;border-radius:2px;background:var(--stroke);opacity:.55}
+.lenref .lr.on i{opacity:1}.lenref .lr.on span{color:var(--ink);font-weight:700}
