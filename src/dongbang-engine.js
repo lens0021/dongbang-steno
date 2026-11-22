@@ -21,7 +21,7 @@ function strokeDot(it,len=44,side='in'){
   const a=it.g.a,bulge=it.b,r=a*Math.PI/180,px=Math.sin(r),py=Math.cos(r),k=bulge*len*0.22;
   let dx,dy;
   if(bulge){const sg=Math.sign(bulge)*(side==='in'?-1:1);dx=40+px*k+px*sg*10;dy=40+py*k+py*sg*10}
-  else{let nx=px,ny=py;if(nx+ny>0){nx=-nx;ny=-ny}const sg=side==='in'?1:-1;dx=40+nx*sg*10;dy=40+ny*sg*10}
+  else{const [nx,ny]=jeong(it.g.a);const sg=side==='in'?1:-1;dx=40+nx*sg*10;dy=40+ny*sg*10}
   return stroke(a,bulge,len).replace('</svg>',`<circle cx="${dx.toFixed(1)}" cy="${dy.toFixed(1)}" r="3.2" fill="var(--stroke)"/></svg>`);
 }
 function ruler(mm){const px=mm*5;return `<svg viewBox="0 0 120 40" aria-hidden="true"><line x1="${60-px/2}" y1="20" x2="${60+px/2}" y2="20" stroke="var(--stroke)" stroke-width="4" stroke-linecap="round"/></svg>`}
@@ -48,12 +48,14 @@ function syl(ch){const n=ch.charCodeAt(0)-0xAC00,cho=Math.floor(n/588),jung=Math
 const compose=(c,jung)=>String.fromCharCode(0xAC00+CHO.indexOf(REV[c])*588+jung*28);
 /* 책 3-3-1: 같은 방향의 곧은 선이 이어지면 구별이 안 되므로, 다음 글자를 앞 글자의 정측(위·왼쪽)으로 조금 들어가 띄어 쓴다 */
 function needsOffset(prev,cur){if(!prev)return false;const a=ALL.find(x=>x.c===prev.c),b=ALL.find(x=>x.c===cur.c);return a.g===b.g&&a.b===0&&b.b===0&&!HALF.has(cur.jung)}
+/* 직선의 정측(위·왼쪽) 법선. 교재 27쪽 도해: 수평은 위, 그 밖은 왼쪽 (45° 기준 ↘는 왼쪽 아래) */
+function jeong(a){const r=a*Math.PI/180;let nx=Math.sin(r),ny=Math.cos(r);if(Math.abs(nx)<1e-6)return [0,-1];return nx>0?[-nx,-ny]:[nx,ny]}
 const wordOffsets=w=>[...w].map((ch,i,arr)=>i>0&&needsOffset(syl(arr[i-1]),syl(ch)));
 function wordPath(word){
   let x=0,y=0,pts=[[0,0]],d='M0 0',prev=null;
   for(const ch of word){const sy=syl(ch),it=ALL.find(a=>a.c===sy.c),g=it.g,v=DIR[g.id],L=LEN[sy.mm];
     let hooked=false;
-    if(needsOffset(prev,sy)){const a0=g.a*Math.PI/180;let nx=Math.sin(a0),ny=Math.cos(a0);if(nx+ny>0){nx=-nx;ny=-ny}
+    if(needsOffset(prev,sy)){const [nx,ny]=jeong(g.a);
             x=x+nx*5-v[0]*3;y=y+ny*5-v[1]*3;d+=`M${x.toFixed(1)} ${y.toFixed(1)}`;pts.push([x,y])}
     const a=g.a*Math.PI/180;
     if(HALF.has(sy.jung)){ /* ㅑㅕㅛㅠㅣ: 시작할 때 정측에 반소원. 책처럼 12시에서 반시계 방향으로 6시까지 그리고, 거기서 선이 이어진다 */
