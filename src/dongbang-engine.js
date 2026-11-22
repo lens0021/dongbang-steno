@@ -112,5 +112,5 @@ const mmPx=mm=>mm*PXMM;
 /* 그림 단위 1개가 몇 px인지(실제 길이 배율). 모든 그림 함수는 이 값 이하로만 그려 mm가 어디서나 같은 크기가 되게 한다. */
 const RS=()=>PXMM/3;
 /* 문자 하나를 실제 mm 길이로 그린다. 단위 3개 = 1mm, 그림 칸은 60단위(=20mm) 정사각형 */
-function svMM(it,mm){const px=60*PXMM/3;
-  return stroke(it.g.a,it.b,3*mm,1.4).replace('viewBox="0 0 80 80"',`viewBox="10 10 60 60" style="width:${px.toFixed(0)}px;height:${px.toFixed(0)}px"`)}
+function svMM(it,mm){const u=Math.min(60,3*mm+16),px=u*PXMM/3,o=40-u/2;  /* 칸 크기는 길이에 맞춰 줄여 화면을 덜 차지한다(배율은 그대로) */
+  return stroke(it.g.a,it.b,3*mm,1.4).replace('viewBox="0 0 80 80"',`viewBox="${o} ${o} ${u} ${u}" style="width:${px.toFixed(0)}px;height:${px.toFixed(0)}px"`)}

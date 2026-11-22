@@ -264,11 +264,19 @@ function render(){
   <div class="opts ${q.one?'one':''}">${q.opts.map((o,i)=>`<button class="opt" data-i="${i}">${o.h}</button>`).join('')}</div></div>
   <div class="fb" id="fb"><div class="in"><button class="go" id="go" disabled>확인</button></div></div>`;
   R.sel=null;R.checked=false;
+  fitQuestion();
   app.querySelector('#quit').onclick=home;
   app.querySelectorAll('.opt').forEach(b=>b.onclick=()=>{if(R.checked){if(Date.now()-R.at>400)next();return}if(R.sel===+b.dataset.i)return check();R.sel=+b.dataset.i;app.querySelectorAll('.opt').forEach(x=>x.classList.toggle('sel',x===b));app.querySelector('#go').disabled=false});
   app.querySelector('#go').onclick=check;
   window.scrollTo(0,0);
 }
+/* 질문·그림·보기·확인 버튼이 한 화면에 들어오도록 여백과 글자만 단계적으로 줄인다(그림 배율은 그대로). 그래도 넘치면 그대로 둔다. */
+function fitQuestion(){
+  const need=()=>{const o=app.querySelector('.opts'),fb=document.getElementById('fb');if(!o)return 0;return o.getBoundingClientRect().bottom+window.scrollY+(fb?fb.offsetHeight:92)+10-window.innerHeight};
+  app.classList.remove('compact','tight');
+  if(need()>0){app.classList.add('compact');if(need()>0)app.classList.add('tight')}
+}
+window.addEventListener('resize',()=>{if(R&&R.qs&&R.qs[R.i]&&!R.qs[R.i].intro&&!R.checked)fitQuestion()});
 function check(){
   const q=R.qs[R.i],fb=app.querySelector('#fb');
   if(R.checked)return next();

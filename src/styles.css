@@ -100,3 +100,19 @@ details summary{cursor:pointer}
 .lenref .lr i{display:block;height:3px;border-radius:2px;background:var(--stroke);opacity:.55}
 .lenref .lr.on i{opacity:1}.lenref .lr.on span{color:var(--ink);font-weight:700}
 .go.big{padding:18px;font-size:19px}
+.opt{min-height:72px}
+/* 한 화면에 맞추기(fitQuestion): 그림 크기는 그대로 두고 여백·글자만 줄인다 */
+#app.compact .q h2{font-size:19px;margin:12px 0 8px}
+#app.compact .prompt{min-height:0;padding:10px;margin-bottom:10px}
+#app.compact .prompt .big{font-size:46px}
+#app.compact .opts{gap:8px}
+#app.compact .opt{min-height:56px;padding:6px 4px}
+#app.compact .lenref{padding:6px 10px;margin:-2px 0 8px;display:flex;flex-wrap:wrap;align-items:center;gap:2px 14px}
+#app.compact .lenref small{flex-basis:100%}
+#app.compact .lenref .lr{margin-top:2px}
+#app.tight .q h2{font-size:17px;margin:8px 0 6px}
+#app.tight .prompt{padding:6px;margin-bottom:6px}
+#app.tight .prompt .big{font-size:38px}
+#app.tight .opts{gap:6px}
+#app.tight .opt{min-height:48px;padding:4px 4px}
+#app.tight .top{padding:6px 0}
