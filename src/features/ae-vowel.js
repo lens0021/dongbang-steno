@@ -53,7 +53,11 @@ const flagsOf=w=>aePath(itemsOf(w)).fl;
 const BOOKW=['가내','가로채다','개재되어','개최해','개회사','게다가','개교해','고뇌','고래','과대해','궤도','괴리','괴테','교재대','구두쇠','구제해야','구좌','가게','고개','교과서','기개로','기과해서','대대로'];
 const OWNW=['매미','배구','대구','개나리','쇠고기','회사','해마','최고','재고','채소','세모','네모','제기','배추','나래','되도록','하나'];
 /* 교재에 그림이 있는 단어는 그대로, 직접 고른 단어는 선이 겹쳐 잎사귀가 되지 않는 것만(공용 pathSelfTouch를 개모음 경로에 적용) */
-const AEW=[...new Set([...BOOKW,...OWNW])].filter(w=>okAE(w)&&[...w].some(isAE)).filter(w=>BOOKW.includes(w)||pathSelfTouch(aePath(itemsOf(w)).d).length===0);
+const AEW0=[...new Set([...BOOKW,...OWNW])].filter(w=>okAE(w)&&[...w].some(isAE)).filter(w=>BOOKW.includes(w)||pathSelfTouch(aePath(itemsOf(w)).d).length===0);
+/* 교재에서 모은 단어(BOOKCAND, src/data/book-words.js)는 개모음 그리기 규칙으로 그릴 수 있고 선이 겹치지 않을 때만 쓴다 */
+const aeOk=w=>okAE(w)&&[...w].some(isAE)&&pathSelfTouch(aePath(itemsOf(w)).d).length===0;
+(window.WORDCHECK=window.WORDCHECK||{}).ae=aeOk;
+const AEW=[...new Set([...AEW0,...(typeof BOOKCAND!=='undefined'?BOOKCAND:[]).filter(aeOk)])];
 const wordKcsAE=w=>{const set=new Set(),fl=flagsOf(w);
   [...w].forEach(ch=>{const s=syl(ch),j=s.jung;set.add('c:'+s.c);
     if(j in AEMM){set.add('e:hook');set.add(KC[AEMM[j]])}else{if(MM[j]>4)set.add('v:'+MM[j]);if(HALF.has(j))set.add('r:3')}});

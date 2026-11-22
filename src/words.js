@@ -4,6 +4,7 @@ const DICT=['가구','가지','가수','고기','구두','거미','나무','나�
 const OKJ=new Set([0,4,8,13,18,20]);
 const okWord=w=>[...w].every(ch=>{const n=ch.charCodeAt(0)-0xAC00;return n>=0&&n%28===0&&INIT[CHO[Math.floor(n/588)]]&&OKJ.has(Math.floor(n%588/28))});
 /* 교재에 그림이 있는 단어(WORDS)는 그대로 쓰고, 그 밖의 단어는 선이 겹쳐 고리·잎사귀가 되지 않는 것만 쓴다(drawsClean). 새 단어를 더하는 곳은 모두 같은 검사를 거친다. */
-const ALLW=[...new Set([...WORDS,...DICT])].filter(okWord).filter(w=>WORDS.includes(w)||drawsClean(w));
+(window.WORDCHECK=window.WORDCHECK||{}).basic=w=>okWord(w)&&drawsClean(w);
+const ALLW=[...new Set([...WORDS,...DICT,...(typeof BOOKCAND!=='undefined'?BOOKCAND:[])])].filter(okWord).filter(w=>WORDS.includes(w)||drawsClean(w));
 const wordWhy=w=>w+' = '+[...w].map(ch=>{const s=syl(ch);const g=ALL.find(a=>a.c===s.c).g;return `${ch}(${s.c} ${DIR[g.id][2]} ${s.mm}mm)`}).join(' + ')+(wordOffsets(w).some(Boolean)?'. 같은 방향의 곧은 선이 이어져서 뒤 글자를 정측으로 조금 들어가 띄어 씁니다.':'')+([...w].some(ch=>HALF.has(syl(ch).jung))?' ㅣ·ㅑ·ㅕ·ㅛ·ㅠ는 시작할 때 정측에 반소원을 붙입니다.':'');
 
