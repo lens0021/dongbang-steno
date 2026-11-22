@@ -67,10 +67,14 @@ function itemQ0(id){
     if(t==='wsym')return {id,prompt:wordSVG(key,130),q:'이 속기 단어는 무엇일까요?'+tag,opts:ws.map(w=>({k:w,h:`<span class="big" style="font-size:24px">${w}</span>`})),ans:key,why:wordWhy(key)};
     return {id,prompt:`<span class="big" style="font-size:48px">${key}</span>`,q:`「${key}」을(를) 이어 쓴 모양을 고르세요`+tag,opts:ws.map(w=>({k:w,h:wordSVG(w,0,sc)})),ans:key,why:wordWhy(key)}}
   const it=ALL.find(x=>x.c===key),g=it.g,mine=g.chars.map(([c,b])=>({c,b,g})),others=ALL.filter(x=>x.g!==g);
+  /* 자음 문제: 이미 익힌 모음 중 하나를 골라 글자(자음+모음) 단위로 낸다. 안 배운 모음은 쓰지 않는다. */
+  const VOWS=[[4,0],[4,4],[8,8],[8,13],[16,18]].filter(([mm])=>mm===4||learned('v:'+mm));
+  const [vmm,vj]=VOWS[Math.floor(Math.random()*VOWS.length)],L=LEN[vmm],sy=o=>compose(o.c,vj),vn={4:'ㅏㅓ 4mm',8:'ㅗㅜ 8mm',16:'ㅡ 16mm'}[vmm];
+  const lines=o=>`${o.b===0?'곧은 선':'굽은 선'}(${o.g.deg}) × ${vn}`;
   if(t==='sym')
-    return {id,prompt:sv(it,48),q:'이 속기 문자는 무엇일까요?',opts:shuf([it,...shuf(mine.filter(m=>m.c!==it.c)),...shuf(others).slice(0,1)]).map(o=>({k:o.c,h:`<span class="big">${o.c}</span>`})),ans:it.c,why:`${it.c}은(는) ${g.deg} 묶음(${g.title})의 문자입니다.`};
+    return {id,prompt:sv(it,L),q:'이 속기 글자는 무엇일까요?',opts:shuf([it,...shuf(mine.filter(m=>m.c!==it.c)),...shuf(others).slice(0,1)]).map(o=>({k:o.c,h:`<span class="big">${sy(o)}</span>`})),ans:it.c,why:`${sy(it)}은(는) ${it.c} 문자(${g.deg} 방향)에 모음 ${vn} 길이로 씁니다.`};
   if(t==='pick'){const pool=shuf([...shuf(mine.filter(m=>m.c!==it.c)),...shuf(others).slice(0,2)]).slice(0,3);
-    return {id,prompt:`<span class="big">${it.c}</span>`,q:`「${it.c}」에 해당하는 모양을 고르세요`,opts:shuf([it,...pool]).map(o=>({k:o.c,h:sv(o,40)})),ans:it.c,why:`${it.c}은(는) ${it.b===0?'곧은 선':'굽은 선'}으로, ${g.deg} 방향에 씁니다.`}}
+    return {id,prompt:`<span class="big">${sy(it)}</span>`,q:`「${sy(it)}」에 해당하는 모양을 고르세요`,opts:shuf([it,...pool]).map(o=>({k:o.c,h:sv(o,L)})),ans:it.c,why:`${sy(it)}은(는) ${lines(it)}으로 씁니다.`}}
 }
 function itemQ(id){
   const q=itemQ0(id),t=id.split(':')[0];q.kcs=kcsOf(id);
