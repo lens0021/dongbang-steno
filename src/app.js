@@ -4,10 +4,20 @@
 const CURR=['c:가','c:나','c:마','v:4','c:다','c:사','c:라','r:6','r:11','c:차','c:자','c:아','v:8','c:하','c:바','c:타','r:7','r:5','c:이','c:파','c:카','r:12','r:13','v:16','r:3','r:4','r:8','r:9','r:10'];
 /* 문제로 확인하기 어려운 설명형 규칙: 카드를 읽으면 익힌 것으로 본다 */
 const INFO=new Set(['r:12','r:13','r:11','r:3','r:4','r:6','r:7','r:8','r:9','r:10']);
+/* ---------- 기능 확장 등록 ----------
+   새 학습 영역(받침, ㅐ모음, 약기법 등)은 src/features/<이름>.js 에서 아래 모양의 객체를 FEATURES에 push 한다.
+   {name, curr:[개념 id...], info:[읽기만 하는 개념 id], names:{id:표시 이름},
+    intro:{id:()=>({prompt,text})}, questions:{id:()=>[문제 id...]},
+    types:{종류:{kcs:(key,id)=>[개념...], build:(key,id)=>문제 객체, ids:()=>[문제 id...]}},
+    section:{title,kcs:[...]}, wordKcs:(word,set)=>void}
+   개념 id는 영역마다 겹치지 않게 접두어를 쓴다(받침 b:, ㅐ모음 e:, 약기법 a:). */
+const FEATURES=window.FEATURES||[];
+FEATURES.forEach(f=>{CURR.push(...(f.curr||[]));(f.info||[]).forEach(k=>INFO.add(k))});
+const featType=t=>{for(const f of FEATURES){if(f.types&&f.types[t])return f.types[t]}};
 const DD={'까':'가','따':'다','빠':'바','싸':'사','짜':'자'};
 const RNAME={11:'이어쓰기가 곤란할 때',3:'반소원(ㅑ계열)',4:'ㅑㅕ·ㅛㅠ 길이',5:'된소리',6:'이어쓰기',7:'정측·반측',8:'연습 방법',9:'획순',10:'창안자·연도',12:'각도는 재량이 있다',13:'ㅏ와 ㅓ, ㅗ와 ㅜ 구별'};
 const VNAME={4:'ㅏㅓ 4mm',8:'ㅗㅜ 8mm',16:'ㅡㅣ 16mm'};
-const kcName=k=>{const [t,v]=k.split(':');return t==='w'?'이어쓰기 단어':t==='c'?v:t==='v'?VNAME[v]:RNAME[v]};
+const kcName=k=>{const fn=FEATURES.find(f=>f.names&&f.names[k]);if(fn)return fn.names[k];const [t,v]=k.split(':');return t==='w'?'이어쓰기 단어':t==='c'?v:t==='v'?VNAME[v]:RNAME[v]};
 const LEARNED=2;
 let S={xp:0,streak:0,last:'',k:{},recent:[]};
 try{const o=JSON.parse(localStorage.getItem('steno2')||'{}');Object.assign(S,o)}catch(e){}
@@ -18,8 +28,8 @@ const seen=k=>!!S.k[k];
 const learned=k=>strength(k)>=LEARNED;
 function markSeen(k){if(!S.k[k])S.k[k]={s:INFO.has(k)?3:1,n:1,w:0,t:Date.now()}}
 function recordKcs(kcs,ok){kcs.forEach(k=>{const m=S.k[k]||(S.k[k]={s:0,n:0,w:0,t:0});m.n++;m.t=Date.now();if(ok)m.s=Math.min(5,m.s+1);else{m.w++;m.s=Math.max(0,m.s-(kcs.length>1?1:2))}})}
-const wordKcs=w=>{const set=new Set();[...w].forEach(ch=>{const s=syl(ch);set.add('c:'+s.c);if(s.mm>4)set.add('v:'+s.mm);if(HALF.has(s.jung))set.add('r:3')});if(wordOffsets(w).some(Boolean))set.add('r:11');return [...set]};
-function kcsOf(id){const [t,key]=id.split(':');
+const wordKcs=w=>{const set=new Set();[...w].forEach(ch=>{const s=syl(ch);set.add('c:'+s.c);if(s.mm>4)set.add('v:'+s.mm);if(HALF.has(s.jung))set.add('r:3')});FEATURES.forEach(f=>f.wordKcs&&f.wordKcs(w,set));if(wordOffsets(w).some(Boolean))set.add('r:11');return [...set]};
+function kcsOf(id){const [t,key]=id.split(':');const ft=featType(t);if(ft)return ft.kcs(key,id);
   if(t==='dd')return ['r:5','c:'+DD[key]];
   if(t==='ddd')return ['r:5','r:7','c:'+DD[key]];
   if(t==='sym'||t==='pick')return ['c:'+key];
@@ -43,7 +53,7 @@ function mutants(word,n=3){
     const m=chars.join('');if(m!==word)out.add(m)}
   return [...out];
 }
-function itemQ0(id){
+function itemQ0(id){{const ft=featType(id.split(':')[0]);if(ft)return ft.build(id.split(':')[1],id)}
   const [t,key]=id.split(':');
   if(t==='len'){const mm=+key,VN={4:'ㅏ·ㅓ',8:'ㅗ·ㅜ',16:'ㅡ(으)'};
     const ref=shuf([4,8,16].filter(m=>m!==mm))[0];
@@ -85,6 +95,7 @@ function itemQ(id){
 }
 /* 새 개념을 처음 만날 때 보여 주는 설명 카드 */
 function introQ(kc){
+  for(const f of FEATURES){if(f.intro&&f.intro[kc]){const r=f.intro[kc]();return {intro:true,kc,q:'새로 배워요',opts:[],kcs:[kc],...r}}}
   const [t,v]=kc.split(':');let prompt,text;
   if(t==='c'){const it=ALL.find(x=>x.c===v),g=it.g;
     prompt=sv(it,56);
@@ -94,7 +105,7 @@ function introQ(kc){
   else{const c=CONCEPTS[+v];prompt=+v===6?wordSVG('가사',110):+v===3?wordSVG('고기',110):+v===5?`<span style="display:flex;gap:16px;align-items:center"><span style="width:96px;text-align:center">${sv(ALL[0],40)}<small>가</small></span><span style="width:96px;text-align:center">${strokeDot(ALL.find(x=>x.c==='가'),40,'in')}<small>까 (점 표기)</small></span></span>`:`<div class="txt"><b>${RNAME[v]}</b></div>`;text=`<b>${RNAME[v]}</b><br>${c.w}`}
   return {intro:true,kc,prompt,q:'새로 배워요',text,opts:[],kcs:[kc]};
 }
-const kcQuestions=kc=>{const [t,v]=kc.split(':');
+const kcQuestions=kc=>{const [t,v]=kc.split(':');for(const f of FEATURES){if(f.questions&&f.questions[kc])return f.questions[kc]()}
   if(t==='c')return ['sym:'+v,'pick:'+v];
   if(t==='v')return ['len:'+v];
   return +v===5?Object.keys(DD).flatMap(k=>['dd:'+k,'ddd:'+k]):[]};
@@ -105,6 +116,7 @@ function candidates(){
   ALL.forEach(x=>['sym','pick'].forEach(t=>ids.push(t+':'+x.c)));
   [4,8,16].forEach(m=>ids.push('len:'+m));Object.keys(DD).forEach(k=>ids.push('dd:'+k,'ddd:'+k));
   ALLW.forEach(w=>ids.push('wsym:'+w,'wpick:'+w));
+  FEATURES.forEach(f=>Object.values(f.types||{}).forEach(ft=>ids.push(...ft.ids())));
   return [...new Set(ids)];
 }
 const avgS=kcs=>kcs.reduce((a,k)=>a+strength(k),0)/kcs.length;
@@ -163,6 +175,7 @@ function home(){
   <button class="unit" id="galb" style="margin:14px 0"><span class="badge" style="font-size:18px">✎</span><span><b>속기 단어 그림 보기</b><span>교재 단어의 이어쓰기 모양만 모아 봅니다.</span></span></button>
   <details class="card"><summary><b>쓰기 규칙</b> <small>${rules.filter(learned).length}/${rules.length} 익힘</small></summary>
    <div style="margin-top:8px">${rules.map(k=>`<button class="rr" data-show="${k}"><span>${kcName(k)}</span>${seen(k)?(INFO.has(k)?'<small>✓ 읽음</small>':dots(strength(k))):'<small>아직 안 읽음</small>'}</button>`).join('')}</div></details>
+  ${FEATURES.filter(f=>f.section).map(f=>`<details class="card"><summary><b>${f.section.title}</b> <small>${f.section.kcs.filter(learned).length}/${f.section.kcs.length} 익힘</small></summary><div style="margin-top:8px">${f.section.kcs.map(k=>`<button class="rr" data-show="${k}"><span>${kcName(k)}</span>${seen(k)?(INFO.has(k)?'<small>✓ 읽음</small>':dots(strength(k))):'<small>아직 안 배움</small>'}</button>`).join('')}</div></details>`).join('')}
   <p class="src">내용 출처: 「동방속기 기초편」(이동근, 크라운출판사) 제1장. 문자와 단어 그림은 책의 도해(방향 화살표, 4·8·16mm 길이)를 바탕으로 다시 그린 것이라 손글씨 곡선과는 다릅니다.</p>`;
   app.querySelector('#adp').onclick=()=>start();
   app.querySelector('#galb').onclick=gallery;
