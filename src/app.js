@@ -294,10 +294,11 @@ function finish(win){
   app.innerHTML=`${topbar('<b>동방속기</b>')}<div class="end"><h2>${win?'학습 완료!':'하트를 모두 썼어요'}</h2>
   <p style="color:var(--mute)">${win?'개념별 숙련도가 갱신됐어요.':'틀린 문제를 다시 보고 도전해 보세요. XP는 끝까지 풀어야 쌓입니다.'}</p>
   <div class="tiles"><div class="tile"><b>${R.xp}</b><span>획득 XP${win&&R.hearts===5?' (만점 +10)':''}</span></div><div class="tile"><b>${R.hearts}</b><span>남은 하트</span></div><div class="tile"><b>${S.streak}</b><span>연속 학습일</span></div></div>
-  <button class="go" id="again" style="max-width:320px">${win?'대시보드로':'다시 도전'}</button>${win?'<br><button class="link" id="more">한 번 더</button>':'<br><button class="link" id="h">대시보드로</button>'}</div>`;
-  app.querySelector('#again').onclick=win?home:()=>start(R.focus||undefined);
-  const m=app.querySelector('#more');if(m)m.onclick=()=>start(R.focus||undefined);
-  const h=app.querySelector('#h');if(h)h.onclick=home;
+</div>
+  <div class="fb"><div class="in"><button class="go big" id="again">${win?'한 번 더':'다시 도전'}</button><button class="link" id="h" style="margin:0;padding:8px">대시보드로</button></div></div>`;
+  /* 끝난 뒤 가장 자주 하는 일은 바로 이어 하기라서, 엄지가 닿는 화면 아래 고정 영역에 큰 주 버튼으로 두고 대시보드는 보조로 둔다 */
+  app.querySelector('#again').onclick=()=>start(R.focus||undefined);
+  app.querySelector('#h').onclick=home;
   window.scrollTo(0,0);
 }
 window.claude?.hot?.snapshot(()=>({R,S}));
