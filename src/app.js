@@ -154,12 +154,19 @@ function sigNear(a,b){const A=sigPts(a),B=sigPts(b);
   const far=(P,Q)=>{for(const p of P){let m=1e9;for(const q of Q){const d=Math.hypot(p[0]-q[0],p[1]-q[1]);if(d<m)m=d;if(m<SIGTOL)break}if(m>=SIGTOL)return true}return false};
   return !far(A,B)&&!far(B,A)}
 window.sigNear=sigNear;
+/* 단어의 겉모양 패턴: 글자마다 첫 자음의 방향 묶음을 처음 나온 순서대로 번호로 바꾼 것(서서=00, 가사=01). full이면 받침 유무도 붙인다. 공백은 무시 */
+function wordPat(w,full){const m=new Map();return [...w].filter(c=>c.charCodeAt(0)>=0xAC00).map(c=>{const n=c.charCodeAt(0)-0xAC00,it=ALL.find(x=>x.c===INIT[CHO[Math.floor(n/588)]]),g=it?it.g.id:'?';if(!m.has(g))m.set(g,m.size);return m.get(g)+(full&&n%28?'b':'')}).join('')}
 function pickDistractors(key,pool,n=3,kcsFn=wordKcs,distinct){
   const same=(x,y)=>distinct?sigNear(distinct(x),distinct(y)):x===y;
   const cand=[...new Set(pool)].filter(w=>w!==key&&!same(w,key));
   const sc=new Map(cand.map(w=>[w,wordSim(key,w)+Math.random()*.8]));
   const ok=w=>{try{return kcsFn(w).every(learned)}catch(e){return true}};
-  const out=[],take=list=>{for(const w of list){if(out.length>=n)break;if(out.some(o=>same(o,w)))continue;out.push(w)}};
+  const out=[],take=(list,lim)=>{for(const w of list){if(out.length>=(lim||n))break;if(out.some(o=>same(o,w)))continue;out.push(w)}};
+  /* 구조 소거 방지: 같은 자음 묶음이 반복되는지·받침이 있는지 같은 "겉모양 패턴"이 정답과 같은 오답을 최소 2개 넣는다 */
+  const pk=wordPat(key),pf=wordPat(key,1),byS=l=>l.sort((x,y)=>sc.get(y)-sc.get(x));
+  take(byS(cand.filter(w=>ok(w)&&wordPat(w,1)===pf)),Math.min(2,n));
+  take(byS(cand.filter(w=>wordPat(w,1)===pf)),Math.min(2,n));
+  take(byS(cand.filter(w=>ok(w)&&wordPat(w)===pk)),Math.min(2,n));
   take(cand.filter(ok).sort((x,y)=>sc.get(y)-sc.get(x)));take(cand.filter(w=>!out.includes(w)).sort((x,y)=>sc.get(y)-sc.get(x)));
   return out}
 /* 새 개념의 첫 연습 문제 4개(문제 종류가 적으면 되풀이한다) */
