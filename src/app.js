@@ -1,11 +1,11 @@
 
 /* ---------- 지식 요소(개념) ----------
    c:문자  v:모음 길이  r:규칙.  문제는 필요한 개념 목록(kcs)을 가진다. 단어 문제는 그 단어의 문자들(+8·16mm 모음)을 모두 익혀야 나온다. */
-const CURR=['c:가','c:나','c:마','v:4','c:다','c:사','c:라','r:6','r:11','c:차','c:자','c:아','v:8','c:하','c:바','c:타','r:7','r:5','c:이','c:파','c:카','v:16','r:3','r:4','r:8','r:9','r:10'];
+const CURR=['c:가','c:나','c:마','v:4','c:다','c:사','c:라','r:6','r:11','c:차','c:자','c:아','v:8','c:하','c:바','c:타','r:7','r:5','c:이','c:파','c:카','r:12','r:13','v:16','r:3','r:4','r:8','r:9','r:10'];
 /* 문제로 확인하기 어려운 설명형 규칙: 카드를 읽으면 익힌 것으로 본다 */
-const INFO=new Set(['r:11','r:3','r:4','r:6','r:7','r:8','r:9','r:10']);
+const INFO=new Set(['r:12','r:13','r:11','r:3','r:4','r:6','r:7','r:8','r:9','r:10']);
 const DD={'까':'가','따':'다','빠':'바','싸':'사','짜':'자'};
-const RNAME={11:'이어쓰기가 곤란할 때',3:'반소원(ㅑ계열)',4:'ㅑㅕ·ㅛㅠ 길이',5:'된소리',6:'이어쓰기',7:'정측·반측',8:'연습 방법',9:'획순',10:'창안자·연도'};
+const RNAME={11:'이어쓰기가 곤란할 때',3:'반소원(ㅑ계열)',4:'ㅑㅕ·ㅛㅠ 길이',5:'된소리',6:'이어쓰기',7:'정측·반측',8:'연습 방법',9:'획순',10:'창안자·연도',12:'각도는 재량이 있다',13:'ㅏ와 ㅓ, ㅗ와 ㅜ 구별'};
 const VNAME={4:'ㅏㅓ 4mm',8:'ㅗㅜ 8mm',16:'ㅡㅣ 16mm'};
 const kcName=k=>{const [t,v]=k.split(':');return t==='w'?'이어쓰기 단어':t==='c'?v:t==='v'?VNAME[v]:RNAME[v]};
 const LEARNED=2;
@@ -52,7 +52,7 @@ function itemQ0(id){
     return {id,prompt,q:`위 선이 ${ref}mm일 때, ${VN[mm]} 모음에 맞는 선은?`,opts:shuf([4,8,16]).map(m=>({k:m,h:bar(m)})),ans:mm,why:`${VN[mm]}은(는) ${mm}mm입니다. ㅏㅓ : ㅗㅜ : ㅡ = 1 : 2 : 4 비율이에요. 실제 mm는 화면마다 달라서 비율로 기억하세요.`}}
   if(t==='dd'){const base=ALL.find(x=>x.c===DD[key]),g=base.g;
     const pool=shuf([...g.chars.map(([c,b])=>({c,b,g})).filter(x=>x.c!==base.c),...shuf(ALL.filter(x=>x.g!==g)).slice(0,2)]).slice(0,3);
-    return {id,prompt:`<span class="big">${key}</span>`,q:`된소리 「${key}」는 속기로 어떻게 쓸까요?`,opts:shuf([base,...pool]).map(o=>({k:o.c,h:sv(o,40)})),ans:base.c,why:`된소리는 정측 중앙에 점을 찍어 표기하나, 생략하는 것을 원칙으로 합니다. 그래서 ${key}=${base.c}처럼 평음과 같이 씁니다. 교육 중에는 점을 찍어 구별해 보기도 해요.`}}
+    return {id,prompt:`<span class="big">${key}</span>`,q:`된소리 「${key}」는 속기로 어떻게 쓸까요?`,opts:shuf([base,...pool]).map(o=>({k:o.c,h:sv(o,40)})),ans:base.c,why:`된소리는 정측 중앙에 점을 찍어 표기하나, 생략하는 것을 원칙으로 합니다. 그래서 ${key}=${base.c}처럼 평음과 같이 씁니다.`}}
   if(t==='ddd'){const base=ALL.find(x=>x.c===DD[key]),g=base.g,other=shuf(g.chars.map(([c,b])=>({c,b,g})).filter(x=>x.c!==base.c))[0];
     const opts=shuf([{k:'ok',h:strokeDot(base,40,'in')},{k:'x1',h:strokeDot(base,40,'out')},{k:'x2',h:strokeDot(other,40,'in')},{k:'x3',h:strokeDot(other,40,'out')}]);
     return {id,prompt:`<span class="big">${key}</span>`,q:`된소리 「${key}」를 점을 찍어 표기한다면?`,opts,ans:'ok',why:`${key}은(는) ${base.c}에 정측(곡선의 안쪽, 직선은 위·왼쪽) 중앙에 점을 찍습니다. 원칙은 점을 생략하고 ${base.c}와 같이 쓰는 것이에요.`}}
@@ -91,7 +91,7 @@ function introQ(kc){
     text=`<b>새 문자 「${v}」</b><br>${it.b===0?'곧은 선':'굽은 선'} · ${g.deg} · 쓰는 방향 ${DIR[g.id][2]}<br>같은 묶음: ${g.title}`}
   else if(t==='w'){prompt=wordSVG('가사',110);text=`<b>단어 이어쓰기</b><br>앞 글자의 끝에서 연필을 떼지 않고 다음 글자를 이어 씁니다.<br>글자마다 쓰는 방향이 있어요: 가나마 →, 다사라 ↙, 차자아 ↗, 하바타 ↘, 이파카 ↓<br>길이는 모음이 정합니다: ㅏㅓ 4mm · ㅗㅜ 8mm · ㅡ 16mm<br>예) 가사 = 가(→ 4mm) + 사(↙ 4mm)`}
   else if(t==='v'){prompt=ratioSVG(1,true);text=`<b>모음 길이</b><br>ㅏㅓ 4mm · ㅗㅜ 8mm · ㅡ 16mm, 즉 <b>1 : 2 : 4</b> 비율로 씁니다.<br><small>책의 mm는 실제 종이 기준이라 화면마다 크기가 달라요. 비율로 기억하세요.</small>`}
-  else{const c=CONCEPTS[+v];prompt=+v===6?wordSVG('가사',110):+v===3?wordSVG('고기',110):+v===5?`<span style="display:flex;gap:16px;align-items:center"><span style="width:96px;text-align:center">${sv(ALL[0],40)}<small>가</small></span><span style="width:96px;text-align:center">${strokeDot(ALL.find(x=>x.c==='사'),40,'in')}<small>싸 (점 표기)</small></span></span>`:`<div class="txt"><b>${RNAME[v]}</b></div>`;text=`<b>${RNAME[v]}</b><br>${c.w}`}
+  else{const c=CONCEPTS[+v];prompt=+v===6?wordSVG('가사',110):+v===3?wordSVG('고기',110):+v===5?`<span style="display:flex;gap:16px;align-items:center"><span style="width:96px;text-align:center">${sv(ALL[0],40)}<small>가</small></span><span style="width:96px;text-align:center">${strokeDot(ALL.find(x=>x.c==='가'),40,'in')}<small>까 (점 표기)</small></span></span>`:`<div class="txt"><b>${RNAME[v]}</b></div>`;text=`<b>${RNAME[v]}</b><br>${c.w}`}
   return {intro:true,kc,prompt,q:'새로 배워요',text,opts:[],kcs:[kc]};
 }
 const kcQuestions=kc=>{const [t,v]=kc.split(':');

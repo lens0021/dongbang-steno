@@ -26,11 +26,11 @@ function strokeDot(it,len=44,side='in'){
 }
 function ruler(mm){const px=mm*5;return `<svg viewBox="0 0 120 40" aria-hidden="true"><line x1="${60-px/2}" y1="20" x2="${60+px/2}" y2="20" stroke="var(--stroke)" stroke-width="4" stroke-linecap="round"/></svg>`}
 const GROUPS=[
- {id:'g1',title:'가 나 마',deg:'180° (수평)',a:0,chars:[['가',0],['나',1],['마',-1]],tol:''},
- {id:'g2',title:'다 사 라',deg:'60° 기준',a:60,chars:[['다',0],['사',-1],['라',1]],tol:'45°까지 허용'},
- {id:'g3',title:'차 자 아',deg:'30° 기준',a:30,chars:[['차',0],['자',-1],['아',1]],tol:''},
- {id:'g4',title:'하 바 타',deg:'45° 기준',a:135,chars:[['하',0],['바',-1],['타',1]],tol:'60°~30°까지 허용'},
- {id:'g5',title:'이 파 카',deg:'90° (수직)',a:90,chars:[['이',0],['파',-1],['카',1]],tol:''}
+ {id:'g1',title:'가 나 마',deg:'180° (수평)',a:0,chars:[['가',0],['나',1],['마',-1]]},
+ {id:'g2',title:'다 사 라',deg:'60° 기준',a:60,chars:[['다',0],['사',-1],['라',1]]},
+ {id:'g3',title:'차 자 아',deg:'30° 기준',a:30,chars:[['차',0],['자',-1],['아',1]]},
+ {id:'g4',title:'하 바 타',deg:'45° 기준',a:135,chars:[['하',0],['바',-1],['타',1]]},
+ {id:'g5',title:'이 파 카',deg:'90° (수직)',a:90,chars:[['이',0],['파',-1],['카',1]]}
 ];
 const ALL=[];GROUPS.forEach(g=>g.chars.forEach(([c,b])=>ALL.push({c,b,g})));
 const shuf=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.random()*(i+1)|0;[a[i],a[j]]=[a[j],a[i]]}return a};
