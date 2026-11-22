@@ -99,7 +99,7 @@ const headWord=(kind,ae)=>mk('ㄷ',ae?11:8,KJ[kind]);
 const BOK=new Set([0,4,8,13,18]);        /* 받침 글자의 모음: ㅏㅓㅗㅜㅡ */
 const OKF=new Set([0,4,8,13,18,20,2,6,12,17]);
 const HEADK=new Set(['n','ng','m','g']);
-const BWORDS=['모든','그간','시간','차분한','가난','구분','사건','고난','노동','고궁','고향','고충','차창','가장','도장','소망','그들','수출','소홀','추출','도달','그걸','고갈','두돌','차출','가을','하늘','가감','고급','소감','차츰','보람','마음','사람','구름','바람','소금','다섯','이웃','가각','고국','도둑','차축','고독','다목적','호박죽',
+const BWORDS=['하룻밤','마룻바닥','모든','그간','시간','차분한','가난','구분','사건','고난','노동','고궁','고향','고충','차창','가장','도장','소망','그들','수출','소홀','추출','도달','그걸','고갈','두돌','차출','가을','하늘','가감','고급','소감','차츰','보람','마음','사람','구름','바람','소금','다섯','이웃','가각','고국','도둑','차축','고독','다목적','호박죽',
  /* ㅐ계열 */'고된','사관','주된','나뇐','이권','고관','가관','교황','로댕','비행장','투쟁','고갱','호황','후생','보낼','사활','부활','대궐','초과될','하겠다','오랬다','노랫말','어쨌든','헤맸다','되겠다','보냄','도마뱀','스냅','보탬','대책','시책','수확','구획','어획','주객','가객','고객','과객','개국',
  /* 받침이 앞에 올 때 */'간장','강당','건강','감자','각도','남자','당근','반도','상자','장갑','박수'];
 const okB=w=>[...w].every((ch,i)=>{const n=ch.charCodeAt(0)-0xAC00;if(n<0||n>=11172)return false;const s=BSYL(ch);if(!s.c)return false;const j=Math.floor(n%588/28),jg=n%28;
@@ -111,10 +111,12 @@ const hasB=w=>[...w].some(ch=>(ch.charCodeAt(0)-0xAC00)%28);
 const hasLoop=w=>[...w].some((ch,i)=>{const s=BSYL(ch);return s.kind&&((i===0)||(s.ae&&(s.kind==='n'||s.kind==='ng')))});
 /* 교재 그림이 있는 단어(보기·응용)는 겹침 검사를 면제한다. 나머지 실제 단어는 검사를 통과해야 한다. */
 const TB=new Set('모든 그간 시간 차분한 노동 고궁 고향 고충 차창 그들 수출 소홀 추출 도달 그걸 고갈 두돌 차출 가감 고급 소감 차츰 보람 가각 고국 도둑 차축 고독 다목적 호박죽 고된 사관 주된 나뇐 이권 고관 가관 교황 로댕 비행장 투쟁 고갱 호황 후생 보낼 사활 부활 대궐 초과될 하겠다 오랬다 노랫말 어쨌든 헤맸다 되겠다 보냄 도마뱀 스냅 보탬 대책 시책 수확 구획 어획 주객 가객 고객 과객 개국'.split(' '));
-const BW0=BWORDS.filter(okB).filter(w=>hasB(w)&&(TB.has(w)||hasLoop(w)||typeof pathSelfTouch!=='function'||pathSelfTouch(bPath(w).d).length===0));
+/* ㅅ받침 원칙은 앞 글자 꼬리에 걸쳐 쓰므로 한 곳에서 선이 만나는 것이 규칙이다(그 외 겹침은 계속 막는다) */
+const touchOk=w=>{const n=pathSelfTouch(bPath(w).d).length;return n===0||(n<=2&&bKcs(w).includes('b:5'))};
+const BW0=BWORDS.filter(okB).filter(w=>hasB(w)&&(TB.has(w)||hasLoop(w)||typeof pathSelfTouch!=='function'||touchOk(w)));
 /* 교재에서 모은 단어(BOOKCAND)는 받침 규칙으로 그릴 수 있고 선이 겹치지 않을 때만 쓴다(원 모양은 규칙이라 예외) */
 /* 특별문자(이·히)에 받침을 붙이는 방법은 확인하지 못해 제외한다 */
-const bOkNew=w=>okB(w)&&hasB(w)&&![...w].some(ch=>syl(ch).sp&&(ch.charCodeAt(0)-0xAC00)%28)&&(hasLoop(w)||typeof pathSelfTouch!=='function'||pathSelfTouch(bPath(w).d).length===0);
+const bOkNew=w=>okB(w)&&hasB(w)&&![...w].some(ch=>syl(ch).sp&&(ch.charCodeAt(0)-0xAC00)%28)&&(hasLoop(w)||typeof pathSelfTouch!=='function'||touchOk(w));
 (window.WORDCHECK=window.WORDCHECK||{}).b=bOkNew;
 (window.WORDSIG=window.WORDSIG||{}).b=w=>bPath(w).d;
 const BW=[...new Set([...BW0,...(typeof BOOKCAND!=='undefined'?BOOKCAND:[]).filter(bOkNew)])];
