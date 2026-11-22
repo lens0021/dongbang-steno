@@ -23,7 +23,7 @@ const DD={'까':'가','따':'다','빠':'바','싸':'사','짜':'자'};
 const RNAME={11:'이어쓰기가 곤란할 때',3:'반소원(ㅑ계열)',4:'ㅑㅕ·ㅛㅠ 길이',5:'된소리',6:'이어쓰기',7:'정측·반측',8:'연습 방법',9:'획순',10:'창안자·연도',12:'각도는 재량이 있다',13:'ㅏ와 ㅓ, ㅗ와 ㅜ 구별'};
 const VNAME={4:'ㅏㅓ 4mm',8:'ㅗㅜ 8mm',16:'ㅡㅣ 16mm'};
 const kcName=k=>{const fn=FEATURES.find(f=>f.names&&f.names[k]);if(fn)return fn.names[k];const [t,v]=k.split(':');return t==='w'?'이어쓰기 단어':t==='c'?v:t==='v'?VNAME[v]:RNAME[v]};
-const LEARNED=2;
+const LEARNED=3;
 let S={xp:0,streak:0,last:'',k:{},recent:[]};
 try{const o=JSON.parse(localStorage.getItem('steno2')||'{}');Object.assign(S,o)}catch(e){}
 if(!S.k)S.k={};if(!S.recent)S.recent=[];
@@ -127,14 +127,19 @@ function candidates(){
 }
 const avgS=kcs=>kcs.reduce((a,k)=>a+strength(k),0)/kcs.length;
 function eligible(id){const k=kcsOf(id);return k.every(seen)&&(k.length===1||k.every(learned))}
+/* 새 개념의 첫 연습 문제 4개(문제 종류가 적으면 되풀이한다) */
+function practiceIds(k){const base=shuf(kcQuestions(k).filter(id=>kcsOf(id).every(x=>x===k||seen(x))));const out=[];while(base.length&&out.length<4)out.push(base[out.length%base.length]);return out}
 function makeSession(focus){
   const recent=new Set(S.recent||[]);
   let pool=candidates().filter(eligible);
   if(focus)pool=pool.filter(id=>kcsOf(id).includes(focus));
-  const weakN=CURR.filter(k=>seen(k)&&strength(k)<LEARNED).length;
-  const cap=focus?(seen(focus)?0:1):(pool.length<6?3:weakN>=4?1:2);
+  /* 진도 속도: 먼저 본 개념(읽기 전용 카드 제외)이 모두 익숙해져야(LEARNED 이상) 새 개념을 연다.
+     익숙하지 않은 개념이 있으면 복습만 하는 세션이 된다(풀 수 있는 문제가 너무 적을 때만 예외로 1개). 한 번에 1개씩, 모두 탄탄할 때만 2개. */
+  const unstable=CURR.filter(k=>seen(k)&&!INFO.has(k)&&strength(k)<LEARNED).length;
+  const seenK=CURR.filter(k=>seen(k)&&!INFO.has(k)),solid=seenK.length&&seenK.every(k=>strength(k)>=4);
+  const cap=focus?(seen(focus)?0:1):(unstable===0?(solid&&pool.length>=12?2:1):(pool.length<6?1:0));
   const newK=focus?(seen(focus)?[]:[focus]):CURR.filter(k=>!seen(k)).slice(0,cap);
-  const target=(focus?8:10),N=Math.max(3,target-newK.length*2);
+  const target=(focus?8:10),N=Math.max(4,target-newK.length*4);
   const score=id=>avgS(kcsOf(id))+(recent.has(id)?0.8:0)+Math.random()*0.5;
   const hard=pool.filter(id=>avgS(kcsOf(id))<2.2).sort((a,b)=>score(a)-score(b));
   const mid=shuf(pool.filter(id=>{const a=avgS(kcsOf(id));return a>=2.2&&a<3.6}));
@@ -147,7 +152,7 @@ function makeSession(focus){
   take(shuf(pool),N-picked.length,true);
   const qs=picked.map(itemQ);
   const first=qs.findIndex(q=>avgS(q.kcs)>=3.6),lead=first>=0?qs.splice(first,1):[];
-  const intro=newK.flatMap(k=>[introQ(k),...shuf(kcQuestions(k).filter(id=>kcsOf(id).every(x=>x===k||seen(x)))).slice(0,2).map(itemQ)]);
+  const intro=newK.flatMap(k=>[introQ(k),...practiceIds(k).map(itemQ)]);
   const out=[...lead,...intro,...shuf(qs)];
   if(!seen('w:1')){const wi=out.findIndex(q=>q.id&&q.id[0]==='w');if(wi>=0)out.splice(wi,0,introQ('w:1'))}
   return out;
