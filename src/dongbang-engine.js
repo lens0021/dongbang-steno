@@ -76,3 +76,25 @@ function wordSVG(word,h=90,S){
   return `<svg viewBox="${b.x0.toFixed(1)} ${b.y0.toFixed(1)} ${b.w.toFixed(1)} ${b.h.toFixed(1)}" style="${size}" aria-hidden="true"><path d="${d}" fill="none" stroke="var(--stroke)" stroke-width="${S?(3.4/S).toFixed(2):2.6}" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
 }
 /* 받침·ㅇ 없이 쓸 수 있는 일반 단어(연습용). 교재 단어와 함께 문제로 나옵니다. */
+
+/* 단어 경로 검사: 선이 스스로 겹치거나 닿아 고리·잎사귀 모양이 되는지 본다.
+   모든 단어(새 영역에서 추가하는 단어 포함)는 목록에 넣기 전에 drawsClean(word)를 통과해야 한다.
+   떨어진 구간(호 길이 8 이상 차이)의 두 점이 2.6 이내로 가까우면 겹친 것으로 본다. 반환값은 문제가 없으면 true. */
+function pathSelfTouch(d){
+  if(typeof document==='undefined'||!document.createElementNS)return [];
+  const pts=[];let idx=0,off=0;
+  for(const sub of d.split(/(?=M)/).filter(Boolean)){
+    const el=document.createElementNS('http://www.w3.org/2000/svg','path');el.setAttribute('d',sub);
+    if(!el.getTotalLength)return [];
+    const L=el.getTotalLength();
+    for(let s=0;s<=L;s+=0.8){const p=el.getPointAtLength(s);pts.push([p.x,p.y,off+s,idx])}
+    off+=L+100;idx++}
+  /* 날카롭게 꺾인 모서리는 꼭짓점 근처에서만 가깝다. 선이 일정 길이 이상 나란히 붙어 있으면 잎사귀·겹침으로 본다. */
+  let n=0;
+  for(let i=0;i<pts.length;i++){
+    for(let j=0;j<pts.length;j++){
+      const a=pts[i],b=pts[j];if(i===j||(a[3]===b[3]&&Math.abs(b[2]-a[2])<8))continue;
+      if(Math.hypot(a[0]-b[0],a[1]-b[1])<2.0){n++;break}}}
+  return n>=7?[n]:[];
+}
+const drawsClean=word=>pathSelfTouch(wordPath(word).d).length===0;
