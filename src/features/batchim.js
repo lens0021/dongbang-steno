@@ -173,8 +173,7 @@ function bhBuild(key,id){
   return {id,prompt:`<span class="big" style="font-size:30px">${KNAME[kind]}받침 · ${ae?'ㅐ계열':'ㅏ계열'}</span>`,q:`맨 앞 글자에 ${KNAME[kind]}받침이 붙을 때(${ae?'ㅐ계열':'ㅏ계열'}) 글자 머리 모양은?`,opts,ans:kind+'|'+(ae?1:0),why:INTRO[HK[kind]]().text};
 }
 function bwBuild(t,w,id){
-  const dist=x=>Math.abs(x.length-w.length)*2+Math.random();
-  const ws=shuf([w,...BW.filter(x=>x!==w).sort((a,b)=>dist(a)-dist(b)).slice(0,3)]);
+  const ws=shuf([w,...pickDistractors(w,BW,3,x=>bKcs(x))]);
   const why=bWhy(w);
   if(t==='bsym')return {id,prompt:bSVG(w,130),q:'이 속기 단어는 무엇일까요?',opts:ws.map(x=>({k:x,h:`<span class="big" style="font-size:24px">${x}</span>`})),ans:w,why};
   const bx=ws.map(bBox),sc=Math.min(RS(),150/Math.max(...bx.map(b=>b.w)),80/Math.max(...bx.map(b=>b.h)));

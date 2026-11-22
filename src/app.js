@@ -74,8 +74,7 @@ function itemQ0(id){{const ft=featType(id.split(':')[0]);if(ft)return ft.build(i
   if(t==='txt'){const c=CONCEPTS[+key];
     return {id,prompt:`<div class="txt">${c.q}</div>`,q:'책의 내용을 떠올려 보세요',one:true,opts:shuf(c.o.map(x=>({k:x,h:x}))),ans:c.o[c.a],why:c.w}}
   if(t==='wsym'||t==='wpick'){
-    const dist=w=>Math.abs(w.length-key.length)*2+(wordKcs(w).every(learned)?0:1)+Math.random();
-    const real=ALLW.filter(w=>w!==key).sort((a,b)=>dist(a)-dist(b)).slice(0,3);
+    const real=pickDistractors(key,ALLW,3,wordKcs);
     const ws=shuf([key,...real]);
     const tag='';
     const bx=ws.map(wordBox),sc=Math.min(RS(),150/Math.max(...bx.map(b=>b.w)),80/Math.max(...bx.map(b=>b.h)));
@@ -127,6 +126,27 @@ function candidates(){
 }
 const avgS=kcs=>kcs.reduce((a,k)=>a+strength(k),0)/kcs.length;
 function eligible(id){const k=kcsOf(id);return k.every(seen)&&(k.length===1||k.every(learned))}
+/* ---------- 단어 문제의 오답 보기 고르기 ----------
+   배운 개념만 아는 학습자가 "이 글자가 없는 보기"를 지워서 푸는 일이 없도록, 오답은 정답과 닮은 것을 고른다:
+   같은 자음·같은 방향 묶음의 자음·같은 모음 길이·같은 받침 유무·같은 글자 수. 그리고 이미 다 익힌 개념으로 쓸 수 있는 단어를 먼저 쓴다.
+   (새 영역의 단어 문제도 이 함수를 쓴다.) distinct: 그림이 같아지는 보기를 막는 키 함수. */
+function wordSim(a,b){
+  const A=[...a],B=[...b];let s=-2*Math.abs(A.length-B.length);
+  const dec=ch=>{const n=ch.charCodeAt(0)-0xAC00;return n<0?null:{cho:Math.floor(n/588),jung:Math.floor(n%588/28),jong:n%28}};
+  const grp=d=>{const it=ALL.find(x=>x.c===INIT[CHO[d.cho]]);return it&&it.g};
+  for(let i=0;i<Math.min(A.length,B.length);i++){const x=dec(A[i]),y=dec(B[i]);if(!x||!y)continue;
+    if(x.cho===y.cho)s+=3;else if(grp(x)&&grp(x)===grp(y))s+=1.5;
+    if(MM[x.jung]===MM[y.jung])s+=1;if(x.jung===y.jung)s+=.5;
+    if(x.jong===y.jong)s+=1;else if((x.jong>0)===(y.jong>0))s+=.5}
+  const sh=new Set(A.map(c=>c.charCodeAt(0)>=0xAC00?CHO[Math.floor((c.charCodeAt(0)-0xAC00)/588)]:c));B.forEach(c=>{if(sh.has(c.charCodeAt(0)>=0xAC00?CHO[Math.floor((c.charCodeAt(0)-0xAC00)/588)]:c))s+=.5});
+  return s}
+function pickDistractors(key,pool,n=3,kcsFn=wordKcs,distinct){
+  const cand=[...new Set(pool)].filter(w=>w!==key&&(!distinct||distinct(w)!==distinct(key)));
+  const sc=new Map(cand.map(w=>[w,wordSim(key,w)+Math.random()*.8]));
+  const ok=w=>{try{return kcsFn(w).every(learned)}catch(e){return true}};
+  const out=[],seen=new Set(),take=list=>{for(const w of list){if(out.length>=n)break;const dk=distinct?distinct(w):w;if(seen.has(dk))continue;seen.add(dk);out.push(w)}};
+  take(cand.filter(ok).sort((x,y)=>sc.get(y)-sc.get(x)));take(cand.filter(w=>!out.includes(w)).sort((x,y)=>sc.get(y)-sc.get(x)));
+  return out}
 /* 새 개념의 첫 연습 문제 4개(문제 종류가 적으면 되풀이한다) */
 function practiceIds(k){const base=shuf(kcQuestions(k).filter(id=>kcsOf(id).every(x=>x===k||seen(x))));const out=[];while(base.length&&out.length<4)out.push(base[out.length%base.length]);return out}
 function makeSession(focus){

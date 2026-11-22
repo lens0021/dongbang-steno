@@ -12,7 +12,7 @@ function phraseSVG(ph,h=90,S){const L=phraseLayout(ph.split(' '));S=Math.min(S||
   return `<svg viewBox="0 ${L.y0.toFixed(1)} ${L.w.toFixed(1)} ${L.h.toFixed(1)}" style="${size}" aria-hidden="true"><g fill="none" stroke="var(--stroke)" stroke-width="${S?(3.4/S).toFixed(2):2.6}" stroke-linecap="round" stroke-linejoin="round">${L.parts.map(p=>`<path transform="translate(${p.tx.toFixed(1)} 0)" d="${p.d}"/>`).join('')}</g></svg>`}
 const kcsP=p=>['p:1',...new Set(p.split(' ').flatMap(wordKcs))];
 const why=p=>`${p} = ${p.split(' ').join(' / ')}. 띄어쓰는 곳에서는 펜을 떼고 옆에 따로 씁니다.`;
-const others=p=>shuf(PHR.filter(x=>x!==p)).slice(0,3);
+const others=p=>pickDistractors(p,PHR,3,x=>kcsP(x).slice(1));
 window.phraseSVG=phraseSVG;
 (window.FEATURES=window.FEATURES||[]).push({
   name:'어구',curr:['p:1'],info:['p:1'],after:'c:이',names:{'p:1':'띄어쓰기(어구)'},
