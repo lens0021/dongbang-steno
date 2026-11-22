@@ -59,7 +59,7 @@ function bPath(word){
           d+=`L${fx(ax)} ${fx(ay)}`;pts.push([ax,ay]);x=ax;y=ay}
         else{mv(ps.x1+u[0]*.6*U-sg*sd[0]*1.2*U,ps.y1+u[1]*.6*U-sg*sd[1]*1.2*U);if(ae)afterHook=true}}
     }else if(sy.kind&&!ps){loop=sy.kind}   /* 받침이 앞에 나올 때: 머리에 원·타원·갈고리 */
-    else if(needsOffset(prev,sy)){const [nx,ny]=jeong(g.a);mv(x+nx*5-v[0]*3,y+ny*5-v[1]*3)}
+    else if(needsOffset(prev,sy)){const [nx,ny]=jeong(g.a);mv(x+nx*4-v[0]*2.5,y+ny*4-v[1]*2.5)}
     if(loop){
       /* 6절: ㅏ계열은 정측, ㅐ계열은 반측에 붙인다. ㄱ받침 곡선문자만 반대(E20) */
       let s=jside(it);if(sy.ae)s=[-s[0],-s[1]];
@@ -84,6 +84,7 @@ function bPath(word){
 }
 function bBox(word){const {pts}=bPath(word);const xs=pts.map(p=>p[0]),ys=pts.map(p=>p[1]);const x0=Math.min(...xs)-8,y0=Math.min(...ys)-8;return {x0,y0,w:Math.max(...xs)-x0+8,h:Math.max(...ys)-y0+8}}
 function bSVG(word,h=90,S){
+  S=Math.min(S||1e9,RS());
   const {d}=bPath(word),b=bBox(word);
   const size=S?`width:${(b.w*S).toFixed(0)}px;height:${(b.h*S).toFixed(0)}px;max-width:100%`:`width:100%;max-width:${Math.max(110,Math.min(300,b.w*2.2))}px;height:${h}px`;
   return `<svg viewBox="${fx(b.x0)} ${fx(b.y0)} ${fx(b.w)} ${fx(b.h)}" style="${size}" aria-hidden="true"><path d="${d}" fill="none" stroke="var(--stroke)" stroke-width="${S?(3.4/S).toFixed(2):2.6}" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
@@ -123,8 +124,8 @@ const bWhy=w=>{const cs=[...w].map(BSYL);const parts=[];
   return w+' → '+parts.join(', ')};
 
 /* ---------- 설명 카드 ---------- */
-const demo=(k,par,ae,S=2.4)=>bSVG(demoWord(k,par,ae),0,S);
-const hd=(k,ae,S=3)=>bSVG(headWord(k,ae),0,S);
+const demo=(k,par,ae,S=0)=>bSVG(demoWord(k,par,ae),0,S);
+const hd=(k,ae,S=0)=>bSVG(headWord(k,ae),0,S);
 const NOTE='<br><small>그림은 규칙대로 다시 그린 것이고 크기는 추정입니다.</small>';
 const INTRO={
  'b:1':()=>({prompt:demo('n',false),text:`<b>ㄴ받침 (ㅏ·ㅓ 계열 모음)</b><br>ㄴ은 따로 그리지 않고 <b>앞 글자 끝에서 안쪽으로 1mm쯤 들어가 연필을 떼고</b>, 그 글자의 방향·길이대로 씁니다. 앞 글자와 떨어져 있는 것이 ㄴ받침의 표시예요. 예) 모든, 그간${NOTE}`}),
@@ -176,7 +177,7 @@ function bwBuild(t,w,id){
   const ws=shuf([w,...BW.filter(x=>x!==w).sort((a,b)=>dist(a)-dist(b)).slice(0,3)]);
   const why=bWhy(w);
   if(t==='bsym')return {id,prompt:bSVG(w,130),q:'이 속기 단어는 무엇일까요?',opts:ws.map(x=>({k:x,h:`<span class="big" style="font-size:24px">${x}</span>`})),ans:w,why};
-  const bx=ws.map(bBox),sc=Math.min(1.5,150/Math.max(...bx.map(b=>b.w)),80/Math.max(...bx.map(b=>b.h)));
+  const bx=ws.map(bBox),sc=Math.min(RS(),150/Math.max(...bx.map(b=>b.w)),80/Math.max(...bx.map(b=>b.h)));
   return {id,prompt:`<span class="big" style="font-size:48px">${w}</span>`,q:`「${w}」을(를) 이어 쓴 모양을 고르세요`,opts:ws.map(x=>({k:x,h:bSVG(x,0,sc)})),ans:w,why};
 }
 const CURR=['b:1','b:2','b:7','b:3','b:4','b:8','b:9','b:5','b:6','b:11','b:12','b:17','b:13','b:14','b:18','b:19','b:15','b:16','b:10','b:20','b:21','b:22','b:23'];

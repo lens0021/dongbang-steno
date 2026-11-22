@@ -43,7 +43,8 @@ const REV=Object.fromEntries(Object.entries(INIT).map(([k,v])=>[v,k]));
 const CHO='ㄱㄲㄴㄷㄸㄹㅁㅂㅃㅅㅆㅇㅈㅉㅊㅋㅌㅍㅎ';
 const HALF=new Set([2,6,12,17,20]);
 const MM={0:4,4:4,2:4,6:4,8:8,13:8,12:8,17:8,18:16,20:16};
-const LEN={4:15,8:27,16:48};
+/* 단위 3개 = 1mm (4mm=12, 8mm=24, 16mm=48). 화면 배율은 RS() */
+const LEN={4:12,8:24,16:48};
 function syl(ch){const n=ch.charCodeAt(0)-0xAC00,cho=Math.floor(n/588),jung=Math.floor(n%588/28);return {c:INIT[CHO[cho]],mm:MM[jung],jung,ch}}
 const compose=(c,jung)=>String.fromCharCode(0xAC00+CHO.indexOf(REV[c])*588+jung*28);
 /* 책 3-3-1: 같은 방향의 곧은 선이 이어지면 구별이 안 되므로, 다음 글자를 앞 글자의 정측(위·왼쪽)으로 조금 들어가 띄어 쓴다 */
@@ -56,7 +57,7 @@ function wordPath(word){
   for(const ch of word){const sy=syl(ch),it=ALL.find(a=>a.c===sy.c),g=it.g,v=DIR[g.id],L=LEN[sy.mm];
     let hooked=false;
     if(needsOffset(prev,sy)){const [nx,ny]=jeong(g.a);
-            x=x+nx*5-v[0]*3;y=y+ny*5-v[1]*3;d+=`M${x.toFixed(1)} ${y.toFixed(1)}`;pts.push([x,y])}
+            x=x+nx*4-v[0]*2.5;y=y+ny*4-v[1]*2.5;d+=`M${x.toFixed(1)} ${y.toFixed(1)}`;pts.push([x,y])}
     const a=g.a*Math.PI/180;
     if(HALF.has(sy.jung)){ /* ㅑㅕㅛㅠㅣ: 시작할 때 정측에 반소원. 책처럼 12시에서 반시계 방향으로 6시까지 그리고, 거기서 선이 이어진다 */
       let nx=-Math.sin(a)*Math.sign(it.b),ny=-Math.cos(a)*Math.sign(it.b);
@@ -71,6 +72,7 @@ function wordPath(word){
 function wordBox(word){const {pts}=wordPath(word);const xs=pts.map(p=>p[0]),ys=pts.map(p=>p[1]);const x0=Math.min(...xs)-8,y0=Math.min(...ys)-8;return {x0,y0,w:Math.max(...xs)-x0+8,h:Math.max(...ys)-y0+8}}
 /* S가 같으면 글자 길이·굵기가 같은 배율로 그려진다(길이 비교 문제용) */
 function wordSVG(word,h=90,S){
+  S=Math.min(S||1e9,RS());
   const {d}=wordPath(word),b=wordBox(word);
   const size=S?`width:${(b.w*S).toFixed(0)}px;height:${(b.h*S).toFixed(0)}px;max-width:100%`:`width:100%;max-width:${Math.max(110,Math.min(300,b.w*2.2))}px;height:${h}px`;
   return `<svg viewBox="${b.x0.toFixed(1)} ${b.y0.toFixed(1)} ${b.w.toFixed(1)} ${b.h.toFixed(1)}" style="${size}" aria-hidden="true"><path d="${d}" fill="none" stroke="var(--stroke)" stroke-width="${S?(3.4/S).toFixed(2):2.6}" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
@@ -107,6 +109,8 @@ const DEFAULT_PXMM=(typeof navigator!=='undefined'&&/Android/i.test(navigator.us
 let PXMM=(()=>{try{const v=parseFloat(localStorage.getItem('dongbang-pxmm'));if(v>1&&v<20)return v}catch(e){}return DEFAULT_PXMM})();
 function setPxmm(v){PXMM=v;try{localStorage.setItem('dongbang-pxmm',String(v))}catch(e){}}
 const mmPx=mm=>mm*PXMM;
+/* 그림 단위 1개가 몇 px인지(실제 길이 배율). 모든 그림 함수는 이 값 이하로만 그려 mm가 어디서나 같은 크기가 되게 한다. */
+const RS=()=>PXMM/3;
 /* 문자 하나를 실제 mm 길이로 그린다. 단위 3개 = 1mm, 그림 칸은 60단위(=20mm) 정사각형 */
 function svMM(it,mm){const px=60*PXMM/3;
   return stroke(it.g.a,it.b,3*mm,1.4).replace('viewBox="0 0 80 80"',`viewBox="10 10 60 60" style="width:${px.toFixed(0)}px;height:${px.toFixed(0)}px"`)}

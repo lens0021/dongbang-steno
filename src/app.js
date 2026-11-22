@@ -78,7 +78,7 @@ function itemQ0(id){{const ft=featType(id.split(':')[0]);if(ft)return ft.build(i
     const real=ALLW.filter(w=>w!==key).sort((a,b)=>dist(a)-dist(b)).slice(0,3);
     const ws=shuf([key,...real]);
     const tag='';
-    const bx=ws.map(wordBox),sc=Math.min(1.5,150/Math.max(...bx.map(b=>b.w)),80/Math.max(...bx.map(b=>b.h)));
+    const bx=ws.map(wordBox),sc=Math.min(RS(),150/Math.max(...bx.map(b=>b.w)),80/Math.max(...bx.map(b=>b.h)));
     if(t==='wsym')return {id,prompt:wordSVG(key,130),q:'이 속기 단어는 무엇일까요?'+tag,opts:ws.map(w=>({k:w,h:`<span class="big" style="font-size:24px">${w}</span>`})),ans:key,why:wordWhy(key)};
     return {id,prompt:`<span class="big" style="font-size:48px">${key}</span>`,q:`「${key}」을(를) 이어 쓴 모양을 고르세요`+tag,opts:ws.map(w=>({k:w,h:wordSVG(w,0,sc)})),ans:key,why:wordWhy(key)}}
   const it=ALL.find(x=>x.c===key),g=it.g,mine=g.chars.map(([c,b])=>({c,b,g})),others=ALL.filter(x=>x.g!==g);

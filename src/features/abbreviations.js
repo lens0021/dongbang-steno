@@ -2,7 +2,7 @@
    교재 글 설명(줄 방향·길이·위치)에 근거한 모양만 그린다. 손글씨 약부 중 모양을 글로 알 수 없는 것은 그리지 않고 설명 카드에만 둔다. */
 (function(){
 const SW='stroke="var(--stroke)" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" fill="none"';
-const svg=(inner,w=84,h=63)=>`<svg viewBox="0 0 80 60" style="width:${w}px;height:${h}px" aria-hidden="true"><g ${SW}>${inner}</g></svg>`;
+const svg=(inner)=>`<svg viewBox="0 0 80 60" style="width:${(80*PXMM/3.6).toFixed(0)}px;height:${(60*PXMM/3.6).toFixed(0)}px;max-width:100%" aria-hidden="true"><g ${SW}>${inner}</g></svg>`;
 const BASE='<path d="M6 30H44"/>';
 const dot=(x,y)=>`<circle cx="${x}" cy="${y}" r="2.2" fill="var(--stroke)" stroke="none"/>`;
 const tx=(s,x,y,sz=13)=>`<text x="${x}" y="${y}" font-size="${sz}" font-weight="700" fill="var(--stroke)" stroke="none" font-family="sans-serif">${s}</text>`;

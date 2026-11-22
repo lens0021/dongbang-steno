@@ -24,7 +24,7 @@ function aePath(items){
     if(cur.kind==='ae'&&prev){if(sameStraight){fl.sep=true}else{fl.link=true;hook=false}}
     const jump=prev&&((cur.kind==='ae'&&!sameStraight)||(cur.kind==='plain'&&sameStraight));
     if(cur.kind==='plain'&&sameStraight)fl.off=true;
-    if(jump){const [nx,ny]=jeong(g.a);x=x+nx*5-v[0]*3;y=y+ny*5-v[1]*3;d+=`M${x.toFixed(1)} ${y.toFixed(1)}`;pts.push([x,y])}
+    if(jump){const [nx,ny]=jeong(g.a);x=x+nx*4-v[0]*2.5;y=y+ny*4-v[1]*2.5;d+=`M${x.toFixed(1)} ${y.toFixed(1)}`;pts.push([x,y])}
     if(hook){
       let nx=-Math.sin(a)*Math.sign(it.b),ny=-Math.cos(a)*Math.sign(it.b);
       if(!it.b){nx=Math.sin(a);ny=Math.cos(a);if(nx+ny>0){nx=-nx;ny=-ny}}
@@ -38,12 +38,13 @@ function aePath(items){
 }
 const itemsOf=w=>[...w].map(item);
 function svgOf(items,h,S){
+  S=Math.min(S||1e9,RS());
   const {d,pts}=aePath(items),xs=pts.map(p=>p[0]),ys=pts.map(p=>p[1]),x0=Math.min(...xs)-8,y0=Math.min(...ys)-8,w=Math.max(...xs)-x0+8,hh=Math.max(...ys)-y0+8;
   const size=S?`width:${(w*S).toFixed(0)}px;height:${(hh*S).toFixed(0)}px;max-width:100%`:`width:100%;max-width:${Math.max(110,Math.min(300,w*2.2))}px;height:${h}px`;
   return `<svg viewBox="${x0.toFixed(1)} ${y0.toFixed(1)} ${w.toFixed(1)} ${hh.toFixed(1)}" style="${size}" aria-hidden="true"><path d="${d}" fill="none" stroke="var(--stroke)" stroke-width="${S?(3.4/S).toFixed(2):2.6}" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
 }
 const wordSvg=(w,h,S)=>svgOf(itemsOf(w),h,S);
-const glyph=(c,mm,kind,S=2)=>svgOf([{c,mm,kind}],0,S);
+const glyph=(c,mm,kind,S=0)=>svgOf([{c,mm,kind}],0,S);
 const shapeKey=w=>aePath(itemsOf(w)).d;
 const letterShape=(c,mm,kind)=>aePath([{c,mm,kind}]).d;
 const flagsOf=w=>aePath(itemsOf(w)).fl;
@@ -126,7 +127,7 @@ const F={name:'ㅐ모음',
     build:(k,id)=>{const key=shapeKey(k),pool=[...AEW,...ALLW].filter(w=>w!==k&&shapeKey(w)!==key);
       const real=[];pool.sort((a,b)=>Math.abs(a.length-k.length)-Math.abs(b.length-k.length)+Math.random()-.5);
       for(const w of pool){if(real.length>=3)break;if(!real.some(r=>shapeKey(r)===shapeKey(w)))real.push(w)}
-      const ws=shuf([k,...real]),sc=Math.min(1.5,150/Math.max(...ws.map(w=>{const p=aePath(itemsOf(w)).pts;return Math.max(...p.map(q=>q[0]))-Math.min(...p.map(q=>q[0]))+16})),80/Math.max(...ws.map(w=>{const p=aePath(itemsOf(w)).pts;return Math.max(...p.map(q=>q[1]))-Math.min(...p.map(q=>q[1]))+16})));
+      const ws=shuf([k,...real]),sc=Math.min(RS(),150/Math.max(...ws.map(w=>{const p=aePath(itemsOf(w)).pts;return Math.max(...p.map(q=>q[0]))-Math.min(...p.map(q=>q[0]))+16})),80/Math.max(...ws.map(w=>{const p=aePath(itemsOf(w)).pts;return Math.max(...p.map(q=>q[1]))-Math.min(...p.map(q=>q[1]))+16})));
       return {id,prompt:`<span class="big" style="font-size:48px">${k}</span>`,q:`「${k}」을(를) 이어 쓴 모양을 고르세요`,opts:ws.map(w=>({k:w,h:wordSvg(w,0,sc)})),ans:k,why:withWhy(wordWhyAE(k),k)}}}},
  section:{title:'ㅐ모음(개모음)',kcs:['e:hook','e:4','e:8','e:16','e:link','e:sep']}};
 window.FEATURES.push(F);
