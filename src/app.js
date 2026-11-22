@@ -170,7 +170,27 @@ function pickDistractors(key,pool,n=3,kcsFn=wordKcs,distinct){
   take(cand.filter(ok).sort((x,y)=>sc.get(y)-sc.get(x)));take(cand.filter(w=>!out.includes(w)).sort((x,y)=>sc.get(y)-sc.get(x)));
   return out}
 /* 새 개념의 첫 연습 문제 4개(문제 종류가 적으면 되풀이한다) */
-function practiceIds(k){const base=shuf(kcQuestions(k).filter(id=>kcsOf(id).every(x=>x===k||seen(x))));const out=[];while(base.length&&out.length<4)out.push(base[out.length%base.length]);return out}
+/* 같은 세션에 그림이 완전히 같은 단어 문제(예: 가구/거구)가 두 번 나오지 않도록 하는 키. 단어 문제가 아니면 null */
+function sigKey(id){const [t,w]=[id.split(':')[0],id.slice(id.indexOf(':')+1)];
+  try{const g=t==='wsym'||t==='wpick'?()=>wordPath(w).d:t==='ewsym'||t==='ewpick'?()=>WORDSIG.ae(w):t==='bsym'||t==='bpick'?()=>WORDSIG.b(w):null;
+    return g?t.replace(/^(.*)(sym|pick)$/,'$1')+'|'+g():null}catch(e){return null}}
+/* 같은 문제를 4번 되풀이하지 않도록: 그 개념의 고유 문제가 4개 미만이면, 이미 익힌 다른 개념과 합쳐 만든 문제(단어 등)로 채운다.
+   고르는 순서는 문제 종류(앞 글자 접두어)를 번갈아 가며 다양하게 한다. */
+function practiceIds(k){
+  const own=shuf(kcQuestions(k).filter(id=>kcsOf(id).every(x=>x===k||seen(x))));
+  const out=[...own].slice(0,4);
+  if(out.length<4){
+    const strict=id=>kcsOf(id).every(x=>x===k||learned(x)),loose=id=>kcsOf(id).every(x=>x===k||seen(x));
+    for(const ok of [strict,loose]){
+      const sigs=new Set(out.map(sigKey).filter(Boolean)),extra=shuf(candidates().filter(id=>!out.includes(id)&&kcsOf(id).includes(k)&&ok(id))).filter(id=>{const sk=sigKey(id);if(!sk)return true;if(sigs.has(sk))return false;sigs.add(sk);return true});
+      const byT={};extra.forEach(id=>(byT[id.split(':')[0]]=byT[id.split(':')[0]]||[]).push(id));
+      const used=new Set(out.map(id=>id.split(':')[0]));
+      /* 아직 안 쓴 문제 종류를 먼저, 그다음 종류를 번갈아 */
+      const types=Object.keys(byT).sort((a,b)=>(used.has(a)-used.has(b)));
+      while(out.length<4&&types.some(t=>byT[t].length)){for(const t of types){if(out.length>=4)break;if(byT[t].length)out.push(byT[t].shift())}}
+      if(out.length>=4)break}}
+  while(out.length&&out.length<4)out.push(out[out.length%Math.max(1,own.length||out.length)]);
+  return out}
 function makeSession(focus){
   const recent=new Set(S.recent||[]);
   let pool=candidates().filter(eligible);
@@ -187,14 +207,15 @@ function makeSession(focus){
   const mid=shuf(pool.filter(id=>{const a=avgS(kcsOf(id));return a>=2.2&&a<3.6}));
   const easy=pool.filter(id=>avgS(kcsOf(id))>=3.6).sort((a,b)=>score(a)-score(b));
   const used={},picked=[];
-  const take=(list,n,ignoreCap)=>{for(const id of list){if(n<=0)break;if(picked.includes(id))continue;const ks=kcsOf(id);if(!ignoreCap&&ks.some(k=>(used[k]||0)>=3))continue;picked.push(id);ks.forEach(k=>used[k]=(used[k]||0)+1);n--}};
+  const sigSeen=new Set();const take=(list,n,ignoreCap)=>{for(const id of list){if(n<=0)break;if(picked.includes(id))continue;const sk=sigKey(id);if(sk&&sigSeen.has(sk))continue;const ks=kcsOf(id);if(!ignoreCap&&ks.some(k=>(used[k]||0)>=3))continue;picked.push(id);if(sk)sigSeen.add(sk);ks.forEach(k=>used[k]=(used[k]||0)+1);n--}};
   const nh=Math.ceil(N*.4),nm=Math.round(N*.3);
   take(hard,nh);take(mid,nm);take(easy,N-nh-nm);
   take(hard,N-picked.length);take(mid,N-picked.length);take(easy,N-picked.length);
   take(shuf(pool),N-picked.length,true);
-  const qs=picked.map(itemQ);
+  const pr=newK.map(k=>practiceIds(k)),prSet=new Set(pr.flat()),prSig=new Set([...prSet].map(sigKey).filter(Boolean));
+  const qs=picked.filter(id=>!prSet.has(id)&&!prSig.has(sigKey(id))).map(itemQ);
   const first=qs.findIndex(q=>avgS(q.kcs)>=3.6),lead=first>=0?qs.splice(first,1):[];
-  const intro=newK.flatMap(k=>[introQ(k),...practiceIds(k).map(itemQ)]);
+  const intro=newK.flatMap((k,i)=>[introQ(k),...pr[i].map(itemQ)]);
   const out=[...lead,...intro,...shuf(qs)];
   if(!seen('w:1')){const wi=out.findIndex(q=>q.id&&q.id[0]==='w');if(wi>=0)out.splice(wi,0,introQ('w:1'))}
   return out;
