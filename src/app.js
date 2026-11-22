@@ -13,6 +13,8 @@ const INFO=new Set(['r:12','r:13','r:11','r:3','r:4','r:6','r:7','r:8','r:9','r:
    개념 id는 영역마다 겹치지 않게 접두어를 쓴다(받침 b:, ㅐ모음 e:, 약기법 a:). */
 const FEATURES=window.FEATURES||[];
 FEATURES.forEach(f=>{CURR.push(...(f.curr||[]));(f.info||[]).forEach(k=>INFO.add(k))});
+/* 문제 보기들이 모두 같은 길이로 그려질 때 붙이는 안내(길이가 서로 다르면 붙이지 않는다). 새 영역의 문제도 이 함수를 쓴다. */
+const lenNote=mm=>` <small class="lennote">(모든 보기는 ${mm}mm)</small>`;
 const featType=t=>{for(const f of FEATURES){if(f.types&&f.types[t])return f.types[t]}};
 const DD={'까':'가','따':'다','빠':'바','싸':'사','짜':'자'};
 const RNAME={11:'이어쓰기가 곤란할 때',3:'반소원(ㅑ계열)',4:'ㅑㅕ·ㅛㅠ 길이',5:'된소리',6:'이어쓰기',7:'정측·반측',8:'연습 방법',9:'획순',10:'창안자·연도',12:'각도는 재량이 있다',13:'ㅏ와 ㅓ, ㅗ와 ㅜ 구별'};
@@ -84,7 +86,7 @@ function itemQ0(id){{const ft=featType(id.split(':')[0]);if(ft)return ft.build(i
   if(t==='sym')
     return {id,prompt:sv(it,L),q:'이 속기 글자는 무엇일까요?',opts:shuf([it,...shuf(mine.filter(m=>m.c!==it.c)),...shuf(others).slice(0,1)]).map(o=>({k:o.c,h:`<span class="big">${sy(o)}</span>`})),ans:it.c,why:`${sy(it)}은(는) ${it.c} 문자(${g.deg} 방향)에 모음 ${vn} 길이로 씁니다.`};
   if(t==='pick'){const pool=shuf([...shuf(mine.filter(m=>m.c!==it.c)),...shuf(others).slice(0,2)]).slice(0,3);
-    return {id,prompt:`<span class="big">${sy(it)}</span>`,q:`「${sy(it)}」에 해당하는 모양을 고르세요`,opts:shuf([it,...pool]).map(o=>({k:o.c,h:sv(o,L)})),ans:it.c,why:`${sy(it)}은(는) ${lines(it)}으로 씁니다.`}}
+    return {id,prompt:`<span class="big">${sy(it)}</span>`,q:`「${sy(it)}」에 해당하는 모양을 고르세요${lenNote(vmm)}`,opts:shuf([it,...pool]).map(o=>({k:o.c,h:sv(o,L)})),ans:it.c,why:`${sy(it)}은(는) ${lines(it)}으로 씁니다.`}}
 }
 function itemQ(id){
   const q=itemQ0(id),t=id.split(':')[0];q.kcs=kcsOf(id);

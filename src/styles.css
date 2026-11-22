@@ -94,3 +94,4 @@ details summary{cursor:pointer}
 .gi2{min-height:140px;display:flex;align-items:center;justify-content:center;width:100%}
 .introtx{background:var(--card);border:2px solid var(--line);border-radius:14px;padding:14px;line-height:1.7}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
+.lennote{font-size:13px;font-weight:500;color:var(--mute);white-space:nowrap}
