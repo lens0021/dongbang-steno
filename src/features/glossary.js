@@ -24,58 +24,30 @@ const GLOSS=(src,open)=>{
   if(!hit.length)return '';
   return `<details class="gloss"${open?' open':''}><summary>용어 풀이 (${hit.map(g=>g.s||g.n.split(' ')[0]).join('·')})</summary>${hit.map(g=>`<div class="gli"><b>${g.n}</b><br>${g.h}</div>`).join('')}</details>`};
 
-/* ---------- 용어 문제: 용어가 가리키는 것을 실제 단어·글자에서 찾게 한다 ----------
-   모음 계열(ㅏ·ㅑ·ㅐ)과 받침 종류를 글자 구조에서 계산하므로 목록의 단어만 맞으면 정답이 틀릴 수 없다. */
+/* ---------- 용어 문제: 속기 그림을 보고 어떤 용어에 해당하는지 고른다 ----------
+   한글만 보고 풀리는 문제는 만들지 않는다. 받침이 붙은 글자가 하나뿐인 단어의 속기 그림(받침 영역의 BW 단어)만 쓰고,
+   모음 계열과 받침 종류는 글자 구조에서 계산한다. */
 (function(){
+const B=window.BATCHIM;if(!B)return;
 const AEJ=new Set([1,5,9,10,11,14,15,16]),YAJ=new Set([2,6,12,17,20]);
 const JKM={1:'g',4:'n',8:'l',16:'m',17:'m',19:'s',21:'ng'};
 const KN={n:'ㄴ',ng:'ㅇ',l:'ㄹ',s:'ㅅ',m:'ㅁ·ㅂ',g:'ㄱ'};
+const FN={a:'ㅏ계열',ae:'ㅐ계열'};
 const KC={a:{n:'b:1',ng:'b:2',l:'b:3',s:'b:5',m:'b:7',g:'b:8'},ae:{n:'b:11',ng:'b:12',l:'b:13',s:'b:15',m:'b:17',g:'b:18'}};
 const parse=ch=>{const n=ch.charCodeAt(0)-0xAC00,jung=Math.floor(n%588/28),jong=n%28;return {ch,fam:AEJ.has(jung)?'ae':YAJ.has(jung)?'ya':'a',kind:JKM[jong]||null}};
-const WORDS=['보냄','도마뱀','스냅','고된','사관','주된','교황','로댕','비행장','대책','시책','수확','주객','보낼','사활','부활','하겠다','오랬다','헤맸다',
- '모든','그간','노동','고궁','그들','수출','소홀','가감','고급','보람','호박죽','다목적','고독','가각','고국'];
-const INF=WORDS.map(w=>({w,s:[...w].map(parse)})).filter(x=>x.s.every(p=>!(p.kind&&p.fam==='ya')));
-const has=(x,fam,kind)=>x.s.some(p=>p.kind===kind&&p.fam===fam);
-const FN={a:'ㅏ계열',ae:'ㅐ계열'};
-const lab=x=>x.s.filter(p=>p.kind).map(p=>`${p.ch}(${FN[p.fam]} 모음 + ${KN[p.kind]}받침)`).join(', ');
-const pickN=(a,n)=>shuf(a).slice(0,n);
-const PAIRS=[];['a','ae'].forEach(f=>Object.keys(KN).forEach(k=>{if(INF.some(x=>has(x,f,k))&&INF.filter(x=>!has(x,f,k)).length>=3)PAIRS.push(f+'|'+k)}));
-function gw(key,id){
-  const [f,k]=key.split('|'),good=pickN(INF.filter(x=>has(x,f,k)),1)[0];
-  const near=INF.filter(x=>!has(x,f,k)&&x.s.some(p=>p.kind&&(p.kind===k||p.fam===f)));
-  const rest=INF.filter(x=>!has(x,f,k)&&!near.includes(x));
-  const bad=[...pickN(near,2),...pickN(rest,3)].slice(0,3);
-  const all=shuf([good,...bad]);
-  return {id,prompt:`<div class="txt"><b>${FN[f]} 모음 글자에 ${KN[k]}받침이 붙은 글자</b>가 있는 단어는?</div>`,q:'용어에 맞는 단어를 고르세요',
-   opts:all.map(x=>({k:x.w,h:`<span class="big" style="font-size:24px">${x.w}</span>`})),ans:good.w,
-   why:all.map(x=>`${x.w}: ${lab(x)||'받침 글자 없음'}`).join('<br>')};
-}
-/* 글자 하나: 모음 계열 */
-const SYL={a:['나','너','노','누','느','가','도','무'],ya:['냐','녀','뇨','뉴','니','갸','료','유'],ae:['내','네','과','괴','귀','개','대','뇌']};
-function gc(key,id){
-  const t=key,good=pickN(SYL[t],1)[0],others=Object.keys(SYL).filter(x=>x!==t);
-  const bad=[...pickN(SYL[others[0]],1),...pickN(SYL[others[1]],1),...pickN(SYL[others[Math.random()*2|0]],1)];
-  const all=shuf([good,...bad]);
-  return {id,prompt:`<div class="txt"><b>${FN[t]||'ㅑ계열'} 모음</b>이 들어 있는 글자는?</div>`,q:'용어에 맞는 글자를 고르세요',
-   opts:all.map(c=>({k:c,h:`<span class="big" style="font-size:30px">${c}</span>`})),ans:good,
-   why:all.map(c=>`${c}: ${({a:'ㅏ계열',ya:'ㅑ계열',ae:'ㅐ계열'})[parse(c).fam]}`).join(' · ')};
-}
-const SB={n:['간','문','돈','산'],ng:['강','공','동','방'],l:['갈','달','물','불'],s:['갓','옷','낫','빗'],m:['감','밤','집','숨'],g:['각','박','목','국']};
-function gb(key,id){
-  const good=pickN(SB[key],1)[0],ks=Object.keys(SB).filter(x=>x!==key);
-  const bad=pickN(ks,3).map(k=>pickN(SB[k],1)[0]),all=shuf([good,...bad]);
-  const nm=c=>KN[parse(c).kind]+'받침';
-  return {id,prompt:`<div class="txt"><b>${KN[key]}받침</b>이 붙은 글자는?</div>`,q:'용어에 맞는 글자를 고르세요',
-   opts:all.map(c=>({k:c,h:`<span class="big" style="font-size:30px">${c}</span>`})),ans:good,why:all.map(c=>`${c}: ${nm(c)}`).join(' · ')};
-}
-const types={
- gw:{kcs:k=>{const [f,x]=k.split('|');return [KC[f][x]]},build:gw,ids:()=>PAIRS.map(k=>'gw:'+k)},
- gc:{kcs:k=>[k==='ae'?'b:11':k==='a'?'b:1':'r:3'],build:gc,ids:()=>['gc:a','gc:ae']},
- gb:{kcs:k=>[KC.a[k]],build:gb,ids:()=>Object.keys(SB).map(k=>'gb:'+k)}
-};
-const add=(bk,id)=>{const b=(window.FEATURES||[]).find(f=>f.name==='batchim');if(!b||!b.questions||!b.questions[bk])return;const old=b.questions[bk];b.questions[bk]=()=>[...old(),id]};
-PAIRS.forEach(k=>{const [f,x]=k.split('|');add(KC[f][x],'gw:'+k)});
-Object.keys(SB).forEach(k=>add(KC.a[k],'gb:'+k));
-add('b:11','gc:ae');add('b:1','gc:a');
+const info=w=>{const s=[...w].map(parse),b=s.map((p,i)=>p.kind?i:-1).filter(i=>i>=0);
+  if(b.length!==1||b[0]===0||s[b[0]].fam==='ya')return null;return {w,ch:s[b[0]].ch,fam:s[b[0]].fam,kind:s[b[0]].kind}};
+const POOL=B.BW.map(info).filter(Boolean).filter(x=>KC[x.fam][x.kind]);
+const lab=(f,k)=>`${FN[f]} 모음 글자 + ${KN[k]}받침`;
+function gp(w,id){
+  const x=POOL.find(p=>p.w===w),fo=x.fam==='a'?'ae':'a',ko=Object.keys(KN).filter(k=>k!==x.kind)[Math.random()*5|0];
+  const combos=[[x.fam,x.kind],[fo,x.kind],[x.fam,ko],[fo,ko]];
+  return {id,prompt:B.bSVG(w,130),q:'이 속기 그림에서 받침이 붙은 글자는 어떤 용어에 해당할까요?',
+   opts:shuf(combos).map(([f,k])=>({k:f+'|'+k,h:`<span style="font-size:16px;font-weight:600">${lab(f,k)}</span>`})),ans:x.fam+'|'+x.kind,
+   why:`${w}에서 받침이 붙은 글자는 ${x.ch}이고, <b>${lab(x.fam,x.kind)}</b>입니다. 모음 반소원이 반측에 있으면 ㅐ계열이에요.`+(window.BATCHIM&&B.bKcs?'':'')}}
+const types={gp:{kcs:w=>B.bKcs(w),build:gp,ids:()=>POOL.map(x=>'gp:'+x.w)}};
+const b=(window.FEATURES||[]).find(f=>f.name==='batchim');
+if(b&&b.questions)Object.keys(KC).forEach(f=>Object.keys(KC[f]).forEach(k=>{const c=KC[f][k],old=b.questions[c];if(!old)return;
+  b.questions[c]=()=>[...old(),...shuf(POOL.filter(x=>x.fam===f&&x.kind===k)).slice(0,2).map(x=>'gp:'+x.w)]}));
 (window.FEATURES=window.FEATURES||[]).push({name:'glossary',types});
 })();
