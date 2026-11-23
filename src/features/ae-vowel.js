@@ -59,7 +59,7 @@ const aeOk=w=>okAE(w)&&[...w].some(isAE)&&pathSelfTouch(aePath(itemsOf(w)).d).le
 (window.WORDCHECK=window.WORDCHECK||{}).ae=aeOk;
 (window.WORDSIG=window.WORDSIG||{}).ae=shapeKey;
 const AEW=[...new Set([...AEW0,...(typeof BOOKCAND!=='undefined'?BOOKCAND:[]).filter(aeOk)])];
-const wordKcsAE=w=>{const set=new Set(),fl=flagsOf(w);
+const wordKcsAE=w=>{const set=new Set(),fl=flagsOf(w);if(hasDD(w))set.add('r:5');
   [...w].forEach(ch=>{const s=syl(ch),j=s.jung;set.add('c:'+s.c);
     if(j in AEMM){set.add('e:hook');set.add(KC[AEMM[j]])}else{if(MM[j]>4)set.add('v:'+MM[j]);if(isHook(s)&&!s.sp)set.add('r:3')}});
   if(fl.link)set.add('e:link');if(fl.sep)set.add('e:sep');if(fl.off)set.add('r:11');
@@ -71,7 +71,7 @@ const wordWhyAE=w=>{const fl=flagsOf(w);
 const chip=(ch)=>`<span class="big" style="font-size:24px">${ch}</span>`;
 const ex=(svg,label)=>`<span style="display:inline-block;width:96px;text-align:center">${svg}<small style="display:block">${label}</small></span>`;
 const withWhy=(why,w)=>`<span style="display:flex;align-items:center;gap:10px"><span style="width:96px;flex:none;border:1px solid var(--line);border-radius:10px;background:var(--card);padding:4px">${wordSvg(w,44)}</span><span>${why}</span></span>`;
-const CONS=Object.values(INIT).filter(c=>c!=='아');
+const CONS=[...new Set(Object.values(INIT))].filter(c=>c!=='아');
 const ccLetter=(c,j)=>compose(c,j);
 const letters=js=>CONS.flatMap(c=>js.map(j=>compose(c,j)));
 const mmName={4:'ㅐ·ㅔ',8:'ㅘ·ㅚ',16:'ㅟ·ㅝ'};

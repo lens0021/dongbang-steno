@@ -123,7 +123,7 @@ const bOkNew=w=>okB(w)&&hasB(w)&&![...w].some(ch=>syl(ch).sp&&(ch.charCodeAt(0)-
 (window.WORDSIG=window.WORDSIG||{}).b=w=>bPath(w).d;
 const BW=[...new Set([...BW0,...(typeof BOOKCAND!=='undefined'?BOOKCAND:[]).filter(bOkNew)])];
 /* 단어가 쓰는 개념 */
-function bKcs(w){const set=new Set(),cs=[...w].map(BSYL);
+function bKcs(w){const set=new Set(),cs=[...w].map(BSYL);if(hasDD(w))set.add('r:5');
   cs.forEach((s,i)=>{set.add('c:'+s.c);if(s.ae){set.add('e:'+s.mm);set.add('e:hook')}else if(s.mm>4)set.add('v:'+s.mm);if(isHook(s)&&!s.sp)set.add('r:3');
     if(s.kind&&i===0){set.add(s.kind==='m'?'b:21':s.kind==='g'?'b:22':'b:20');if(s.kind==='g'&&grp(s.c).b)set.add('b:23')}
     else if(s.kind){const pg=grp(cs[i-1].c).g,par=pg.id===grp(s.c).g.id;set.add(conceptOf(s.kind,par,s.ae))}

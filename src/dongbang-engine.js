@@ -40,6 +40,10 @@ const sv=(it,len)=>stroke(it.g.a,it.b,len);
 const DIR={g1:[1,0,'→'],g2:[-.5,.866,'↙'],g3:[.866,-.5,'↗'],g4:[.707,.707,'↘'],g5:[0,1,'↓']};
 const INIT={'ㅇ':'아','ㄱ':'가','ㄴ':'나','ㄷ':'다','ㄹ':'라','ㅁ':'마','ㅂ':'바','ㅅ':'사','ㅈ':'자','ㅊ':'차','ㅋ':'카','ㅌ':'타','ㅍ':'파','ㅎ':'하'};
 const REV=Object.fromEntries(Object.entries(INIT).map(([k,v])=>[v,k]));
+/* 교재 18쪽 된소리: 정측 중앙에 점을 찍는 것도 되지만 생략하는 것이 원칙이라, 단어에서는 평음과 같은 모양으로 쓴다(ㄲ=ㄱ ㄸ=ㄷ ㅃ=ㅂ ㅆ=ㅅ ㅉ=ㅈ). REV(글자→초성)는 평음을 가리켜야 하므로 위에서 먼저 만든다. */
+const DD_INIT={'ㄲ':'ㄱ','ㄸ':'ㄷ','ㅃ':'ㅂ','ㅆ':'ㅅ','ㅉ':'ㅈ'};
+Object.entries(DD_INIT).forEach(([k,v])=>{INIT[k]=INIT[v]});
+const hasDD=w=>[...w].some(ch=>{const n=ch.charCodeAt(0)-0xAC00;return n>=0&&n<11172&&CHO[Math.floor(n/588)]in DD_INIT});
 const CHO='ㄱㄲㄴㄷㄸㄹㅁㅂㅃㅅㅆㅇㅈㅉㅊㅋㅌㅍㅎ';
 const HALF=new Set([2,6,12,17,20]);
 const MM={0:4,4:4,2:4,6:4,8:8,13:8,12:8,17:8,18:16,20:16};
