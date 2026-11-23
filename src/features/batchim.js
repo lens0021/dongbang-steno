@@ -55,7 +55,8 @@ function bPath(word){
         else if(ae)mv(mx,my);
         else mv(ps.x1-u[0]*1.2*U-sg*sd[0]*U,ps.y1-u[1]*1.2*U-sg*sd[1]*U)}
       else if(k==='g'){
-        if(par){const D=7,ax=ps.x1-u[0]*D*.9+bs[0]*D*.8,ay=ps.y1-u[1]*D*.9+bs[1]*D*.8;
+        if(par){const D=5,ax=ps.x1-u[0]*D*.5+bs[0]*D*.85,ay=ps.y1-u[1]*D*.5+bs[1]*D*.85;   /* 교재 그림의 갈고리는 선 위의 작은 홈(약 1.5mm). 4mm짜리 차(ㅊ)와 혼동되지 않게 작게 그린다 */
+         
           d+=`L${fx(ax)} ${fx(ay)}`;pts.push([ax,ay]);x=ax;y=ay}
         else{mv(ps.x1+u[0]*.6*U-sg*sd[0]*1.2*U,ps.y1+u[1]*.6*U-sg*sd[1]*1.2*U);if(ae)afterHook=true}}
     }else if(sy.kind&&!ps){loop=sy.kind}   /* 받침이 앞에 나올 때: 머리에 원·타원·갈고리 */
