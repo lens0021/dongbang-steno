@@ -133,5 +133,5 @@ const F={name:'ㅐ모음',
       const ws=shuf([k,...real]),sc=Math.min(RS(),150/Math.max(...ws.map(w=>{const p=aePath(itemsOf(w)).pts;return Math.max(...p.map(q=>q[0]))-Math.min(...p.map(q=>q[0]))+16})),80/Math.max(...ws.map(w=>{const p=aePath(itemsOf(w)).pts;return Math.max(...p.map(q=>q[1]))-Math.min(...p.map(q=>q[1]))+16})));
       return {id,prompt:`<span class="big" style="font-size:48px">${k}</span>`,q:`「${k}」을(를) 이어 쓴 모양을 고르세요`,opts:ws.map(w=>({k:w,h:wordSvg(w,0,sc)})),ans:k,why:withWhy(wordWhyAE(k),k)}}}},
  section:{title:'ㅐ모음(개모음)',kcs:['e:hook','e:4','e:8','e:16','e:link','e:sep']}};
-window.FEATURES.push(F);
+F.after="b:6";window.FEATURES.push(F);
 })();
