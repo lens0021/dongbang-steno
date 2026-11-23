@@ -34,8 +34,9 @@ function bPath(word){
     if(flip){nx=-nx;ny=-ny}
     const D=4,ex=x-nx*D,ey=y-ny*D,bx=-v[0],by=-v[1],dx=-nx,dy=-ny,sweep=(dx*by-dy*bx)<0?1:0;
     d+=`A${D/2} ${D/2} 0 0 ${sweep} ${fx(ex)} ${fx(ey)}`;pts.push([ex,ey],[(x+ex)/2+bx*D/2,(y+ey)/2+by*D/2]);x=ex;y=ey};
-  const bump=(u,sd,D)=>{const qx=ps.x1+u[0]*D,qy=ps.y1+u[1]*D,sw=(u[0]*sd[1]-u[1]*sd[0])>0?0:1;
-    d+=`A${D/2} ${D/2} 0 0 ${sw} ${fx(qx)} ${fx(qy)}`;pts.push([qx,qy],[(ps.x1+qx)/2+sd[0]*D/2,(ps.y1+qy)/2+sd[1]*D/2]);x=qx;y=qy};
+  /* H: 혹의 깊이. 교재의 ㅅ받침 큰 반소원은 반원보다 깊은 U자(깊이≈너비)라서 H를 따로 받는다 */
+  const bump=(u,sd,D,H=D/2)=>{const qx=ps.x1+u[0]*D,qy=ps.y1+u[1]*D,sw=(u[0]*sd[1]-u[1]*sd[0])>0?0:1,rot=Math.atan2(u[1],u[0])*180/Math.PI;
+    d+=`A${D/2} ${H} ${fx(rot)} 0 ${sw} ${fx(qx)} ${fx(qy)}`;pts.push([qx,qy],[(ps.x1+qx)/2+sd[0]*H,(ps.y1+qy)/2+sd[1]*H]);x=qx;y=qy};
   for(const ch of word){
     idx++;
     const sy=BSYL(ch),it=grp(sy.c),g=it.g,v=DIR[g.id],L=LEN[sy.mm],a=g.a*Math.PI/180;
@@ -50,7 +51,7 @@ function bPath(word){
       else if(k==='ng'){if(ae){circle(5.5,[-sd[0],-sd[1]])}else mv(mx+sd[0]*.7*U,my+sd[1]*.7*U)}
       else if(k==='m'){mv(ps.x1+u[0]*1.2*U,ps.y1+u[1]*1.2*U);if(ae)afterHook=true}
       else if(k==='l'||k==='s'){
-        if(par)bump(u,bs,k==='l'?6:12);
+        if(par)bump(u,bs,k==='l'?6:12,k==='l'?3:11);
         else if(k==='l')mv(ae?ps.x0-sg*sd[0]*U:mx-sg*sd[0]*U,ae?ps.y0-sg*sd[1]*U:my-sg*sd[1]*U);
         else if(ae)mv(mx,my);
         else mv(ps.x1-u[0]*1.2*U-sg*sd[0]*U,ps.y1-u[1]*1.2*U-sg*sd[1]*U)}
