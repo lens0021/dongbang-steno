@@ -8,7 +8,7 @@ const U=3.75; /* 1mm 를 화면 단위로 */
 const JK={1:'g',2:'g',3:'g',9:'g',24:'g',4:'n',5:'n',6:'n',8:'l',12:'l',13:'l',15:'l',16:'m',17:'m',10:'m',11:'m',14:'m',18:'m',26:'m',19:'s',20:'s',7:'s',22:'s',23:'s',25:'s',27:'s',21:'ng'};   /* 받침 번호 → 받침군(교재 5-4~5-6 제목의 군) */
 const KNAME={n:'ㄴ',ng:'ㅇ',l:'ㄹ',s:'ㅅ',m:'ㅁㅂ',g:'ㄱ'};
 const AEMM={1:4,5:4,9:8,10:8,11:8,15:8,14:16,16:16};   /* ㅐ모음 길이(ㅐ=1 ㅔ=5 ㅘ=9 ㅙ=10 ㅚ=11 ㅝ=14 ㅞ=15 ㅟ=16) */
-const BSYL=ch=>{const n=ch.charCodeAt(0)-0xAC00,s=syl(ch);s.kind=JK[n%28]||null;s.jong=n%28;s.ae=s.jung in AEMM;if(s.ae)s.mm=AEMM[s.jung];return s};
+const BSYL=ch=>{const n=ch.charCodeAt(0)-0xAC00,s=syl(ch);s.kind=JK[n%28]||null;s.jong=n%28;if(s.jung===3||s.jung===7)s.jung-=2; /* ㅒ·ㅖ는 ㅐ·ㅔ와 같이 */s.ae=s.jung in AEMM;if(s.ae)s.mm=AEMM[s.jung];return s};
 const grp=c=>ALL.find(a=>a.c===c);
 /* 개념 id: 1~9 ㅏ모음(ㄴ·ㅇ·ㄹ원칙·ㄹ예외·ㅅ원칙·ㅅ예외·ㅁㅂ·ㄱ원칙·ㄱ예외), 10 총정리, 11~19 ㅐ모음(같은 순서),
    20 ㄴ·ㅇ 머리 원, 21 ㅁㅂ 머리 타원, 22 ㄱ 머리 갈고리, 23 ㄱ 곡선 주의 */
