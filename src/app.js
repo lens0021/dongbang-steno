@@ -176,7 +176,7 @@ function pickDistractors(key,pool,n=3,kcsFn=wordKcs,distinct){
 /* 새 개념의 첫 연습 문제 4개(문제 종류가 적으면 되풀이한다) */
 /* 같은 세션에 그림이 완전히 같은 단어 문제(예: 가구/거구)가 두 번 나오지 않도록 하는 키. 단어 문제가 아니면 null */
 function sigKey(id){const [t,w]=[id.split(':')[0],id.slice(id.indexOf(':')+1)];
-  try{const g=t==='wsym'||t==='wpick'?()=>wordPath(w).d:t==='ewsym'||t==='ewpick'?()=>WORDSIG.ae(w):t==='bsym'||t==='bpick'?()=>WORDSIG.b(w):null;
+  try{const g=t==='wsym'||t==='wpick'?()=>wordPath(w).d:t==='ewsym'||t==='ewpick'?()=>WORDSIG.ae(w):t==='bsym'||t==='bpick'?()=>WORDSIG.b(w):t==='jsym'||t==='jpick'?()=>WORDSIG.j(w):null;
     return g?t.replace(/^(.*)(sym|pick)$/,'$1')+'|'+g():null}catch(e){return null}}
 /* 같은 문제를 4번 되풀이하지 않도록: 그 개념의 고유 문제가 4개 미만이면, 이미 익힌 다른 개념과 합쳐 만든 문제(단어 등)로 채운다.
    고르는 순서는 문제 종류(앞 글자 접두어)를 번갈아 가며 다양하게 한다. */

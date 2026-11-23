@@ -9,13 +9,15 @@ const SN=['모두 다시 가자','모두 다시 보자','모두 다시 하자','
  /* ㅐ모음이 든 문장(ㅐ모음 규칙) */
  '고래 하나 해마 하나','나비 하나 매미 하나','배추 하나 채소 하나','모두 가게 가자','다시 가게 가자','모두 고래 보자','다시 해마 보자','모두 개나리 보자','다시 개나리 보자','모두 배구 하자','다시 배구 하자','모두 배추 사자','다시 배추 사자',
  /* 받침과 ㅐ모음이 함께 든 문장 */
- '사람 모두 가게 가자','사람 모두 고래 보자','감자 배추 다시 사자','소금 배추 다시 사자'];
+ '사람 모두 가게 가자','사람 모두 고래 보자','감자 배추 다시 사자','소금 배추 다시 사자',
+ /* 조사약기법(1)~(4): 조사를 어간 끝의 약기 표시로 쓴 문장 */
+ '바다에서 구름을 보자','하늘에서 구름을 보자','시장에서 감자를 사자','시장에서 배추를 사자','모두 가게에서 두부를 사자','다시 지도를 보자','모두 포도를 사자','아이의 모자를 사자','모두 바다에 가자','다시 시장에 가자','모두 시장에 가자','사람이 모두 바다에 가자','나무가 하나 구름이 하나','하늘이 바다 보자'];
 /* 단어마다 그리기 규칙이 영역별로 다르다: 받침 단어는 받침 영역, ㅐ모음 단어는 ㅐ모음 영역, 그 밖은 기본 엔진 */
 const hasB=w=>[...w].some(ch=>(ch.charCodeAt(0)-0xAC00)%28);
 const WC=window.WORDCHECK||{};
-const engineOf=w=>hasB(w)?(WC.b&&WC.b(w)?'b':null):(WC.ae&&WC.ae(w)?'ae':(okWord(w)&&(WORDS.includes(w)||drawsClean(w))?'base':null));
-const dOf=(w,e)=>e==='b'?BATCHIM.bPath(w).d:e==='ae'?WORDSIG.ae(w):wordPath(w).d;
-const kcsW=(w,e)=>e==='b'?BATCHIM.bKcs(w):e==='ae'?featType('ewsym').kcs(w):wordKcs(w);
+const engineOf=w=>(window.JOSA&&JOSA.info(w))?(WC.j(w)?'j':null):hasB(w)?(WC.b&&WC.b(w)?'b':null):(WC.ae&&WC.ae(w)?'ae':(okWord(w)&&(WORDS.includes(w)||drawsClean(w))?'base':null));
+const dOf=(w,e)=>e==='j'?WORDSIG.j(w):e==='b'?BATCHIM.bPath(w).d:e==='ae'?WORDSIG.ae(w):wordPath(w).d;
+const kcsW=(w,e)=>e==='j'?WC.jk(w):e==='b'?BATCHIM.bKcs(w):e==='ae'?featType('ewsym').kcs(w):wordKcs(w);
 const EN=new Map(),engine=w=>{if(!EN.has(w))EN.set(w,engineOf(w));return EN.get(w)};
 const SENT=SN.filter(s=>s.split(' ').every(w=>engine(w)));
 const GAP=14;
