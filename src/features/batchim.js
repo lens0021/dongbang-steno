@@ -4,7 +4,7 @@
 (function(){
 window.FEATURES=window.FEATURES||[];
 const U=3.75; /* 1mm 를 화면 단위로 */
-const JK={1:'g',4:'n',8:'l',16:'m',17:'m',19:'s',20:'s',21:'ng'};   /* 받침 번호 → 받침군 */
+const JK={1:'g',2:'g',3:'g',9:'g',24:'g',4:'n',5:'n',6:'n',8:'l',12:'l',13:'l',15:'l',16:'m',17:'m',10:'m',11:'m',14:'m',18:'m',26:'m',19:'s',20:'s',7:'s',22:'s',23:'s',25:'s',27:'s',21:'ng'};   /* 받침 번호 → 받침군(교재 5-4~5-6 제목의 군) */
 const KNAME={n:'ㄴ',ng:'ㅇ',l:'ㄹ',s:'ㅅ',m:'ㅁㅂ',g:'ㄱ'};
 const AEMM={1:4,5:4,9:8,10:8,11:8,15:8,14:16,16:16};   /* ㅐ모음 길이(ㅐ=1 ㅔ=5 ㅘ=9 ㅙ=10 ㅚ=11 ㅝ=14 ㅞ=15 ㅟ=16) */
 const BSYL=ch=>{const n=ch.charCodeAt(0)-0xAC00,s=syl(ch);s.kind=JK[n%28]||null;s.jong=n%28;s.ae=s.jung in AEMM;if(s.ae)s.mm=AEMM[s.jung];return s};
