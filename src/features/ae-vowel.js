@@ -8,11 +8,20 @@ const AEMM={1:4,5:4,9:8,10:8,11:8,15:8,14:16,16:16};
 const PLAIN={4:0,8:8,16:18},HOOK={4:6,8:12,16:20};   /* 같은 길이의 ㅏ·ㅗ·ㅡ, ㅕ·ㅛ·ㅣ */
 const AEREP={4:1,8:11,16:16};
 const KC={4:'e:4',8:'e:8',16:'e:16'};
-const AE_NAME={'e:hook':'개모음: 반측 반소원','e:4':'ㅐㅔ 4mm','e:8':'ㅘㅚ 8mm','e:16':'ㅟㅝ 16mm','e:link':'개모음 이어쓰기','e:sep':'이어쓰기가 곤란할 때(개모음)'};
-const isAE=ch=>{const n=ch.charCodeAt(0)-0xAC00;return n>=0&&n%28===0&&(Math.floor(n%588/28) in AEMM)};
+const AE_NAME={'e:sp':'ㅇ+와외위워(특별문자)','e:ye':'ㅖㅒ는 ㅔㅐ와 같이','e:ui':'ㅢ: 이(의)·히(희)','e:hook':'개모음: 반측 반소원','e:4':'ㅐㅔ 4mm','e:8':'ㅘㅚ 8mm','e:16':'ㅟㅝ 16mm','e:link':'개모음 이어쓰기','e:sep':'이어쓰기가 곤란할 때(개모음)'};
+/* ㅖ(7)·ㅒ(3)는 ㅔ·ㅐ와 같이 쓴다. ㅢ(19)는 ㅇ·ㅎ 뒤에서만 「이(의)」「히(희)」 특별문자(syl이 처리). */
+const JN={3:1,7:5};const jn=j=>(j in JN)?JN[j]:j;
+const isAE=ch=>{const n=ch.charCodeAt(0)-0xAC00;return n>=0&&n%28===0&&(jn(Math.floor(n%588/28)) in AEMM)};
+const isUi=ch=>{const n=ch.charCodeAt(0)-0xAC00;return n>=0&&n%28===0&&Math.floor(n%588/28)===19&&syl(ch).sp};
+const isYe=ch=>{const n=ch.charCodeAt(0)-0xAC00;return n>=0&&n%28===0&&(Math.floor(n%588/28) in JN)};
+/* ㅇ+ㅘㅚㅙㅞ(8mm)·ㅟㅝ(16mm): 교재 30쪽 특별문자. 이(의)와 같은 세로선에 반측 반소원을 붙이고 길이는 8mm·4mm */
+const isSp=ch=>{const n=ch.charCodeAt(0)-0xAC00;return n>=0&&n%28===0&&CHO[Math.floor(n/588)]==='ㅇ'&&AEMM[jn(Math.floor(n%588/28))]>4};
 const okAE=w=>[...w].every(ch=>{const n=ch.charCodeAt(0)-0xAC00;if(!(n>=0&&n%28===0))return false;const j=Math.floor(n%588/28),ci=CHO[Math.floor(n/588)];
-  if(!INIT[ci])return false;if(j in AEMM)return ci!=='ㅇ';return j in MM});
-const item=(ch)=>{const s=syl(ch),j=s.jung;if(j in AEMM)return {c:s.c,mm:AEMM[j],kind:'ae'};return {c:s.c,mm:MM[j],kind:isHook(s)?'hook':'plain'}};
+  if(!INIT[ci])return false;if(j===19)return !!syl(ch).sp;return jn(j) in AEMM||j in MM});
+const item=(ch)=>{const s=syl(ch),j=jn(s.jung);
+  if(s.sp)return {c:'이',mm:4,kind:s.sp==='hi'?'hook':'plain'};
+  if(j in AEMM){if(isSp(ch))return {c:'이',mm:AEMM[j]===8?8:4,kind:'ae',sp:true};return {c:s.c,mm:AEMM[j],kind:'ae'}}
+  return {c:s.c,mm:MM[j],kind:isHook(s)?'hook':'plain'}};
 const grp=c=>ALL.find(x=>x.c===c);
 const straight=c=>grp(c).b===0;
 /* 그리기: 책 4-1(반측 반소원), 4-2(연필을 떼고 1mm 들어가 반소원 없이), 4-3(앞 글자 끝에서 제 문자 그대로) */
@@ -53,19 +62,27 @@ const flagsOf=w=>aePath(itemsOf(w)).fl;
 const BOOKW=['가내','가로채다','개재되어','개최해','개회사','게다가','개교해','고뇌','고래','과대해','궤도','괴리','괴테','교재대','구두쇠','구제해야','구좌','가게','고개','교과서','기개로','기과해서','대대로'];
 const OWNW=['매미','배구','대구','개나리','쇠고기','회사','해마','최고','재고','채소','세모','네모','제기','배추','나래','되도록','하나'];
 /* 교재에 그림이 있는 단어는 그대로, 직접 고른 단어는 선이 겹쳐 잎사귀가 되지 않는 것만(공용 pathSelfTouch를 개모음 경로에 적용) */
-const AEW0=[...new Set([...BOOKW,...OWNW])].filter(w=>okAE(w)&&[...w].some(isAE)).filter(w=>BOOKW.includes(w)||pathSelfTouch(aePath(itemsOf(w)).d).length===0);
+/* 특별문자(와·외·위·워)는 교재 그림에서 앞 글자 선과 T자로 만난다. 그 교차는 겹침으로 보지 않는다. */
+const touchOk=w=>pathSelfTouch(aePath(itemsOf(w)).d,7+14*[...w].filter(isSp).length).length===0;
+const feat=ch=>isAE(ch)||isUi(ch);
+const AEW0=[...new Set([...BOOKW,...OWNW])].filter(w=>okAE(w)&&[...w].some(feat)).filter(w=>BOOKW.includes(w)||touchOk(w));
 /* 교재에서 모은 단어(BOOKCAND, src/data/book-words.js)는 개모음 그리기 규칙으로 그릴 수 있고 선이 겹치지 않을 때만 쓴다 */
-const aeOk=w=>okAE(w)&&[...w].some(isAE)&&pathSelfTouch(aePath(itemsOf(w)).d).length===0;
+const aeOk=w=>okAE(w)&&[...w].some(feat)&&touchOk(w);
 (window.WORDCHECK=window.WORDCHECK||{}).ae=aeOk;
 (window.WORDSIG=window.WORDSIG||{}).ae=shapeKey;
 const AEW=[...new Set([...AEW0,...(typeof BOOKCAND!=='undefined'?BOOKCAND:[]).filter(aeOk)])];
 const wordKcsAE=w=>{const set=new Set(),fl=flagsOf(w);if(hasDD(w))set.add('r:5');
-  [...w].forEach(ch=>{const s=syl(ch),j=s.jung;set.add('c:'+s.c);
+  [...w].forEach(ch=>{const s=syl(ch),j=jn(s.jung);
+    if(isUi(ch)){set.add('c:이');set.add('e:ui');return}
+    set.add('c:'+(isSp(ch)?'이':s.c));
+    if(isYe(ch))set.add('e:ye');
+    if(isSp(ch))set.add('e:sp');
     if(j in AEMM){set.add('e:hook');set.add(KC[AEMM[j]])}else{if(MM[j]>4)set.add('v:'+MM[j]);if(isHook(s)&&!s.sp)set.add('r:3')}});
   if(fl.link)set.add('e:link');if(fl.sep)set.add('e:sep');if(fl.off)set.add('r:11');
   return [...set]};
 const wordWhyAE=w=>{const fl=flagsOf(w);
   return w+' = '+itemsOf(w).map((t,i)=>{const ch=[...w][i],g=grp(t.c).g;return `${ch}(${t.c} ${DIR[g.id][2]} ${t.mm}mm${t.kind==='ae'?', 반측 반소원':t.kind==='hook'?', 정측 반소원':''})`}).join(' + ')+'.'
+   +([...w].some(isSp)?' 와·외·왜·웨(8mm)와 위·워(4mm)는 이(의)처럼 세로선에 반소원을 붙인 특별문자입니다.':'')+([...w].some(isYe)?' ㅖ·ㅒ는 ㅔ·ㅐ와 같이 씁니다.':'')+([...w].some(isUi)?' 의는 이, 희는 히 특별문자(세로선 4mm)로 씁니다.':'')
    +(fl.link?' 앞 글자 끝에서 연필을 떼고 안으로 1mm 가량 들어가 반소원 없이 붙여 씁니다.':'')
    +(fl.sep?' 같은 방향의 곧은 선이 이어지므로 앞 글자 끝에서 개모음 글자를 반소원까지 그대로 시작합니다.':'')};
 const chip=(ch)=>`<span class="big" style="font-size:24px">${ch}</span>`;
@@ -77,8 +94,8 @@ const letters=js=>CONS.flatMap(c=>js.map(j=>compose(c,j)));
 const mmName={4:'ㅐ·ㅔ',8:'ㅘ·ㅚ',16:'ㅟ·ㅝ'};
 
 const F={name:'ㅐ모음',
- curr:['e:hook','e:4','e:8','e:16','e:link','e:sep'],
- info:['e:link','e:sep'],
+ curr:['e:hook','e:4','e:8','e:16','e:link','e:sep','e:ye','e:sp','e:ui'],
+ info:['e:link','e:sep','e:ye','e:ui'],
  names:AE_NAME,
  intro:{
   'e:hook':()=>({prompt:`<span style="display:flex;gap:12px;align-items:flex-end">${ex(glyph('다',4,'ae'),'대 (반측)')}${ex(glyph('다',4,'hook'),'뎌 (정측)')}</span>`,
@@ -92,14 +109,23 @@ const F={name:'ㅐ모음',
   'e:link':()=>({prompt:`<span style="display:flex;gap:12px">${ex(wordSvg('가내',0,2.4),'가내')}${ex(wordSvg('고래',0,2.4),'고래')}</span>`,
     text:'<b>개모음 이어쓰기</b><br>앞 글자 끝에서 연필을 떼고, 안으로 1mm 가량 들어가 <b>반소원 없이</b> 붙여 씁니다. 예) 가내, 고래, 고뇌.'}),
   'e:sep':()=>({prompt:`<span style="display:flex;gap:12px">${ex(wordSvg('가게',0,2.4),'가게')}${ex(wordSvg('고개',0,2.4),'고개')}${ex(wordSvg('대대로',0,1.6),'대대로')}</span>`,
-    text:'<b>이어쓰기가 곤란할 때</b><br>이어쓰기대로 하면 안 될 때는 앞 글자 끝에서 제 문자를 그대로(반소원까지) 시작합니다. 교재 보기(가게·고개·교과서·기개로·대대로)는 같은 방향의 곧은 선이 이어지는 경우입니다.'})},
+    text:'<b>이어쓰기가 곤란할 때</b><br>이어쓰기대로 하면 안 될 때는 앞 글자 끝에서 제 문자를 그대로(반소원까지) 시작합니다. 교재 보기(가게·고개·교과서·기개로·대대로)는 같은 방향의 곧은 선이 이어지는 경우입니다.'}),
+  'e:ye':()=>({prompt:`<span style="display:flex;gap:12px">${ex(glyph('가',4,'ae'),'게')}${ex(glyph('가',4,'ae'),'계 (같은 모양)')}${ex(glyph('아',4,'ae'),'예·얘')}</span>`,
+    text:'<b>ㅖ·ㅒ는 ㅔ·ㅐ와 같이</b><br>계·예·얘 같은 글자는 ㅐ·ㅔ와 같은 모양(4mm, 반측 반소원)으로 씁니다. 예) 계(=게), 예(=에), 얘(=애). 모양만 보고는 ㅔ와 구별하지 않고 문맥으로 읽습니다.'}),
+  'e:sp':()=>({prompt:`<span style="display:flex;gap:12px">${ex(glyph('이',8,'ae'),'와·외 8mm')}${ex(glyph('이',4,'ae'),'위·워 4mm')}${ex(glyph('아',4,'ae'),'애 4mm')}</span>`,
+    text:'<b>ㅇ + 개모음은 특별문자</b><br>애·에는 ㅇ문자(아)에 반측 반소원을 붙인 보통 모양입니다. 와·외·왜·웨는 <b>8mm</b>, 위·워는 <b>4mm</b>짜리 세로선에 반측 반소원을 붙인 특별문자를 씁니다(이(의)와 같은 세로선이라 반소원으로 구별).'}),
+  'e:ui':()=>({prompt:`<span style="display:flex;gap:12px">${ex(glyph('이',4,'plain'),'의 (이)')}${ex(glyph('이',4,'hook'),'희 (히)')}</span>`,
+    text:'<b>의는 이, 희는 히</b><br>ㅇ·ㅎ 뒤의 ㅢ는 「이(의)」「히(희)」 특별문자 4mm로 씁니다(의원, 희미). 이는 세로선, 히는 세로선 머리에 반소원이 붙습니다.'})},
  questions:{
   'e:hook':()=>shuf(letters([1])).slice(0,3).map(l=>'eside:'+l).concat(shuf(letters([1,11,16])).slice(0,2).map(l=>'esym:'+l)),
   'e:4':()=>shuf(letters([1,5])).slice(0,3).map(l=>'elen:'+l),
   'e:8':()=>shuf(letters([9,11])).slice(0,3).map(l=>'elen:'+l),
   'e:16':()=>shuf(letters([14,16])).slice(0,3).map(l=>'elen:'+l),
   'e:link':()=>AEW.filter(w=>flagsOf(w).link).flatMap(w=>['ewsym:'+w,'ewpick:'+w]),
-  'e:sep':()=>AEW.filter(w=>flagsOf(w).sep).flatMap(w=>['ewsym:'+w,'ewpick:'+w])},
+  'e:sep':()=>AEW.filter(w=>flagsOf(w).sep).flatMap(w=>['ewsym:'+w,'ewpick:'+w]),
+  'e:ye':()=>shuf(CONS.flatMap(c=>[compose(c,7),compose(c,3)])).slice(0,3).map(l=>'eye:'+l),
+  'e:sp':()=>['espick:와','espick:위','espick:워','espick:외','espsym:와','espsym:위','espsym:애'].concat(AEW.filter(w=>[...w].some(isSp)).flatMap(w=>['ewsym:'+w,'ewpick:'+w])),
+  'e:ui':()=>['euipick:의','euipick:희'].concat(AEW.filter(w=>[...w].some(isUi)).flatMap(w=>['ewsym:'+w,'ewpick:'+w]))},
  types:{
   /* 반측이냐 정측이냐: 같은 글자(ㅐ)의 모양 4개, 길이는 모두 같다 */
   eside:{kcs:(k)=>['c:'+syl(k).c,'e:hook','r:3'],
@@ -122,6 +148,31 @@ const F={name:'ㅐ모음',
       const opts=shuf([k,compose(c,PLAIN[mm]),compose(c,HOOK[mm]),compose(c,AEREP[other])]);
       return {id,prompt:glyph(c,mm,'ae',2),q:'이 속기 글자는 무엇일까요?',opts:opts.map(w=>({k:w,h:chip(w)})),ans:k,
         why:`${k}은(는) ${c} 문자에 ${mm}mm 길이로 쓰고 반측에 반소원이 붙어 있습니다.`}}},
+  /* ㅖㅒ: ㅔㅐ와 같은 모양을 고른다 */
+  eye:{kcs:(k)=>['c:'+syl(k).c,'e:hook','e:ye','r:3'],
+    ids:()=>CONS.flatMap(c=>[compose(c,7),compose(c,3)]).map(l=>'eye:'+l),
+    build:(k,id)=>{const c=syl(k).c,L=4,o=shuf(CONS.filter(x=>x!==c&&grp(x).g!==grp(c).g))[0];
+      const opts=shuf([{k:'ok',h:glyph(c,L,'ae')},{k:'x1',h:glyph(c,L,'hook')},{k:'x2',h:glyph(c,L,'plain')},{k:'x3',h:glyph(o,L,'ae')}]);
+      return {id,prompt:`<span class="big">${k}</span>`,q:`「${k}」에 해당하는 모양을 고르세요${lenNote(L)}`,opts,ans:'ok',
+        why:`${k}의 ㅖ·ㅒ는 ㅔ·ㅐ와 같이 씁니다. ${c} 문자 4mm에 반측 반소원을 붙인 모양이에요. 정측에 붙이면 ㅑㅕ 모음입니다.`}}},
+  /* ㅇ+ㅘㅚㅟㅝ 특별문자: 글자 → 모양 */
+  espick:{kcs:(k)=>['c:이','e:hook','e:sp'],ids:()=>['와','외','위','워'].map(l=>'espick:'+l),
+    build:(k,id)=>{const mm=isSp(k)&&AEMM[jn(syl(k).jung)]===8?8:4,other=mm===8?4:8;
+      const opts=shuf([{k:'ok',h:glyph('이',mm,'ae',1.6)},{k:'x1',h:glyph('이',mm,'plain',1.6)},{k:'x2',h:glyph('이',other,'ae',1.6)},{k:'x3',h:glyph('아',mm,'ae',1.6)}]);
+      return {id,prompt:`<span class="big">${k}</span>`,q:`「${k}」에 해당하는 모양을 고르세요`,opts,ans:'ok',
+        why:`ㅇ+${k[0]==='와'||k==='외'?'ㅘㅚ':'ㅟㅝ'} 모음은 특별문자입니다. ${mm}mm 세로선에 반측 반소원을 붙입니다. 반소원이 없으면 이(의)예요.`}}},
+  /* ㅇ+개모음 모양 → 글자 묶음 */
+  espsym:{kcs:(k)=>['c:이','e:hook','e:sp'],ids:()=>['와','위','애'].map(l=>'espsym:'+l),
+    build:(k,id)=>{const sh={'와':glyph('이',8,'ae',2),'위':glyph('이',4,'ae',2),'애':glyph('아',4,'ae',2)}[k];
+      const G={'와':'와·외·왜·웨','위':'위·워','애':'애·에'};
+      return {id,prompt:sh,q:'이 속기 글자는 무엇일까요?',opts:shuf(['와·외·왜·웨','위·워','애·에','이(의)']).map(w=>({k:w,h:chip(w)})),ans:G[k],
+        why:`${G[k]}: ${k==='애'?'아 문자에 반측 반소원':k==='와'?'8mm 세로선에 반측 반소원(특별문자)':'4mm 세로선에 반측 반소원(특별문자)'}입니다. 이(의)는 반소원이 없는 세로선이에요.`}}},
+  /* 의·희 */
+  euipick:{kcs:(k)=>['c:이','e:ui'],ids:()=>['의','희'].map(l=>'euipick:'+l),
+    build:(k,id)=>{const hi=k==='희',ok=glyph('이',4,hi?'hook':'plain',1.6);
+      const opts=shuf([{k:'ok',h:ok},{k:'x1',h:glyph('이',4,hi?'plain':'hook',1.6)},{k:'x2',h:glyph('이',8,hi?'hook':'plain',1.6)},{k:'x3',h:glyph('이',8,'ae',1.6)}]);
+      return {id,prompt:`<span class="big">${k}</span>`,q:`「${k}」에 해당하는 모양을 고르세요`,opts,ans:'ok',
+        why:`${k}는 ${hi?'「히(희)」: 4mm 세로선 머리에 정측 반소원':'「이(의)」: 4mm 세로선'}으로 씁니다.`}}},
   /* 단어 */
   ewsym:{kcs:(k)=>wordKcsAE(k),ids:()=>AEW.map(w=>'ewsym:'+w),
     build:(k,id)=>{const key=shapeKey(k),pool=[...AEW,...ALLW].filter(w=>w!==k&&shapeKey(w)!==key);
@@ -132,6 +183,6 @@ const F={name:'ㅐ모음',
       const real=pickDistractors(k,pool,3,wordKcsAE,shapeKey);
       const ws=shuf([k,...real]),sc=Math.min(RS(),150/Math.max(...ws.map(w=>{const p=aePath(itemsOf(w)).pts;return Math.max(...p.map(q=>q[0]))-Math.min(...p.map(q=>q[0]))+16})),80/Math.max(...ws.map(w=>{const p=aePath(itemsOf(w)).pts;return Math.max(...p.map(q=>q[1]))-Math.min(...p.map(q=>q[1]))+16})));
       return {id,prompt:`<span class="big" style="font-size:48px">${k}</span>`,q:`「${k}」을(를) 이어 쓴 모양을 고르세요`,opts:ws.map(w=>({k:w,h:wordSvg(w,0,sc)})),ans:k,why:withWhy(wordWhyAE(k),k)}}}},
- section:{title:'ㅐ모음(개모음)',kcs:['e:hook','e:4','e:8','e:16','e:link','e:sep']}};
+ section:{title:'ㅐ모음(개모음)',kcs:['e:hook','e:4','e:8','e:16','e:link','e:sep','e:ye','e:sp','e:ui']}};
 F.after="b:6";window.FEATURES.push(F);
 })();

@@ -51,7 +51,7 @@ const MM={0:4,4:4,2:4,6:4,8:8,13:8,12:8,17:8,18:16,20:16};
 const LEN={4:12,8:24,16:48};
 /* 교재 19쪽 특별문자(4mm): 「이(의)」=세로선, 「히(희)」=머리에 작은 갈고리가 달린 세로선. ㅇ+ㅣ, ㅎ+ㅣ는 일반 규칙(16mm 반소원)이 아니라 이 글자를 쓴다. */
 function syl(ch){const n=ch.charCodeAt(0)-0xAC00,cho=Math.floor(n/588),jung=Math.floor(n%588/28);
-  if(jung===20&&(CHO[cho]==='ㅇ'||CHO[cho]==='ㅎ'))return {c:'이',mm:4,jung,ch,sp:CHO[cho]==='ㅇ'?'i':'hi',nohook:CHO[cho]==='ㅇ'};
+  if((jung===20||jung===19)&&(CHO[cho]==='ㅇ'||CHO[cho]==='ㅎ'))return {c:'이',mm:4,jung,ch,sp:CHO[cho]==='ㅇ'?'i':'hi',nohook:CHO[cho]==='ㅇ'};
   return {c:INIT[CHO[cho]],mm:MM[jung],jung,ch}}
 const isHook=s=>HALF.has(s.jung)&&!s.nohook;
 const compose=(c,jung)=>String.fromCharCode(0xAC00+CHO.indexOf(REV[c])*588+jung*28);
@@ -90,7 +90,7 @@ function wordSVG(word,h=90,S){
 /* 단어 경로 검사: 선이 스스로 겹치거나 닿아 고리·잎사귀 모양이 되는지 본다.
    모든 단어(새 영역에서 추가하는 단어 포함)는 목록에 넣기 전에 drawsClean(word)를 통과해야 한다.
    떨어진 구간(호 길이 8 이상 차이)의 두 점이 2.6 이내로 가까우면 겹친 것으로 본다. 반환값은 문제가 없으면 true. */
-function pathSelfTouch(d){
+function pathSelfTouch(d,lim=7){
   if(typeof document==='undefined'||!document.createElementNS)return [];
   const pts=[];let idx=0,off=0;
   for(const sub of d.split(/(?=M)/).filter(Boolean)){
@@ -105,7 +105,7 @@ function pathSelfTouch(d){
     for(let j=0;j<pts.length;j++){
       const a=pts[i],b=pts[j];if(i===j||(a[3]===b[3]&&Math.abs(b[2]-a[2])<8))continue;
       if(Math.hypot(a[0]-b[0],a[1]-b[1])<2.0){n++;break}}}
-  return n>=7?[n]:[];
+  return n>=lim?[n]:[];
 }
 const drawsClean=word=>pathSelfTouch(wordPath(word).d).length===0;
 
