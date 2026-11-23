@@ -1,5 +1,6 @@
 /* 받침 이어쓰기 영역 (교재 1장 5절 받침 이어쓰기, 6절 받침이 앞에 나올 때). 개념 id 접두어 b:.
-   ㅏ·ㅓ·ㅗ·ㅜ·ㅡ 모음과 ㅐ모음(개모음)이 붙은 받침을 다룬다. ㅑ모음(반소원 모음)이 붙은 받침과 ㄹ·ㅅ이 앞에 오는 경우는 다루지 않는다.
+   ㅏ·ㅓ·ㅗ·ㅜ·ㅡ 모음, ㅑ모음(ㅑㅕㅛㅠㅣ, 반소원 모음)과 ㅐ모음(개모음)이 붙은 받침을 다룬다. ㄹ·ㅅ이 앞에 오는 경우는 다루지 않는다.
+   ㅑ모음은 교재 5절 제목대로 ㅏ모음 규칙(「ㅏ·ㅑ 원칙」)으로 자리를 잡고 제 반소원을 정측에 단다(b:24).
    등록 형식은 src/app.js 의 "기능 확장 등록" 주석 참고. 그림은 교재 규칙에서 계산해 다시 그린 것이며 반소원·원·갈고리의 크기는 추정치다. */
 (function(){
 window.FEATURES=window.FEATURES||[];
@@ -17,7 +18,7 @@ function conceptOf(kind,par,ae){const o=ae?10:0;
   const b=+BASE[kind];return 'b:'+(b+(par?1:0)+o)}
 const CNAME={'b:1':'ㄴ받침','b:2':'ㅇ받침','b:3':'ㄹ받침: 원칙(허리에 걸치기)','b:4':'ㄹ받침: 예외(반소원)','b:5':'ㅅ받침: 원칙(꼬리에 걸치기)','b:6':'ㅅ받침: 예외(큰 반소원)','b:7':'ㅁㅂ받침','b:8':'ㄱ받침: 원칙(머리 내밀기)','b:9':'ㄱ받침: 예외(갈고리)','b:10':'받침 이어쓰기 총정리',
  'b:11':'ㅐ모음 ㄴ받침(소원)','b:12':'ㅐ모음 ㅇ받침(큰 원)','b:13':'ㅐ모음 ㄹ받침: 원칙(머리에 걸치기)','b:14':'ㅐ모음 ㄹ받침: 예외(반측 반소원)','b:15':'ㅐ모음 ㅅ받침: 원칙(허리에 붙이기)','b:16':'ㅐ모음 ㅅ받침: 예외(반측 큰 반소원)','b:17':'ㅐ모음 ㅁㅂ받침','b:18':'ㅐ모음 ㄱ받침: 원칙','b:19':'ㅐ모음 ㄱ받침: 예외(반측 갈고리)',
- 'b:20':'받침이 앞에: ㄴ·ㅇ 머리 원','b:21':'받침이 앞에: ㅁㅂ 머리 타원','b:22':'받침이 앞에: ㄱ 머리 갈고리','b:23':'ㄱ받침 곡선문자는 반대'};
+ 'b:24':'ㅑ모음 위의 받침(ㅏ모음 규칙 + 반소원)','b:20':'받침이 앞에: ㄴ·ㅇ 머리 원','b:21':'받침이 앞에: ㅁㅂ 머리 타원','b:22':'받침이 앞에: ㄱ 머리 갈고리','b:23':'ㄱ받침 곡선문자는 반대'};
 
 /* ---------- 그리기 ---------- */
 const fx=n=>n.toFixed(1);
@@ -75,8 +76,8 @@ function bPath(word){
       else if(loop==='g'){const hx=x+s[0]*5.5-v[0]*1.5,hy=y+s[1]*5.5-v[1]*1.5;d+=`L${fx(hx)} ${fx(hy)}L${fx(x)} ${fx(y)}`;pts.push([hx,hy])}
     }
     if(hook||afterHook)aeHook(it,v,a,true);
-    else if(isHook(sy)&&!sy.kind){
-      aeHook(it,v,a,false)}
+    else if(isHook(sy)){
+      aeHook(it,v,a,false)}   /* ㅑ모음: 받침이 붙어도 ㅏ모음 규칙으로 자리를 잡은 뒤 제 반소원을 정측에 단다(교재 5절 「ㅏ·ㅑ 원칙」) */
     const sx=x,sy0=y,x1=x+v[0]*L,y1=y+v[1]*L,kk=it.b*L*0.44,cx=(x+x1)/2+Math.sin(a)*kk,cy=(y+y1)/2+Math.cos(a)*kk;
     d+=it.b?`Q${fx(cx)} ${fx(cy)} ${fx(x1)} ${fx(y1)}`:`L${fx(x1)} ${fx(y1)}`;
     pts.push([x1,y1],[0.25*x+0.5*cx+0.25*x1,0.25*y+0.5*cy+0.25*y1]);
@@ -105,8 +106,8 @@ const BWORDS=['하룻밤','마룻바닥','모든','그간','시간','차분한',
  /* ㅐ모음 */'고된','사관','주된','나뇐','이권','고관','가관','교황','로댕','비행장','투쟁','고갱','호황','후생','보낼','사활','부활','대궐','초과될','하겠다','오랬다','노랫말','어쨌든','헤맸다','되겠다','보냄','도마뱀','스냅','보탬','대책','시책','수확','구획','어획','주객','가객','고객','과객','개국',
  /* 받침이 앞에 올 때 */'간장','강당','건강','감자','각도','남자','당근','반도','상자','장갑','박수'];
 const okB=w=>[...w].every((ch,i)=>{const n=ch.charCodeAt(0)-0xAC00;if(n<0||n>=11172)return false;const s=BSYL(ch);if(!s.c)return false;const j=Math.floor(n%588/28),jg=n%28;
-  if(jg===0){if(s.ae)return i===0&&s.c!=='아';return OKF.has(j)}
-  if(!(jg in JK))return false;if(s.ae&&s.c==='아')return false;if(!(BOK.has(j)||s.ae))return false;
+  if(jg===0){if(s.ae)return s.c!=='아';return OKF.has(j)}
+  if(!(jg in JK))return false;if(s.ae&&s.c==='아')return false;if(!(BOK.has(j)||s.ae||HALF.has(j)))return false;
   if(i===0)return HEADK.has(JK[jg]);return true});
 const hasB=w=>[...w].some(ch=>(ch.charCodeAt(0)-0xAC00)%28);
 /* 원(소원·큰 원·머리 원)은 스스로 닿는 모양이 규칙이라 겹침 검사(drawsClean)에서 뺀다. 그 밖의 단어는 검사를 통과해야 한다. */
@@ -114,7 +115,9 @@ const hasLoop=w=>[...w].some((ch,i)=>{const s=BSYL(ch);return s.kind&&((i===0)||
 /* 교재 그림이 있는 단어(보기·응용)는 겹침 검사를 면제한다. 나머지 실제 단어는 검사를 통과해야 한다. */
 const TB=new Set('모든 그간 시간 차분한 노동 고궁 고향 고충 차창 그들 수출 소홀 추출 도달 그걸 고갈 두돌 차출 가감 고급 소감 차츰 보람 가각 고국 도둑 차축 고독 다목적 호박죽 고된 사관 주된 나뇐 이권 고관 가관 교황 로댕 비행장 투쟁 고갱 호황 후생 보낼 사활 부활 대궐 초과될 하겠다 오랬다 노랫말 어쨌든 헤맸다 되겠다 보냄 도마뱀 스냅 보탬 대책 시책 수확 구획 어획 주객 가객 고객 과객 개국'.split(' '));
 /* ㅅ받침 원칙은 앞 글자 꼬리에 걸쳐 쓰므로 한 곳에서 선이 만나는 것이 규칙이다(그 외 겹침은 계속 막는다) */
-const touchOk=w=>{const n=pathSelfTouch(bPath(w).d).length;return n===0||(n<=2&&bKcs(w).includes('b:5'))};
+/* ㅑ모음 받침 글자는 제 반소원이 앞 선 곁에 붙는 것이 교재 그림에서도 정상이라, 작게 닿는 것(닿은 점 30개 이하)은 허용한다 */
+const hasHalfB=w=>[...w].some((ch,i)=>{const s=BSYL(ch);return s.kind&&i>0&&isHook(s)&&!s.sp});
+const touchOk=w=>{const t=pathSelfTouch(bPath(w).d),n=t.length;return n===0||(n<=2&&bKcs(w).includes('b:5'))||(hasHalfB(w)&&t[0]<=30)};
 const BW0=BWORDS.filter(okB).filter(w=>hasB(w)&&(TB.has(w)||hasLoop(w)||typeof pathSelfTouch!=='function'||touchOk(w)));
 /* 교재에서 모은 단어(BOOKCAND)는 받침 규칙으로 그릴 수 있고 선이 겹치지 않을 때만 쓴다(원 모양은 규칙이라 예외) */
 /* 특별문자(이·히)에 받침을 붙이는 방법은 확인하지 못해 제외한다 */
@@ -127,6 +130,7 @@ function bKcs(w){const set=new Set(),cs=[...w].map(BSYL);if(hasDD(w))set.add('r:
   cs.forEach((s,i)=>{set.add('c:'+s.c);if(s.ae){set.add('e:'+s.mm);set.add('e:hook')}else if(s.mm>4)set.add('v:'+s.mm);if(isHook(s)&&!s.sp)set.add('r:3');
     if(s.kind&&i===0){set.add(s.kind==='m'?'b:21':s.kind==='g'?'b:22':'b:20');if(s.kind==='g'&&grp(s.c).b)set.add('b:23')}
     else if(s.kind){const pg=grp(cs[i-1].c).g,par=pg.id===grp(s.c).g.id;set.add(conceptOf(s.kind,par,s.ae))}
+    if(s.kind&&!s.ae&&isHook(s)&&!s.sp)set.add('b:24');
     else if(i>0&&!cs[i-1].kind&&needsOffset(cs[i-1],s))set.add('r:11')});
   return [...set]}
 const bWhy=w=>{const cs=[...w].map(BSYL);const parts=[];
@@ -153,7 +157,7 @@ const INTRO={
  'b:7':()=>({prompt:demo('m',false),text:`<b>ㅁ·ㅂ받침</b><br>받침을 따로 그리지 않고 <b>자기 글자 그대로</b>, 앞 글자 끝에서 <b>살짝 띄어</b> 씁니다. 예외가 없어요. 띄어 쓴 글자의 모음은 반소원이 있나 없나로 확인합니다. 예) 가감, 고급, 보람<br><small>ㅁ과 ㅂ은 모양이 같아요.</small>`}),
  'b:8':()=>({prompt:demo('g',false),text:`<b>ㄱ받침 원칙</b><br>앞 글자 끝에서, 이어 쓸 글자의 <b>머리를 살짝 내밀어</b> 시작합니다. 예) 호박죽, 다목적, 고독`}),
  'b:9':()=>({prompt:demo('g',true),text:`<b>ㄱ받침 예외</b><br>앞 글자와 같은 방향이라 머리를 내밀기 어려우면, 앞 글자 끝에서 <b>날카로운 갈고리(Z 모양)</b>를 만들며 제 글자를 씁니다. 예) 가각, 고국, 도둑, 차축${NOTE}`}),
- 'b:10':()=>({prompt:`<div class="txt"><b>받침 이어쓰기 판별 순서</b></div>`,text:`<b>받침 이어쓰기 총정리</b><br>① 받침이 어느 군인가: ㄴ · ㅇ · ㄹ · ㅅ · ㅁㅂ · ㄱ<br>② 모음이 ㅏ모음인가 ㅐ모음인가 (반소원이 없으면 ㅏ모음, 정측에 있으면 ㅑ모음, 반측에 있으면 ㅐ모음)<br>③ 앞 글자와 <b>같은 방향</b>이라 이어쓰기가 어려운가(예외)<br>ㅏ모음: ㄴ 끝에서 안쪽 1mm · ㅇ 허리 · ㄹ 허리에 걸침 · ㅅ 꼬리에 걸침 · ㅁㅂ 끝에서 살짝 띄움 · ㄱ 머리 내밀기<br>ㅐ모음: ㄴ 작은 원 · ㅇ 큰 원 · ㄹ 머리에 걸침 · ㅅ 허리에 붙임 · ㅁㅂ ㅏ모음과 같음 · ㄱ ㅏ모음과 같음<br>예외는 ㄹ·ㅅ·ㄱ 셋뿐입니다.<br><small>ㅑ모음(반소원 모음)이 붙은 받침은 이 연습에서 다루지 않습니다.</small>`}),
+ 'b:10':()=>({prompt:`<div class="txt"><b>받침 이어쓰기 판별 순서</b></div>`,text:`<b>받침 이어쓰기 총정리</b><br>① 받침이 어느 군인가: ㄴ · ㅇ · ㄹ · ㅅ · ㅁㅂ · ㄱ<br>② 모음이 ㅏ모음인가 ㅐ모음인가 (반소원이 없으면 ㅏ모음, 정측에 있으면 ㅑ모음, 반측에 있으면 ㅐ모음)<br>③ 앞 글자와 <b>같은 방향</b>이라 이어쓰기가 어려운가(예외)<br>ㅏ모음: ㄴ 끝에서 안쪽 1mm · ㅇ 허리 · ㄹ 허리에 걸침 · ㅅ 꼬리에 걸침 · ㅁㅂ 끝에서 살짝 띄움 · ㄱ 머리 내밀기<br>ㅐ모음: ㄴ 작은 원 · ㅇ 큰 원 · ㄹ 머리에 걸침 · ㅅ 허리에 붙임 · ㅁㅂ ㅏ모음과 같음 · ㄱ ㅏ모음과 같음<br>예외는 ㄹ·ㅅ·ㄱ 셋뿐입니다.<br>ㅑ모음(반소원 모음) 위의 받침은 ㅏ모음과 같은 규칙입니다.`}),
  'b:11':()=>({prompt:demo('n',false,true),text:`<b>ㅐ모음 ㄴ받침</b><br>앞 글자 끝에서 <b>작은 원(소원)</b>을 그리며 그 글자의 방향·길이대로 씁니다. 원이 반소원 자리를 대신하므로 반소원은 따로 붙이지 않아요. 예) 고된, 사관, 주된${NOTE}`}),
  'b:12':()=>({prompt:demo('ng',false,true),text:`<b>ㅐ모음 ㅇ받침</b><br>앞 글자 끝에서 ㄴ받침의 <b>2배 이상 큰 원</b>을 그리며 씁니다. 작은 원이면 ㄴ, 큰 원이면 ㅇ이에요. 예) 교황, 로댕, 비행장${NOTE}`}),
  'b:13':()=>({prompt:demo('l',false,true),text:`<b>ㅐ모음 ㄹ받침 원칙</b><br>앞 글자의 <b>머리(시작 쪽)</b>에 걸쳐 씁니다. ㅏ모음은 허리에 걸치는 것과 달라요. 예) 보낼, 사활, 부활`}),
@@ -163,6 +167,7 @@ const INTRO={
  'b:17':()=>({prompt:demo('m',false,true),text:`<b>ㅐ모음 ㅁㅂ받침</b><br>ㅏ모음과 같이 자기 글자 그대로 앞 글자 끝에서 <b>살짝 띄어</b> 씁니다. 띄어 쓴 글자에 <b>반측 반소원</b>이 있으면 ㅐ모음이에요. 예) 보냄, 도마뱀, 스냅`}),
  'b:18':()=>({prompt:demo('g',false,true),text:`<b>ㅐ모음 ㄱ받침 원칙</b><br>ㅏ모음과 같이 앞 글자 끝에서 이어 쓸 글자의 <b>머리를 내밀어</b> 씁니다. 글자의 모음 표시(반측 반소원)는 그대로 합니다. 예) 대책, 시책, 수확, 주객`}),
  'b:19':()=>({prompt:demo('g',true,true),text:`<b>ㅐ모음 ㄱ받침 예외</b><br>같은 방향이면 앞 글자 끝에서 <b>반측</b>에 날카로운 갈고리를 만들며 씁니다. ㅏ모음은 정측, ㅐ모음은 반측이에요. 예) 가객, 고객, 과객${NOTE}`}),
+ 'b:24':()=>({prompt:`<span style="display:flex;gap:14px;align-items:flex-end">${['n','ng','m'].map(k=>`<span style="text-align:center">${bSVG('구'+mk('ㄷ',12,KJ[k]),0,2.4)}<small>${KNAME[k]}</small></span>`).join('')}</span>`,text:`<b>ㅑ모음 위의 받침</b><br>교재는 「ㅏ·ㅑ 모음」을 한 묶음으로 다룹니다. 받침 자리 규칙은 ㅏ모음과 똑같이 정하고(ㄴ 끝에서 안쪽, ㅇ 허리, ㅁㅂ 끝에서 살짝 띄움, ㄹ 허리에 걸침, ㅅ 꼬리에 걸침, ㄱ 머리 내밀기), 그 자리에서 글자의 <b>반소원을 정측에 달고</b> 제 방향·길이대로 씁니다. 받침이 맨 앞이면 머리 원 안쪽에 반소원이 이어집니다. 예) 자연, 과열, 지녔던${NOTE}`}),
  'b:20':()=>({prompt:`<span style="display:flex;gap:14px;align-items:flex-end"><span style="text-align:center">${hd('n',false)}<small>ㄴ</small></span><span style="text-align:center">${hd('ng',false)}<small>ㅇ</small></span></span>`,text:`<b>받침이 맨 앞에 올 때: ㄴ·ㅇ</b><br>앞 글자가 없으면 받침을 <b>글자의 머리에 원</b>으로 붙입니다. <b>ㄴ은 아주 작은 원(극소원), ㅇ은 ㄴ보다 2배 이상 큰 원</b>이에요. ㅏ모음은 정측, ㅐ모음은 반측에 붙입니다. 예) 간장, 강당${NOTE}`}),
  'b:21':()=>({prompt:`<span style="text-align:center">${hd('m',false)}</span>`,text:`<b>받침이 맨 앞에 올 때: ㅁㅂ</b><br>글자의 머리에 <b>머리카락이 달린 긴 타원</b>을 붙입니다. 예) 감자, 남자, 상자<br><small>ㅁ과 ㅂ은 같은 모양이지만 발음이 달라 따로 연습합니다.</small>${NOTE}`}),
  'b:22':()=>({prompt:`<span style="text-align:center">${hd('g',false)}</span>`,text:`<b>받침이 맨 앞에 올 때: ㄱ</b><br>글자의 머리에 <b>날카로운 갈고리</b>를 붙입니다. 예) 각도, 박수${NOTE}`}),
@@ -200,7 +205,7 @@ function bwBuild(t,w,id){
   const bx=ws.map(bBox),sc=Math.min(RS(),150/Math.max(...bx.map(b=>b.w)),80/Math.max(...bx.map(b=>b.h)));
   return {id,prompt:`<span class="big" style="font-size:48px">${w}</span>`,q:`「${w}」을(를) 이어 쓴 모양을 고르세요`,opts:ws.map(x=>({k:x,h:bSVG(x,0,sc)})),ans:w,why};
 }
-const CURR=['b:1','b:2','b:7','b:3','b:4','b:8','b:9','b:5','b:6','b:11','b:12','b:17','b:13','b:14','b:18','b:19','b:15','b:16','b:10','b:20','b:21','b:22','b:23'];
+const CURR=['b:1','b:2','b:7','b:3','b:4','b:8','b:9','b:5','b:6','b:11','b:12','b:17','b:13','b:14','b:18','b:19','b:15','b:16','b:10','b:20','b:21','b:22','b:23','b:24'];
 const BJKEYS=Object.keys(BJINFO).map(c=>c.slice(2));
 const BHKEYS=[];['n','ng','m','g'].forEach(k=>[0,1].forEach(e=>BHKEYS.push(k+'|'+e)));
 const types={
@@ -216,7 +221,7 @@ const questions={};BJKEYS.forEach(k=>questions['b:'+k]=()=>['bj:'+k,'bk:'+k]);
 questions['b:20']=()=>['bh:n|0','bh:n|1','bh:ng|0','bh:ng|1'];
 questions['b:21']=()=>['bh:m|0','bh:m|1'];
 questions['b:22']=()=>['bh:g|0','bh:g|1'];
-window.FEATURES.push({name:'batchim',curr:CURR,info:['b:10','b:23'],names:CNAME,intro,questions,types,
+window.FEATURES.push({name:'batchim',curr:CURR,info:['b:10','b:23','b:24'],names:CNAME,intro,questions,types,
   section:{title:'받침 이어쓰기',kcs:CURR},
   wordKcs:()=>{}});
 window.BATCHIM={bPath,bSVG,BW,bKcs,demoWord,headWord};
