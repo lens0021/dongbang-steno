@@ -81,7 +81,7 @@ function bPath(word){
     if(hook||afterHook)aeHook(it,v,a,true);
     else if(isHook(sy)){
       aeHook(it,v,a,false)}   /* ㅑ모음: 받침이 붙어도 ㅏ모음 규칙으로 자리를 잡은 뒤 제 반소원을 정측에 단다(교재 5절 「ㅏ·ㅑ 원칙」) */
-    const sx=x,sy0=y,x1=x+v[0]*L,y1=y+v[1]*L,kk=it.b*L*0.44,cx=(x+x1)/2+Math.sin(a)*kk,cy=(y+y1)/2+Math.cos(a)*kk;
+    const sx=x,sy0=y,x1=x+v[0]*L,y1=y+v[1]*L,kk=it.b*L*WCURVE,cx=(x+x1)/2+Math.sin(a)*kk,cy=(y+y1)/2+Math.cos(a)*kk;
     d+=it.b?`Q${fx(cx)} ${fx(cy)} ${fx(x1)} ${fx(y1)}`:`L${fx(x1)} ${fx(y1)}`;
     pts.push([x1,y1],[0.25*x+0.5*cx+0.25*x1,0.25*y+0.5*cy+0.25*y1]);
     ps={g,x0:sx,y0:sy0,x1,y1,mid:it.b?[.25*sx+.5*cx+.25*x1,.25*sy0+.5*cy+.25*y1]:[(sx+x1)/2,(sy0+y1)/2]};

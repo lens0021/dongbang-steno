@@ -60,6 +60,8 @@ function needsOffset(prev,cur){if(!prev)return false;const a=ALL.find(x=>x.c===p
 /* 직선의 정측(위·왼쪽) 법선. 교재 27쪽 도해: 수평은 위, 그 밖은 왼쪽 (45° 기준 ↘는 왼쪽 아래) */
 function jeong(a){const r=a*Math.PI/180;let nx=Math.sin(r),ny=Math.cos(r);if(Math.abs(nx)<1e-6)return [0,-1];return nx>0?[-nx,-ny]:[nx,ny]}
 const wordOffsets=w=>[...w].map((ch,i,arr)=>i>0&&needsOffset(syl(arr[i-1]),syl(ch)));
+/* 단어 안의 곡선문자 휨. 베지어 제어점 거리(글자 길이 대비)이며 실제 처짐(깊이)은 이 값의 절반이다. 교재 11쪽 원형 도해는 깊이 약 20%지만, 단어 그림(77쪽 이웃사촌이 등)의 곡선은 깊이 7~10%로 훨씬 얕다. 깊게 그리면 뒤따르는 사·ㅅ받침 선과 겹쳐 교재에 없는 잎사귀 모양이 생긴다. */
+const WCURVE=0.2;
 function wordPath(word){
   let x=0,y=0,pts=[[0,0]],d='M0 0',prev=null;
   for(const ch of word){const sy=syl(ch),it=ALL.find(a=>a.c===sy.c),g=it.g,v=DIR[g.id],L=LEN[sy.mm];
@@ -72,7 +74,7 @@ function wordPath(word){
       if(!it.b){nx=Math.sin(a);ny=Math.cos(a);if(nx+ny>0){nx=-nx;ny=-ny}}
       const D=4,ex=x-nx*D,ey=y-ny*D,bx=-v[0],by=-v[1],dx=-nx,dy=-ny,sweep=(dx*by-dy*bx)<0?1:0;
       d+=`A${D/2} ${D/2} 0 0 ${sweep} ${ex.toFixed(1)} ${ey.toFixed(1)}`;pts.push([ex,ey],[(x+ex)/2+bx*D/2,(y+ey)/2+by*D/2]);x=ex;y=ey}
-    const x1=x+v[0]*L,y1=y+v[1]*L,k=it.b*L*0.44,cx=(x+x1)/2+Math.sin(a)*k,cy=(y+y1)/2+Math.cos(a)*k;
+    const x1=x+v[0]*L,y1=y+v[1]*L,k=it.b*L*WCURVE,cx=(x+x1)/2+Math.sin(a)*k,cy=(y+y1)/2+Math.cos(a)*k;
     d+=it.b?`Q${cx.toFixed(1)} ${cy.toFixed(1)} ${x1.toFixed(1)} ${y1.toFixed(1)}`:`L${x1.toFixed(1)} ${y1.toFixed(1)}`;
     pts.push([x1,y1],[0.25*x+0.5*cx+0.25*x1,0.25*y+0.5*cy+0.25*y1]);x=x1;y=y1;prev=sy}
   return {d,pts};
