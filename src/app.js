@@ -250,7 +250,6 @@ function home(){
    <p class="sub">책 17·18쪽 단어 중 필요한 문자를 모두 익힌 것만 문제로 나옵니다. 배운 글자로 만든 연습 단어(예: 가가)도 나와요.</p>
    <button class="link" data-show="w:1" style="margin:6px 0 0">이어쓰기 설명 보기</button><div class="chips">${wUnlocked.slice(0,8).map(w=>`<span class="chip">${w}</span>`).join('')||'<span class="sub">아직 열린 단어가 없어요.</span>'}${wUnlocked.length>8?`<span class="chip mute">+${wUnlocked.length-8}</span>`:''}</div>
    ${hint.length?`<p class="sub" style="margin-top:10px">다음에 열릴 단어: ${hint.map(h=>`<b>${h.w}</b> (${h.need.map(kcName).join(', ')} 필요)`).join(' · ')}</p>`:''}</div>
-  <button class="unit" id="galb" style="margin:14px 0"><span class="badge" style="font-size:18px">✎</span><span><b>속기 단어 그림 보기</b><span>교재 단어의 이어쓰기 모양만 모아 봅니다.</span></span></button>
   <details class="card"><summary><b>쓰기 규칙</b> <small>${rules.filter(learned).length}/${rules.length} 익힘</small></summary>
    <div style="margin-top:8px">${rules.map(k=>`<button class="rr" data-show="${k}"><span>${kcName(k)}</span>${seen(k)?(INFO.has(k)?'<small>✓ 읽음</small>':dots(strength(k))):'<small>아직 안 읽음</small>'}</button>`).join('')}</div></details>
   ${FEATURES.filter(f=>f.section).map(f=>`<details class="card"><summary><b>${f.section.title}</b> <small>${f.section.kcs.filter(learned).length}/${f.section.kcs.length} 익힘</small></summary><div style="margin-top:8px">${f.section.kcs.map(k=>`<button class="rr" data-show="${k}"><span>${kcName(k)}</span>${seen(k)?(INFO.has(k)?'<small>✓ 읽음</small>':dots(strength(k))):'<small>아직 안 배움</small>'}</button>`).join('')}</div></details>`).join('')}
@@ -265,7 +264,6 @@ function home(){
    const ap=v=>{setPxmm(v);const w=bar.parentElement.clientWidth||300,mm=54*v<=w?54:27;bar.style.width=(mm*v).toFixed(0)+'px';cr.textContent=mm===54?'카드 짧은 변(54mm)':'카드 짧은 변의 절반(27mm)';cv.textContent=mm+'mm';sm.textContent=v.toFixed(2)+'px = 1mm'};
    sl.oninput=()=>ap(+sl.value);app.querySelector('#calib').addEventListener('toggle',()=>ap(PXMM));
    app.querySelector('#calreset').onclick=()=>{try{localStorage.removeItem('dongbang-pxmm')}catch(e){}PXMM=DEFAULT_PXMM;sl.value=PXMM;ap(PXMM)}}
-  app.querySelector('#galb').onclick=gallery;
   app.querySelectorAll('.tl').forEach(b=>b.onclick=()=>showConcept(b.dataset.kc));
   app.querySelectorAll('[data-show]').forEach(b=>b.onclick=()=>showConcept(b.dataset.show));
   window.scrollTo(0,0);
@@ -276,15 +274,6 @@ function showConcept(kc){
   app.innerHTML=`${topbar('<button class="x" id="back" aria-label="돌아가기">←</button>')}<div class="q"><h2>${kcName(kc)}</h2><div class="prompt">${q.prompt}</div><div class="introtx">${q.text}</div>${GLOSS(q.text,1)}</div><div class="fb"><div class="in"><button class="go" id="go">${sn?'이 개념 연습하기':'배우기'}</button></div></div>`;
   app.querySelector('#back').onclick=home;
   app.querySelector('#go').onclick=()=>start(kc==='w:1'?undefined:kc);
-  window.scrollTo(0,0);
-}
-const GALLERY=['아라','라아','가라고','나가보라','다가서다','라오스'];
-function gallery(){
-  try{history.replaceState(null,'','#gallery')}catch(e){}
-  app.innerHTML=`${topbar('<button class="x" id="back" aria-label="돌아가기">←</button><b>속기 단어 그림</b>')}
-  <p class="sub" style="margin:14px 0">교재 18쪽 단어를 같은 규칙(글자별 방향, 모음 길이 1 : 2 : 4, 반소원, 들여 쓰기)으로 그렸습니다. 그림은 모두 같은 배율이에요.</p>
-  <div class="gal">${GALLERY.map(w=>`<div class="gc"><b>${w}</b><div class="gi2">${wordSVG(w,0,3)}</div></div>`).join('')}</div>`;
-  app.querySelector('#back').onclick=()=>{try{history.replaceState(null,'',location.pathname)}catch(e){}home()};
   window.scrollTo(0,0);
 }
 let R=null;
@@ -357,5 +346,5 @@ function finish(win){
   window.scrollTo(0,0);
 }
 window.claude?.hot?.snapshot(()=>({R,S}));
-function boot(d){if(location.hash==='#gallery')return gallery();if(d&&d.S)S=d.S;if(d&&d.R&&d.R.qs&&d.R.qs[d.R.i]){R=d.R;render()}else home()}
+function boot(d){if(d&&d.S)S=d.S;if(d&&d.R&&d.R.qs&&d.R.qs[d.R.i]){R=d.R;render()}else home()}
 window.claude?.hot?.ready?window.claude.hot.ready(boot):boot(window.claude?.hot?.data);
