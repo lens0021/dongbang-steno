@@ -273,7 +273,7 @@ function home(){
 
 function showConcept(kc){
   const q=introQ(kc),sn=seen(kc);
-  app.innerHTML=`${topbar('<button class="x" id="back" aria-label="돌아가기">←</button>')}<div class="q"><h2>${kcName(kc)}</h2><div class="prompt">${q.prompt}</div><div class="introtx">${q.text}</div></div><div class="fb"><div class="in"><button class="go" id="go">${sn?'이 개념 연습하기':'배우기'}</button></div></div>`;
+  app.innerHTML=`${topbar('<button class="x" id="back" aria-label="돌아가기">←</button>')}<div class="q"><h2>${kcName(kc)}</h2><div class="prompt">${q.prompt}</div><div class="introtx">${q.text}</div>${GLOSS(q.text,1)}</div><div class="fb"><div class="in"><button class="go" id="go">${sn?'이 개념 연습하기':'배우기'}</button></div></div>`;
   app.querySelector('#back').onclick=home;
   app.querySelector('#go').onclick=()=>start(kc==='w:1'?undefined:kc);
   window.scrollTo(0,0);
@@ -301,13 +301,13 @@ function render(){
   const pct=R.total?R.step/R.total*100:0;
   const head='<div class="top"><button class="x" id="quit" aria-label="나가기">×</button><div class="bar"><i style="width:'+pct+'%"></i></div><span class="stat">'+ICON.heart+R.hearts+'</span></div>';
   if(q.intro){
-    app.innerHTML=`${head}<div class="q"><h2>${q.q}</h2><div class="prompt">${q.prompt}</div><div class="introtx">${q.text}</div></div><div class="fb"><div class="in"><button class="go" id="go">알겠어요</button></div></div>`;
+    app.innerHTML=`${head}<div class="q"><h2>${q.q}</h2><div class="prompt">${q.prompt}</div><div class="introtx">${q.text}</div>${GLOSS(q.text,1)}</div><div class="fb"><div class="in"><button class="go" id="go">알겠어요</button></div></div>`;
     app.querySelector('#quit').onclick=home;
     app.querySelector('#go').onclick=()=>{markSeen(q.kc);save();R.i++;render()};
     window.scrollTo(0,0);return;
   }
   app.innerHTML=`${head}
-  <div class="q"><h2>${q.q}</h2><div class="prompt">${q.prompt}</div>${q.ref||''}
+  <div class="q"><h2>${q.q}</h2><div class="prompt">${q.prompt}</div>${q.ref||''}${GLOSS(q.q)}
   <div class="opts ${q.one?'one':''}">${q.opts.map((o,i)=>`<button class="opt" data-i="${i}">${o.h}</button>`).join('')}</div></div>
   <div class="fb" id="fb"><div class="in"><button class="go" id="go" disabled>확인</button></div></div>`;
   R.sel=null;R.checked=false;
@@ -335,7 +335,7 @@ function check(){
   if(ok){R.right++;if(first){R.xp+=10}R.step++}
   else{R.hearts--;if(first){q.retried=true;R.qs.push({...q,opts:shuf(q.opts)});R.total++}R.step++}
   fb.className='fb '+(ok?'good':'bad');
-  fb.innerHTML=`<div class="in"><div class="msg">${ok?'정답입니다!'+(first?' +10 XP':''):'아쉬워요. 다시 나올 거예요.'}<div class="why">${q.why}</div></div><button class="go" id="go">계속하기</button></div>`;
+  fb.innerHTML=`<div class="in"><div class="msg">${ok?'정답입니다!'+(first?' +10 XP':''):'아쉬워요. 다시 나올 거예요.'}<div class="why">${q.why}</div>${ok?'':GLOSS(q.q+' '+q.why)}</div><button class="go" id="go">계속하기</button></div>`;
   app.querySelector('#go').onclick=next;
   app.querySelector('.bar i').style.width=(R.step/R.total*100)+'%';
   app.querySelector('.stat').innerHTML=ICON.heart+R.hearts;
