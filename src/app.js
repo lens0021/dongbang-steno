@@ -20,7 +20,7 @@ const lenRef=mm=>`<div class="lenref" aria-hidden="true"><small>실제 길이 �
 const lenNote=mm=>` <small class="lennote">(모든 보기는 ${mm}mm)</small>`;
 const featType=t=>{for(const f of FEATURES){if(f.types&&f.types[t])return f.types[t]}};
 const DD={'까':'가','따':'다','빠':'바','싸':'사','짜':'자'};
-const RNAME={11:'이어쓰기가 곤란할 때',3:'반소원(ㅑ계열)',4:'ㅑㅕ·ㅛㅠ 길이',5:'된소리',6:'이어쓰기',7:'정측·반측',8:'연습 방법',9:'획순',10:'창안자·연도',12:'각도는 재량이 있다',13:'ㅏ와 ㅓ, ㅗ와 ㅜ 구별'};
+const RNAME={11:'이어쓰기가 곤란할 때',3:'반소원(ㅑ모음)',4:'ㅑㅕ·ㅛㅠ 길이',5:'된소리',6:'이어쓰기',7:'정측·반측',8:'연습 방법',9:'획순',10:'창안자·연도',12:'각도는 재량이 있다',13:'ㅏ와 ㅓ, ㅗ와 ㅜ 구별'};
 const VNAME={4:'ㅏㅓ 4mm',8:'ㅗㅜ 8mm',16:'ㅡㅣ 16mm'};
 const kcName=k=>{const fn=FEATURES.find(f=>f.names&&f.names[k]);if(fn)return fn.names[k];const [t,v]=k.split(':');return t==='w'?'이어쓰기 단어':t==='c'?v:t==='v'?VNAME[v]:RNAME[v]};
 const LEARNED=3;

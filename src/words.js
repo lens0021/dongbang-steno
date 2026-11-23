@@ -6,5 +6,5 @@ const okWord=w=>[...w].every(ch=>{const n=ch.charCodeAt(0)-0xAC00;return n>=0&&n
 /* 교재에 그림이 있는 단어(WORDS)는 그대로 쓰고, 그 밖의 단어는 선이 겹쳐 고리·잎사귀가 되지 않는 것만 쓴다(drawsClean). 새 단어를 더하는 곳은 모두 같은 검사를 거친다. */
 (window.WORDCHECK=window.WORDCHECK||{}).basic=w=>okWord(w)&&drawsClean(w);
 const ALLW=[...new Set([...WORDS,...DICT,...(typeof BOOKCAND!=='undefined'?BOOKCAND:[])])].filter(okWord).filter(w=>WORDS.includes(w)||drawsClean(w));
-const wordWhy=w=>w+' = '+[...w].map(ch=>{const s=syl(ch);const g=ALL.find(a=>a.c===s.c).g;return s.sp?`${ch}(특별문자 ${s.sp==='hi'?'세로선+반소원':'세로선'} 4mm)`:`${ch}(${s.c} ${DIR[g.id][2]} ${s.mm}mm)`}).join(' + ')+(wordOffsets(w).some(Boolean)?'. 같은 방향의 곧은 선이 이어져서 뒤 글자를 정측으로 조금 들어가 띄어 씁니다.':'')+([...w].some(ch=>syl(ch).sp)?' 이(의)·히(희)는 ㅣ 계열의 예외로, 교재 19쪽의 4mm 특별문자를 씁니다.':'')+([...w].some(ch=>{const s=syl(ch);return isHook(s)&&!s.sp})?' ㅣ·ㅑ·ㅕ·ㅛ·ㅠ는 시작할 때 정측에 반소원을 붙입니다.':'');
+const wordWhy=w=>w+' = '+[...w].map(ch=>{const s=syl(ch);const g=ALL.find(a=>a.c===s.c).g;return s.sp?`${ch}(특별문자 ${s.sp==='hi'?'세로선+반소원':'세로선'} 4mm)`:`${ch}(${s.c} ${DIR[g.id][2]} ${s.mm}mm)`}).join(' + ')+(wordOffsets(w).some(Boolean)?'. 같은 방향의 곧은 선이 이어져서 뒤 글자를 정측으로 조금 들어가 띄어 씁니다.':'')+([...w].some(ch=>syl(ch).sp)?' 이(의)·히(희)는 ㅣ의 예외로, 교재 19쪽의 4mm 특별문자를 씁니다.':'')+([...w].some(ch=>{const s=syl(ch);return isHook(s)&&!s.sp})?' ㅣ·ㅑ·ㅕ·ㅛ·ㅠ는 시작할 때 정측에 반소원을 붙입니다.':'');
 

@@ -107,14 +107,14 @@ const F={name:'ㅐ모음',
     build:(k,id)=>{const c=syl(k).c,L=4,o=shuf(CONS.filter(x=>x!==c&&grp(x).g!==grp(c).g))[0];
       const opts=shuf([{k:'ok',h:glyph(c,L,'ae')},{k:'x1',h:glyph(c,L,'hook')},{k:'x2',h:glyph(c,L,'plain')},{k:'x3',h:glyph(o,L,'ae')}]);
       return {id,prompt:`<span class="big">${k}</span>`,q:`「${k}」에 해당하는 모양을 고르세요${lenNote(L)}`,opts,ans:'ok',
-        why:`${k}은(는) ${c} 문자에 모음 ㅐ(4mm)를 쓰고, 시작할 때 <b>반측</b>에 반소원을 붙입니다. 정측에 붙이면 ㅑㅕ 계열이에요.`}}},
+        why:`${k}은(는) ${c} 문자에 모음 ㅐ(4mm)를 쓰고, 시작할 때 <b>반측</b>에 반소원을 붙입니다. 정측에 붙이면 ㅑㅕ 모음이에요.`}}},
   /* 길이 고르기: 4·8·16mm 중 글자의 모음 길이에 맞는 모양 */
   elen:{kcs:(k)=>{const j=syl(k).jung;return ['c:'+syl(k).c,'e:hook',KC[AEMM[j]],'r:3']},
     ids:()=>letters([1,9,11,14,16]).map(l=>'elen:'+l),
     build:(k,id)=>{const s=syl(k),mm=AEMM[s.jung],c=s.c;
       const opts=shuf([4,8,16].map(m=>({k:m,h:glyph(c,m,'ae',1.6)})).concat([{k:'h',h:glyph(c,mm,'hook',1.6)}]));
       return {id,prompt:`<span class="big">${k}</span>`,q:`「${k}」에 해당하는 모양을 고르세요`,opts,ans:mm,
-        why:`${k}의 모음 ${mmName[mm]}는 ${mm}mm이고 반측에 반소원을 붙입니다. 정측에 붙인 모양은 ㅑㅕㅛㅠㅣ 계열이에요.`}}},
+        why:`${k}의 모음 ${mmName[mm]}는 ${mm}mm이고 반측에 반소원을 붙입니다. 정측에 붙인 모양은 ㅑ모음이에요.`}}},
   /* 모양 → 글자 */
   esym:{kcs:(k)=>{const j=syl(k).jung;return ['c:'+syl(k).c,'e:hook',KC[AEMM[j]],'r:3']},
     ids:()=>letters([1,5,9,11,14,16]).map(l=>'esym:'+l),
