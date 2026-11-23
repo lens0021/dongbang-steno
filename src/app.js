@@ -38,7 +38,7 @@ function kcsOf(id){const [t,key]=id.split(':');const ft=featType(t);if(ft)return
   if(t==='dd')return ['r:5','c:'+DD[key]];
   if(t==='ddd')return ['r:5','r:7','c:'+DD[key]];
   if(t==='sym'||t==='pick')return ['c:'+key];
-  if(t==='len')return ['v:'+key];
+  if(t==='len'||t==='lenv')return ['v:'+key];
   if(t==='txt')return [+key<3?'v:'+[4,8,16][+key]:'r:'+key];
   return wordKcs(key);}
 const today=()=>new Date().toISOString().slice(0,10);
@@ -60,6 +60,10 @@ function mutants(word,n=3){
 }
 function itemQ0(id){{const ft=featType(id.split(':')[0]);if(ft)return ft.build(id.split(':')[1],id)}
   const [t,key]=id.split(':');
+  if(t==='lenv'){const mm=+key,VN={4:'ㅏ·ㅓ',8:'ㅗ·ㅜ',16:'ㅡ(으)'},ref=shuf([4,8,16].filter(m=>m!==mm))[0];
+    const bar=m=>`<span style="display:block;width:${mmPx(m).toFixed(0)}px;height:4px;border-radius:3px;background:var(--stroke)"></span>`;
+    const prompt=`<span style="display:flex;flex-direction:column;align-items:center;gap:8px"><small style="color:var(--mute)">기준선: ${ref}mm</small>${bar(ref)}<small style="color:var(--mute)">이 글자의 모음 선</small>${bar(mm)}</span>`;
+    return {id,prompt,q:`기준선이 ${ref}mm일 때, 아래 선의 길이에 맞는 모음은?`,opts:shuf([4,8,16]).map(m=>({k:m,h:`<span class="big" style="font-size:22px">${VN[m]}</span>`})),ans:mm,why:`${mm}mm는 ${VN[mm]}입니다. ㅏㅓ : ㅗㅜ : ㅡ = 1 : 2 : 4 비율이에요.`}}
   if(t==='len'){const mm=+key,VN={4:'ㅏ·ㅓ',8:'ㅗ·ㅜ',16:'ㅡ(으)'};
     const ref=shuf([4,8,16].filter(m=>m!==mm))[0];
     const bar=m=>`<span style="display:block;width:${mmPx(m).toFixed(0)}px;height:4px;border-radius:3px;background:var(--stroke)"></span>`;
@@ -112,14 +116,14 @@ function introQ(kc){
 }
 const kcQuestions=kc=>{const [t,v]=kc.split(':');for(const f of FEATURES){if(f.questions&&f.questions[kc])return f.questions[kc]()}
   if(t==='c')return ['sym:'+v,'pick:'+v];
-  if(t==='v')return ['len:'+v];
+  if(t==='v')return ['len:'+v,'lenv:'+v];
   return +v===5?Object.keys(DD).flatMap(k=>['dd:'+k,'ddd:'+k]):[]};
 
 /* ---------- 맞춤 선택: 필요한 개념을 익혔다면 그 개념들로 만든 문제도 나온다 ---------- */
 function candidates(){
   const ids=[];
   ALL.forEach(x=>['sym','pick'].forEach(t=>ids.push(t+':'+x.c)));
-  [4,8,16].forEach(m=>ids.push('len:'+m));Object.keys(DD).forEach(k=>ids.push('dd:'+k,'ddd:'+k));
+  [4,8,16].forEach(m=>ids.push('len:'+m,'lenv:'+m));Object.keys(DD).forEach(k=>ids.push('dd:'+k,'ddd:'+k));
   ALLW.forEach(w=>ids.push('wsym:'+w,'wpick:'+w));
   FEATURES.forEach(f=>Object.values(f.types||{}).forEach(ft=>ids.push(...ft.ids())));
   return [...new Set(ids)];

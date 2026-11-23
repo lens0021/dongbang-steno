@@ -92,7 +92,7 @@ function bSVG(word,h=90,S){
 /* 규칙 시연용 글자: 한글로 보여 주지 않는 그림용 음절. 앞 글자 구(8mm 가로선) 뒤에 이어 쓴다. */
 const KJ={n:4,ng:21,l:8,s:19,m:16,g:1};
 const mk=(cho,jung,jong)=>String.fromCharCode(0xAC00+CHO.indexOf(cho)*588+jung*28+jong);
-const demoWord=(kind,par,ae)=>'구'+mk(par?'ㄱ':'ㄷ',ae?11:8,KJ[kind]);
+const demoWord=(kind,par,ae,front)=>(front||'구')+mk(par?'ㄱ':'ㄷ',ae?11:8,KJ[kind]);
 const headWord=(kind,ae)=>mk('ㄷ',ae?11:8,KJ[kind]);
 
 /* ---------- 단어 목록(실제 단어만) ---------- */
@@ -132,7 +132,13 @@ const bWhy=w=>{const cs=[...w].map(BSYL);const parts=[];
   return w+' → '+parts.join(', ')};
 
 /* ---------- 설명 카드 ---------- */
-const demo=(k,par,ae,S=0)=>bSVG(demoWord(k,par,ae),0,S);
+const demo=(k,par,ae,S=0,front)=>bSVG(demoWord(k,par,ae,front),0,S);
+/* 같은 개념 연습이 똑같아 보이지 않도록, 앞 글자의 길이를 바꿔 가며 보여 준다(겹침 검사를 통과한 것만 쓴다) */
+const FRONTS=['가','고','구'];
+const touchN=(k,par,ae,f)=>{try{return pathSelfTouch(bPath(demoWord(k,par,ae,f)).d).length}catch(e){return 99}};
+/* 기본 앞 글자('구')와 같은 정도(설계상 걸쳐 쓰는 접촉 포함)로만 겹치는 앞 글자만 쓴다 */
+const frontOk=(k,par,ae,f)=>touchN(k,par,ae,f)<=touchN(k,par,ae,'구');
+const pickFront=(k,par,ae)=>{const ok=FRONTS.filter(f=>frontOk(k,par,ae,f));return ok.length?ok[Math.random()*ok.length|0]:'구'};
 const hd=(k,ae,S=0)=>bSVG(headWord(k,ae),0,S);
 const NOTE='<br><small>그림은 규칙대로 다시 그린 것이고 크기는 추정입니다.</small>';
 const INTRO={
@@ -164,9 +170,14 @@ const INTRO={
 const KORD=['n','ng','l','s','m','g'];
 const BJINFO={'b:1':['n',false,false],'b:2':['ng',false,false],'b:3':['l',false,false],'b:4':['l',true,false],'b:5':['s',false,false],'b:6':['s',true,false],'b:7':['m',false,false],'b:8':['g',false,false],'b:9':['g',true,false],
  'b:11':['n',false,true],'b:12':['ng',false,true],'b:13':['l',false,true],'b:14':['l',true,true],'b:15':['s',false,true],'b:16':['s',true,true],'b:17':['m',false,true],'b:18':['g',false,true],'b:19':['g',true,true]};
+function bkBuild(key,id){
+  const c='b:'+key,[kind,par,ae]=BJINFO[c],others=shuf(KORD.filter(k=>k!==kind)).slice(0,3),f=pickFront(kind,par,ae);
+  const ws=shuf([kind,...others]).map(k=>({k,h:`<span class="big" style="font-size:24px">${KNAME[k]}받침</span>`}));
+  return {id,prompt:demo(kind,par,ae,3,f),q:`이 이어쓰기에서 뒤 글자에 붙은 받침은 무엇일까요?${ae?' (ㅐ계열 모음)':''}`,opts:ws,ans:kind,why:INTRO[c]().text};
+}
 function bjBuild(key,id){
   const c='b:'+key,[kind,par,ae]=BJINFO[c],others=shuf(KORD.filter(k=>k!==kind)).slice(0,3);
-  const ws=shuf([kind,...others]).map(k=>({k,h:demo(k,par,ae,2.2)}));
+  const fr=pickFront(kind,par,ae),ws=shuf([kind,...others]).map(k=>({k,h:demo(k,par,ae,2.2,pickFront(k,par,ae))}));
   const prefix=par?'앞 글자와 방향이 같은 글자':'앞 글자와 방향이 다른 글자';
   return {id,prompt:`<span class="big" style="font-size:30px">${KNAME[kind]}받침${ae?' · ㅐ계열':''}</span>`,q:`앞 글자(가로선) 뒤에 ${ae?'ㅐ계열 모음의 ':''}${KNAME[kind]}받침이 붙은, ${prefix}를 이어 쓴 모양은?`,opts:ws,ans:kind,why:INTRO[c]().text};
 }
@@ -192,12 +203,13 @@ const BJKEYS=Object.keys(BJINFO).map(c=>c.slice(2));
 const BHKEYS=[];['n','ng','m','g'].forEach(k=>[0,1].forEach(e=>BHKEYS.push(k+'|'+e)));
 const types={
  bj:{kcs:k=>['b:'+k],build:bjBuild,ids:()=>BJKEYS.map(k=>'bj:'+k)},
+ bk:{kcs:k=>['b:'+k],build:bkBuild,ids:()=>BJKEYS.map(k=>'bk:'+k)},
  bh:{kcs:k=>[HK[k.split('|')[0]]],build:bhBuild,ids:()=>BHKEYS.map(k=>'bh:'+k)},
  bsym:{kcs:k=>bKcs(k),build:(k,id)=>bwBuild('bsym',k,id),ids:()=>BW.map(w=>'bsym:'+w)},
  bpick:{kcs:k=>bKcs(k),build:(k,id)=>bwBuild('bpick',k,id),ids:()=>BW.map(w=>'bpick:'+w)}
 };
 const intro={};CURR.forEach(c=>intro[c]=INTRO[c]);
-const questions={};BJKEYS.forEach(k=>questions['b:'+k]=()=>['bj:'+k]);
+const questions={};BJKEYS.forEach(k=>questions['b:'+k]=()=>['bj:'+k,'bk:'+k]);
 ['n','ng'].forEach(k=>{});
 questions['b:20']=()=>['bh:n|0','bh:n|1','bh:ng|0','bh:ng|1'];
 questions['b:21']=()=>['bh:m|0','bh:m|1'];
