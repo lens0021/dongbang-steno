@@ -110,7 +110,7 @@ const BWORDS=['하룻밤','마룻바닥','모든','그간','시간','차분한',
  /* 받침이 앞에 올 때 */'간장','강당','건강','감자','각도','남자','당근','반도','상자','장갑','박수'];
 const okB=w=>[...w].every((ch,i)=>{const n=ch.charCodeAt(0)-0xAC00;if(n<0||n>=11172)return false;const s=BSYL(ch);if(!s.c)return false;const j=Math.floor(n%588/28),jg=n%28;
   if(jg===0){if(s.ae)return s.c!=='아';return OKF.has(j)||(j===19&&!!s.sp)}
-  if(!(jg in JK))return false;if(s.ae&&s.c==='아')return false;if(!(BOK.has(j)||s.ae||HALF.has(j)))return false;
+  if(!(jg in JK))return false;if(s.ae&&s.c==='아'&&i===0)return false;if(!(BOK.has(j)||s.ae||HALF.has(j)))return false;
   if(i===0)return HEADK.has(JK[jg]);return true});
 const hasB=w=>[...w].some(ch=>(ch.charCodeAt(0)-0xAC00)%28);
 /* 원(소원·큰 원·머리 원)은 스스로 닿는 모양이 규칙이라 겹침 검사(drawsClean)에서 뺀다. 그 밖의 단어는 검사를 통과해야 한다. */
