@@ -8,7 +8,10 @@ const U=3.75; /* 1mm 를 화면 단위로 */
 const JK={1:'g',2:'g',3:'g',9:'g',24:'g',4:'n',5:'n',6:'n',8:'l',12:'l',13:'l',15:'l',16:'m',17:'m',10:'m',11:'m',14:'m',18:'m',26:'m',19:'s',20:'s',7:'s',22:'s',23:'s',25:'s',27:'s',21:'ng'};   /* 받침 번호 → 받침군(교재 5-4~5-6 제목의 군) */
 const KNAME={n:'ㄴ',ng:'ㅇ',l:'ㄹ',s:'ㅅ',m:'ㅁㅂ',g:'ㄱ'};
 const AEMM={1:4,5:4,9:8,10:8,11:8,15:8,14:16,16:16};   /* ㅐ모음 길이(ㅐ=1 ㅔ=5 ㅘ=9 ㅙ=10 ㅚ=11 ㅝ=14 ㅞ=15 ㅟ=16) */
-const BSYL=ch=>{const n=ch.charCodeAt(0)-0xAC00,s=syl(ch);s.kind=JK[n%28]||null;s.jong=n%28;if(s.jung===3||s.jung===7)s.jung-=2; /* ㅒ·ㅖ는 ㅐ·ㅔ와 같이 */s.ae=s.jung in AEMM;if(s.ae)s.mm=AEMM[s.jung];return s};
+const BSYL=ch=>{const n=ch.charCodeAt(0)-0xAC00,s=syl(ch);s.kind=JK[n%28]||null;s.jong=n%28;if(s.jung===3||s.jung===7)s.jung-=2; /* ㅒ·ㅖ는 ㅐ·ㅔ와 같이 */s.ae=s.jung in AEMM;if(s.ae)s.mm=AEMM[s.jung];
+  /* ㅇ+ㅘㅚㅟㅝ…(와·외·위·워)는 교재 30쪽 특별문자(이(의)와 같은 세로선, 8mm·4mm). 받침이 붙을 때도 같은 글자로 ㅐ모음 규칙(교재 43·51쪽 수원·의원·호황)을 따른다. */
+  if(s.ae&&s.mm>4&&n>=0&&Math.floor(n/588)===11){s.c='이';s.mm=s.mm===8?8:4;s.spc=true}
+  return s};
 const grp=c=>ALL.find(a=>a.c===c);
 /* 개념 id: 1~9 ㅏ모음(ㄴ·ㅇ·ㄹ원칙·ㄹ예외·ㅅ원칙·ㅅ예외·ㅁㅂ·ㄱ원칙·ㄱ예외), 10 총정리, 11~19 ㅐ모음(같은 순서),
    20 ㄴ·ㅇ 머리 원, 21 ㅁㅂ 머리 타원, 22 ㄱ 머리 갈고리, 23 ㄱ 곡선 주의 */
@@ -106,7 +109,7 @@ const BWORDS=['하룻밤','마룻바닥','모든','그간','시간','차분한',
  /* ㅐ모음 */'고된','사관','주된','나뇐','이권','고관','가관','교황','로댕','비행장','투쟁','고갱','호황','후생','보낼','사활','부활','대궐','초과될','하겠다','오랬다','노랫말','어쨌든','헤맸다','되겠다','보냄','도마뱀','스냅','보탬','대책','시책','수확','구획','어획','주객','가객','고객','과객','개국',
  /* 받침이 앞에 올 때 */'간장','강당','건강','감자','각도','남자','당근','반도','상자','장갑','박수'];
 const okB=w=>[...w].every((ch,i)=>{const n=ch.charCodeAt(0)-0xAC00;if(n<0||n>=11172)return false;const s=BSYL(ch);if(!s.c)return false;const j=Math.floor(n%588/28),jg=n%28;
-  if(jg===0){if(s.ae)return s.c!=='아';return OKF.has(j)}
+  if(jg===0){if(s.ae)return s.c!=='아';return OKF.has(j)||(j===19&&!!s.sp)}
   if(!(jg in JK))return false;if(s.ae&&s.c==='아')return false;if(!(BOK.has(j)||s.ae||HALF.has(j)))return false;
   if(i===0)return HEADK.has(JK[jg]);return true});
 const hasB=w=>[...w].some(ch=>(ch.charCodeAt(0)-0xAC00)%28);
@@ -127,7 +130,7 @@ const bOkNew=w=>okB(w)&&hasB(w)&&![...w].some(ch=>syl(ch).sp&&(ch.charCodeAt(0)-
 const BW=[...new Set([...BW0,...(typeof BOOKCAND!=='undefined'?BOOKCAND:[]).filter(bOkNew)])];
 /* 단어가 쓰는 개념 */
 function bKcs(w){const set=new Set(),cs=[...w].map(BSYL);if(hasDD(w))set.add('r:5');
-  cs.forEach((s,i)=>{set.add('c:'+s.c);if(s.ae){set.add('e:'+s.mm);set.add('e:hook')}else if(s.mm>4)set.add('v:'+s.mm);if(isHook(s)&&!s.sp)set.add('r:3');
+  cs.forEach((s,i)=>{set.add('c:'+s.c);if(s.spc)set.add('e:sp');if(s.ae){set.add('e:'+s.mm);set.add('e:hook')}else if(s.mm>4)set.add('v:'+s.mm);if(isHook(s)&&!s.sp)set.add('r:3');
     if(s.kind&&i===0){set.add(s.kind==='m'?'b:21':s.kind==='g'?'b:22':'b:20');if(s.kind==='g'&&grp(s.c).b)set.add('b:23')}
     else if(s.kind){const pg=grp(cs[i-1].c).g,par=pg.id===grp(s.c).g.id;set.add(conceptOf(s.kind,par,s.ae))}
     if(s.kind&&!s.ae&&isHook(s)&&!s.sp)set.add('b:24');
