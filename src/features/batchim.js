@@ -58,7 +58,7 @@ function bPath(word){
         if(par)bump(u,bs,k==='l'?6:12,k==='l'?3:11);
         else if(k==='l')mv(ae?ps.x0-sg*sd[0]*U:mx-sg*sd[0]*U,ae?ps.y0-sg*sd[1]*U:my-sg*sd[1]*U);
         else if(ae)mv(mx,my);
-        else mv(ps.x1-u[0]*1.2*U-sg*sd[0]*U,ps.y1-u[1]*1.2*U-sg*sd[1]*U)}
+        else mv(ps.x1-u[0]*.3*U-sg*sd[0]*U,ps.y1-u[1]*.3*U-sg*sd[1]*U)}   /* 교재 그듯·비교ㄹ: 꼬리(끝)에 걸침 — 선 끝에서 약 0.3mm 안쪽. ㄹ은 허리(중앙) */
       else if(k==='g'){
         if(par){const D=5,ax=ps.x1-u[0]*D*.5+bs[0]*D*.85,ay=ps.y1-u[1]*D*.5+bs[1]*D*.85;   /* 교재 그림의 갈고리는 선 위의 작은 홈(약 1.5mm). 4mm짜리 차(ㅊ)와 혼동되지 않게 작게 그린다 */
          
@@ -147,7 +147,7 @@ const FRONTS=['가','고','구'];
 const touchN=(k,par,ae,f)=>{try{return pathSelfTouch(bPath(demoWord(k,par,ae,f)).d).length}catch(e){return 99}};
 /* 기본 앞 글자('구')와 같은 정도(설계상 걸쳐 쓰는 접촉 포함)로만 겹치는 앞 글자만 쓴다 */
 const frontOk=(k,par,ae,f)=>touchN(k,par,ae,f)<=touchN(k,par,ae,'구');
-const pickFront=(k,par,ae)=>{const ok=FRONTS.filter(f=>frontOk(k,par,ae,f));return ok.length?ok[Math.random()*ok.length|0]:'구'};
+const pickFront=(k,par,ae)=>{const ok=FRONTS.filter(f=>frontOk(k,par,ae,f)&&!(f==='가'&&(k==='l'||k==='s')));  /* ㄹ(허리)·ㅅ(꼬리) 걸침 자리는 짧은 선(4mm)에서 구분이 안 돼 8mm 선만 쓴다 */return ok.length?ok[Math.random()*ok.length|0]:'구'};
 const hd=(k,ae,S=0)=>bSVG(headWord(k,ae),0,S);
 const NOTE='<br><small>그림은 규칙대로 다시 그린 것이고 크기는 추정입니다.</small>';
 const INTRO={
@@ -187,7 +187,7 @@ function bkBuild(key,id){
 }
 function bjBuild(key,id){
   const c='b:'+key,[kind,par,ae]=BJINFO[c],others=shuf(KORD.filter(k=>k!==kind)).slice(0,3);
-  const fr=pickFront(kind,par,ae),ws=shuf([kind,...others]).map(k=>({k,h:demo(k,par,ae,2.2,pickFront(k,par,ae))}));
+  const fr='구',ws=shuf([kind,...others]).map(k=>({k,h:demo(k,par,ae,2.2,fr)}));   /* 보기마다 앞 글자 길이가 다르면 걸치는 자리를 비교할 수 없으므로 모두 같은 앞 글자로 */
   const prefix=par?'앞 글자와 방향이 같은 글자':'앞 글자와 방향이 다른 글자';
   return {id,prompt:`<span class="big" style="font-size:30px">${KNAME[kind]}받침${ae?' · ㅐ모음':''}</span>`,q:`앞 글자(가로선) 뒤에 ${ae?'ㅐ모음 붙은 ':''}${KNAME[kind]}받침이 오는, ${prefix}를 이어 쓴 모양은?`,opts:ws,ans:kind,why:INTRO[c]().text};
 }
