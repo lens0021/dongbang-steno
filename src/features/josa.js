@@ -62,22 +62,31 @@ function markD(P,t,k,side){
   return `M${fx(P[0])} ${fx(P[1])}A${HD/2} ${HD/2} 0 0 ${sw} ${fx(Q[0])} ${fx(Q[1])}`}
 /* ---------- 조사 단어 ---------- */
 const CACHE=new Map();
+/* 어간 검사(선 겹침 계산)는 단어 수천 개를 불러올 때 느려서, 미리 검사해 둔 목록(src/data/josa-ok.js: 단어→영역)이 있으면 그것을 쓴다.
+   그 밖의 단어(문장용 등)는 그 자리에서 검사한다. 영역 규칙이 바뀌어 목록을 다시 만들 때는 주소에 ?josalive 를 붙여 연 뒤 콘솔에서 JOSA.dump()를 실행한다. */
+const LIVE=typeof location!=='undefined'&&/josalive/.test(location.search);
+const PRE=!LIVE&&typeof JOSAOK!=='undefined'?JOSAOK:null;
 function info(w){if(CACHE.has(w))return CACHE.get(w);
   let r=null;const sp=splitJ(w);
-  if(sp){const e=engOf(sp.stem);
+  if(sp){const e=PRE&&PRE[w]?PRE[w]:engOf(sp.stem);
     if(e){const d0=stemD(sp.stem,e),ei=endInfo(d0),mk=markD(ei.p,ei.t,sp.k,ei.side);
       r={stem:sp.stem,s:sp.s,k:sp.k,e,d0,mk,d:d0+mk,P:ei.p,t:ei.t,side:ei.side}}}
   CACHE.set(w,r);return r}
-/* 표시가 어간의 앞쪽 선과 닿으면(끝 근처 8단위 밖의 선과 2.2 이내) 흐려지므로 쓰지 않는다 */
+/* 표시가 어간의 앞쪽 선과 닿으면(끝점에서 10단위 넘게 떨어진 선과 2.2 이내) 흐려지므로 쓰지 않는다.
+   선 위의 점은 경로 문자열에서 직접 계산한다(DOM으로 재면 단어 수천 개를 불러올 때 너무 느리다). 호(A)는 현으로 어림한다. */
+function samplePts(d,step){
+  const o=[];let cx=0,cy=0;const re=/([MLQCA])([^MLQCA]*)/g;let m;
+  const line=(x0,y0,x1,y1)=>{const n=Math.max(1,Math.ceil(Math.hypot(x1-x0,y1-y0)/step));for(let i=0;i<=n;i++)o.push([x0+(x1-x0)*i/n,y0+(y1-y0)*i/n])};
+  while((m=re.exec(d))){const n=m[2].trim().split(/[ ,]+/).map(Number);
+    if(m[1]==='M'){cx=n[0];cy=n[1];continue}
+    if(m[1]==='L'){line(cx,cy,n[0],n[1]);cx=n[0];cy=n[1]}
+    else if(m[1]==='Q'){const N=Math.max(2,Math.ceil(Math.hypot(n[2]-cx,n[3]-cy)/step));for(let i=0;i<=N;i++){const u=i/N,a=(1-u)*(1-u),b=2*u*(1-u),c=u*u;o.push([a*cx+b*n[0]+c*n[2],a*cy+b*n[1]+c*n[3]])}cx=n[2];cy=n[3]}
+    else if(m[1]==='C'){const N=12;for(let i=0;i<=N;i++){const u=i/N,a=(1-u)**3,b=3*u*(1-u)**2,c=3*u*u*(1-u),e=u**3;o.push([a*cx+b*n[0]+c*n[2]+e*n[4],a*cy+b*n[1]+c*n[3]+e*n[5]])}cx=n[4];cy=n[5]}
+    else{line(cx,cy,n[5],n[6]);cx=n[5];cy=n[6]}}
+  return o}
 function markClear(r){
-  if(typeof document==='undefined'||!document.createElementNS)return true;
-  const mk=(d)=>{const el=document.createElementNS('http://www.w3.org/2000/svg','path');el.setAttribute('d',d);return el};
-  const pts=(d,step)=>{const o=[];let off=0;for(const sub of d.split(/(?=M)/).filter(Boolean)){const el=mk(sub);const L=el.getTotalLength();for(let s=0;s<=L;s+=step){const p=el.getPointAtLength(s);o.push([p.x,p.y,L-s])}off+=L}return o};
-  const A=pts(r.d0,.8),B=pts(r.mk,.5);
-  const sub=r.d0.split(/(?=M)/).filter(Boolean),last=mk(sub[sub.length-1]);
-  /* 어간에서 끝점까지 거리가 10 넘는 점(=표시와 떨어진 앞쪽 선)만 비교 */
-  const tail=A.filter(p=>Math.hypot(p[0]-r.P[0],p[1]-r.P[1])>10);
-  for(const b of B)for(const a of tail)if(Math.hypot(a[0]-b[0],a[1]-b[1])<2.2)return false;
+  const tail=samplePts(r.d0,1).filter(p=>Math.hypot(p[0]-r.P[0],p[1]-r.P[1])>10),B=samplePts(r.mk,.6);
+  for(const b of B)for(const a of tail)if(Math.abs(a[0]-b[0])<2.2&&Math.abs(a[1]-b[1])<2.2&&Math.hypot(a[0]-b[0],a[1]-b[1])<2.2)return false;
   return true}
 const okJ=w=>{const r=info(w);if(!r)return false;if(r.chk===undefined)r.chk=markClear(r);return r.chk};
 const KEYG={S2:'a:s1',S1:'a:s1',E:'a:s2',L:'a:s2',N:'a:s3',C:'a:s3',CB:'a:s3',H:'a:s4',HB:'a:s4'};
@@ -136,8 +145,8 @@ const markBuild=(t,k,id)=>{
   if(t==='jm')return {id,prompt:markDemo(k,RS()*1.6),q:'어간 끝에 붙은 이 표시는 어떤 조사일까요?',one:true,opts:all.map(x=>({k:x,h:`<span class="big" style="font-size:20px">${NAMES[x]}</span>`})),ans:k,why:`${NAMES[k]}: ${WHYK[k]}`};
   return {id,prompt:`<span class="big" style="font-size:28px">${NAMES[k]}</span>`,q:'어간 끝에 어떤 표시를 붙일까요?',opts:all.map(x=>({k:x,h:markDemo(x,RS()*1.2)})),ans:k,why:`${NAMES[k]}: ${WHYK[k]}`}};
 const KEYG2=k=>KEYG[k];
-const JW=[...new Set(typeof JOSAWORDS!=='undefined'?JOSAWORDS:[])].filter(okJ);
-window.JOSA={info,JW,splitJ,okJ,kcsJ,dJ,markD,endInfo};
+const JW=[...new Set(PRE?Object.keys(PRE):typeof JOSAWORDS!=='undefined'?JOSAWORDS:[])].filter(okJ);
+window.JOSA={info,JW,splitJ,okJ,kcsJ,dJ,markD,endInfo,dump:()=>'/* 조사약기법 단어 중 어간을 그릴 수 있고 선이 겹치지 않는 것(단어→그리기 영역). ?josalive 로 열어 JOSA.dump() 로 다시 만든다. */\nconst JOSAOK='+JSON.stringify(Object.fromEntries(JW.map(w=>[w,info(w).e])))+';\n'};
 const ex=w=>info(w)?`<span style="display:inline-block;margin:2px 6px;text-align:center">${jSVG(w,0,RS()*1.4)}<small style="display:block">${w}</small></span>`:'';
 const exs=(...ws)=>ws.filter(w=>JW.includes(w)||info(w)).slice(0,3).map(ex).join('');
 const row=ks=>`<span style="display:flex;flex-wrap:wrap;justify-content:center;gap:8px">${ks.map(k=>`<span style="text-align:center">${markDemo(k,RS()*1.3)}<small style="display:block">${NAMES[k]}</small></span>`).join('')}</span>`;
