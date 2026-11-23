@@ -79,7 +79,7 @@ function wordSVG(word,h=90,S){
   S=Math.min(S||1e9,RS());
   const {d}=wordPath(word),b=wordBox(word);
   const size=S?`width:${(b.w*S).toFixed(0)}px;height:${(b.h*S).toFixed(0)}px;max-width:100%`:`width:100%;max-width:${Math.max(110,Math.min(300,b.w*2.2))}px;height:${h}px`;
-  return `<svg viewBox="${b.x0.toFixed(1)} ${b.y0.toFixed(1)} ${b.w.toFixed(1)} ${b.h.toFixed(1)}" style="${size}" aria-hidden="true"><path d="${d}" fill="none" stroke="var(--stroke)" stroke-width="${S?(3.4/S).toFixed(2):2.6}" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+  return `<svg viewBox="${b.x0.toFixed(1)} ${b.y0.toFixed(1)} ${b.w.toFixed(1)} ${b.h.toFixed(1)}" style="${size}" aria-hidden="true"><path d="${d}" fill="none" stroke="var(--stroke)" stroke-width="${S?penW(S).toFixed(2):2.6}" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
 }
 /* 받침·ㅇ 없이 쓸 수 있는 일반 단어(연습용). 교재 단어와 함께 문제로 나옵니다. */
 
@@ -115,6 +115,8 @@ function setPxmm(v){PXMM=v;try{localStorage.setItem('dongbang-pxmm',String(v))}c
 const mmPx=mm=>mm*PXMM;
 /* 그림 단위 1개가 몇 px인지(실제 길이 배율). 모든 그림 함수는 이 값 이하로만 그려 mm가 어디서나 같은 크기가 되게 한다. */
 const RS=()=>PXMM/3;
+/* 선 굵기(단위). 교재 그림은 글자 길이에 비해 선이 가늘다(4mm 선의 약 1/20). 화면 px는 1.8~3.4로 두되 4mm 선(12단위)의 1/11(1.05단위)을 넘지 않게 해, 작게 줄어든 그림에서 겹친 선이 덩어리로 뭉치지 않게 한다. */
+const penW=S=>Math.max(1.8/S,Math.min(3.4/S,1.05));
 /* 문자 하나를 실제 mm 길이로 그린다. 단위 3개 = 1mm, 그림 칸은 60단위(=20mm) 정사각형 */
 function svMM(it,mm){const u=Math.min(60,3*mm+16),px=u*PXMM/3,o=40-u/2;  /* 칸 크기는 길이에 맞춰 줄여 화면을 덜 차지한다(배율은 그대로) */
   return stroke(it.g.a,it.b,3*mm,1.4).replace('viewBox="0 0 80 80"',`viewBox="${o} ${o} ${u} ${u}" style="width:${px.toFixed(0)}px;height:${px.toFixed(0)}px"`)}

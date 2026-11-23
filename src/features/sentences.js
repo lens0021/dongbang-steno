@@ -28,7 +28,7 @@ function wLay(w){if(LC.has(w))return LC.get(w);const e=engine(w),d=dOf(w,e);
   const r={d,x0:bb.x-8,w:bb.width+16,y0:bb.y-8,y1:bb.y+bb.height+8};LC.set(w,r);return r}
 function lineSVG(ws,S){let x=0,y0=1e9,y1=-1e9;const parts=ws.map(w=>{const b=wLay(w),tx=x-b.x0;x+=b.w+GAP;y0=Math.min(y0,b.y0);y1=Math.max(y1,b.y1);return {d:b.d,tx}});
   const W=x-GAP,H=y1-y0;
-  return `<svg viewBox="0 ${y0.toFixed(1)} ${W.toFixed(1)} ${H.toFixed(1)}" style="width:${(W*S).toFixed(0)}px;height:${(H*S).toFixed(0)}px;max-width:100%" aria-hidden="true"><g fill="none" stroke="var(--stroke)" stroke-width="${(3.4/S).toFixed(2)}" stroke-linecap="round" stroke-linejoin="round">${parts.map(p=>`<path transform="translate(${p.tx.toFixed(1)} 0)" d="${p.d}"/>`).join('')}</g></svg>`}
+  return `<svg viewBox="0 ${y0.toFixed(1)} ${W.toFixed(1)} ${H.toFixed(1)}" style="width:${(W*S).toFixed(0)}px;height:${(H*S).toFixed(0)}px;max-width:100%" aria-hidden="true"><g fill="none" stroke="var(--stroke)" stroke-width="${penW(S).toFixed(2)}" stroke-linecap="round" stroke-linejoin="round">${parts.map(p=>`<path transform="translate(${p.tx.toFixed(1)} 0)" d="${p.d}"/>`).join('')}</g></svg>`}
 function lines(s,maxU){const ws=wordsOf(s),tot=ws.reduce((a,w,i)=>a+wLay(w).w+(i?GAP:0),0);
   if(tot<=maxU)return [ws];const h=Math.ceil(ws.length/2);return [ws.slice(0,h),ws.slice(h)]}
 /* 문장 그림. maxPx 안에 줄바꿈하며, 모든 줄은 같은 배율로 그린다 */

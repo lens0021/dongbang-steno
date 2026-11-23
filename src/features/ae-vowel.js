@@ -41,7 +41,7 @@ function svgOf(items,h,S){
   S=Math.min(S||1e9,RS());
   const {d,pts}=aePath(items),xs=pts.map(p=>p[0]),ys=pts.map(p=>p[1]),x0=Math.min(...xs)-8,y0=Math.min(...ys)-8,w=Math.max(...xs)-x0+8,hh=Math.max(...ys)-y0+8;
   const size=S?`width:${(w*S).toFixed(0)}px;height:${(hh*S).toFixed(0)}px;max-width:100%`:`width:100%;max-width:${Math.max(110,Math.min(300,w*2.2))}px;height:${h}px`;
-  return `<svg viewBox="${x0.toFixed(1)} ${y0.toFixed(1)} ${w.toFixed(1)} ${hh.toFixed(1)}" style="${size}" aria-hidden="true"><path d="${d}" fill="none" stroke="var(--stroke)" stroke-width="${S?(3.4/S).toFixed(2):2.6}" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+  return `<svg viewBox="${x0.toFixed(1)} ${y0.toFixed(1)} ${w.toFixed(1)} ${hh.toFixed(1)}" style="${size}" aria-hidden="true"><path d="${d}" fill="none" stroke="var(--stroke)" stroke-width="${S?penW(S).toFixed(2):2.6}" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
 }
 const wordSvg=(w,h,S)=>svgOf(itemsOf(w),h,S);
 const glyph=(c,mm,kind,S=0)=>svgOf([{c,mm,kind}],0,S);

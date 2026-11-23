@@ -89,7 +89,7 @@ function bSVG(word,h=90,S){
   S=Math.min(S||1e9,RS());
   const {d}=bPath(word),b=bBox(word);
   const size=S?`width:${(b.w*S).toFixed(0)}px;height:${(b.h*S).toFixed(0)}px;max-width:100%`:`width:100%;max-width:${Math.max(110,Math.min(300,b.w*2.2))}px;height:${h}px`;
-  return `<svg viewBox="${fx(b.x0)} ${fx(b.y0)} ${fx(b.w)} ${fx(b.h)}" style="${size}" aria-hidden="true"><path d="${d}" fill="none" stroke="var(--stroke)" stroke-width="${S?(3.4/S).toFixed(2):2.6}" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+  return `<svg viewBox="${fx(b.x0)} ${fx(b.y0)} ${fx(b.w)} ${fx(b.h)}" style="${size}" aria-hidden="true"><path d="${d}" fill="none" stroke="var(--stroke)" stroke-width="${S?penW(S).toFixed(2):2.6}" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
 }
 /* 규칙 시연용 글자: 한글로 보여 주지 않는 그림용 음절. 앞 글자 구(8mm 가로선) 뒤에 이어 쓴다. */
 const KJ={n:4,ng:21,l:8,s:19,m:16,g:1};
