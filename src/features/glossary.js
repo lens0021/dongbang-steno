@@ -26,7 +26,7 @@ const GLOSS=(src,open)=>{
   return `<details class="gloss"${open?' open':''}><summary>용어 풀이 (${hit.map(g=>g.s||g.n.split(' ')[0]).join('·')})</summary>${hit.map(g=>`<div class="gli"><b>${g.n}</b><br>${g.h}</div>`).join('')}</details>`};
 
 /* ---------- 용어 문제: 속기 그림을 보고 어떤 용어에 해당하는지 고른다 ----------
-   한글만 보고 풀리는 문제는 만들지 않는다. 받침이 붙은 글자가 하나뿐인 단어의 속기 그림(받침 영역의 BW 단어)만 쓰고,
+   한글만 보고 풀리는 문제는 만들지 않는다. 받침 있는 글자가 정확히 하나뿐인 단어(ㅈ·ㅊ 등 다른 받침 글자도 센다)의 속기 그림(받침 영역의 BW 단어)만 쓰고,
    모음 종류와 받침 종류는 글자 구조에서 계산한다. */
 (function(){
 const B=window.BATCHIM;if(!B)return;
@@ -36,7 +36,8 @@ const KN={n:'ㄴ',ng:'ㅇ',l:'ㄹ',s:'ㅅ',m:'ㅁ·ㅂ',g:'ㄱ'};
 const FN={a:'ㅏ모음',ae:'ㅐ모음'};
 const KC={a:{n:'b:1',ng:'b:2',l:'b:3',s:'b:5',m:'b:7',g:'b:8'},ae:{n:'b:11',ng:'b:12',l:'b:13',s:'b:15',m:'b:17',g:'b:18'}};
 const parse=ch=>{const n=ch.charCodeAt(0)-0xAC00,jung=Math.floor(n%588/28),jong=n%28;return {ch,fam:AEJ.has(jung)?'ae':YAJ.has(jung)?'ya':'a',kind:JKM[jong]||null}};
-const info=w=>{const s=[...w].map(parse),b=s.map((p,i)=>p.kind?i:-1).filter(i=>i>=0);
+const hasJong=ch=>(ch.charCodeAt(0)-0xAC00)%28>0;
+const info=w=>{const s=[...w].map(parse),b=[...w].map((c,i)=>hasJong(c)?i:-1).filter(i=>i>=0);/* 받침 글자는 종류와 상관없이 센다(ㅈ·ㅊ 등도 포함): 둘 이상이면 어느 글자를 묻는지 모호하므로 제외 */
   if(b.length!==1||b[0]===0||s[b[0]].fam==='ya')return null;return {w,ch:s[b[0]].ch,fam:s[b[0]].fam,kind:s[b[0]].kind}};
 const POOL=B.BW.map(info).filter(Boolean).filter(x=>KC[x.fam][x.kind]);
 const lab=(f,k)=>`${FN[f]} 글자 + ${KN[k]}받침`;
