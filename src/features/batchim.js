@@ -181,6 +181,9 @@ const KORD=['n','ng','l','s','m','g'];
 const BJINFO={'b:1':['n',false,false],'b:2':['ng',false,false],'b:3':['l',false,false],'b:4':['l',true,false],'b:5':['s',false,false],'b:6':['s',true,false],'b:7':['m',false,false],'b:8':['g',false,false],'b:9':['g',true,false],
  'b:11':['n',false,true],'b:12':['ng',false,true],'b:13':['l',false,true],'b:14':['l',true,true],'b:15':['s',false,true],'b:16':['s',true,true],'b:17':['m',false,true],'b:18':['g',false,true],'b:19':['g',true,true]};
 function bjBuild(key,id){
+  const kk='b:'+key,okw=w=>{try{const k=bKcs(w);return k.includes(kk)&&k.every(c=>c===kk||(typeof learned==='function'&&learned(c)))}catch(e){return false}};
+  const cw=BW.filter(okw),one=cw.filter(w=>bKcs(w).length===1),pool=one.length?one:cw;
+  if(pool.length)return bwBuild('bpick',pool[Math.random()*pool.length|0],id);   /* 실제 단어로 묻는다: 「가각」은? */
   const c='b:'+key,[kind,par,ae]=BJINFO[c],others=shuf(KORD.filter(k=>k!==kind)).slice(0,3);
   const fr='구',ws=shuf([kind,...others]).map(k=>({k,h:demo(k,par,ae,2.2,fr)}));   /* 보기마다 앞 글자 길이가 다르면 걸치는 자리를 비교할 수 없으므로 모두 같은 앞 글자로 */
   const prefix=par?'앞 글자와 방향이 같은 글자':'앞 글자와 방향이 다른 글자';
@@ -201,7 +204,7 @@ function bwBuild(t,w,id){
   const why=bWhy(w);
   if(t==='bsym')return {id,prompt:bSVG(w,130),q:'이 속기 단어는 무엇일까요?',opts:ws.map(x=>({k:x,h:`<span class="big" style="font-size:24px">${x}</span>`})),ans:w,why};
   const bx=ws.map(bBox),sc=Math.min(RS(),150/Math.max(...bx.map(b=>b.w)),80/Math.max(...bx.map(b=>b.h)));
-  return {id,prompt:`<span class="big" style="font-size:48px">${w}</span>`,q:`「${w}」을(를) 이어 쓴 모양을 고르세요`,opts:ws.map(x=>({k:x,h:bSVG(x,0,sc)})),ans:w,why};
+  return {id,prompt:`<span class="big" style="font-size:48px">${w}</span>`,q:`다음 중 「${w}」${(w.charCodeAt(w.length-1)-0xAC00)%28?'은':'는'}?`,opts:ws.map(x=>({k:x,h:bSVG(x,0,sc)})),ans:w,why};
 }
 const CURR=['b:1','b:2','b:7','b:3','b:4','b:8','b:9','b:5','b:6','b:11','b:12','b:17','b:13','b:14','b:18','b:19','b:15','b:16','b:10','b:20','b:21','b:22','b:23','b:24'];
 const BJKEYS=Object.keys(BJINFO).map(c=>c.slice(2));
