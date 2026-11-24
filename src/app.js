@@ -162,10 +162,12 @@ window.sigNear=sigNear;
 function wordPat(w,full){const m=new Map();return [...w].filter(c=>c.charCodeAt(0)>=0xAC00).map(c=>{const n=c.charCodeAt(0)-0xAC00,it=ALL.find(x=>x.c===INIT[CHO[Math.floor(n/588)]]),g=it?it.g.id:'?';if(!m.has(g))m.set(g,m.size);return m.get(g)+(full&&n%28?'b':'')}).join('')}
 function pickDistractors(key,pool,n=3,kcsFn=wordKcs,distinct){
   const same=(x,y)=>distinct?sigNear(distinct(x),distinct(y)):x===y;
-  const cand=[...new Set(pool)].filter(w=>w!==key&&!same(w,key));
+  /* 정답과 그림이 같은지(same)는 DOM 경로 계산이 비싸서 모든 후보에 미리 하지 않고, 실제로 고를 때만 한다(단어가 수천 개라 첫 세션이 수십 초 걸리던 원인) */
+  const cand=[...new Set(pool)].filter(w=>w!==key);
+  const sameKey=new Map(),sk=w=>{let r=sameKey.get(w);if(r===undefined){r=same(w,key);sameKey.set(w,r)}return r};
   const sc=new Map(cand.map(w=>[w,wordSim(key,w)+Math.random()*.8]));
   const ok=w=>{try{return kcsFn(w).every(learned)}catch(e){return true}};
-  const out=[],take=(list,lim)=>{for(const w of list){if(out.length>=(lim||n))break;if(out.some(o=>same(o,w)))continue;out.push(w)}};
+  const out=[],take=(list,lim)=>{for(const w of list){if(out.length>=(lim||n))break;if(sk(w)||out.some(o=>same(o,w)))continue;out.push(w)}};
   /* 구조 소거 방지: 같은 자음 묶음이 반복되는지·받침이 있는지 같은 "겉모양 패턴"이 정답과 같은 오답을 최소 2개 넣는다 */
   const pk=wordPat(key),pf=wordPat(key,1),byS=l=>l.sort((x,y)=>sc.get(y)-sc.get(x));
   take(byS(cand.filter(w=>ok(w)&&wordPat(w,1)===pf)),Math.min(2,n));
@@ -200,10 +202,10 @@ function makeSession(focus){
   let pool=candidates().filter(eligible);
   if(focus)pool=pool.filter(id=>kcsOf(id).includes(focus));
   /* 진도 속도: 먼저 본 개념(읽기 전용 카드 제외)이 모두 익숙해져야(LEARNED 이상) 새 개념을 연다.
-     익숙하지 않은 개념이 있으면 복습만 하는 세션이 된다(풀 수 있는 문제가 너무 적을 때만 예외로 1개). 한 번에 1개씩, 모두 탄탄할 때만 2개. */
+     익숙하지 않은 개념이 있으면 복습만 하는 세션이 된다(풀 수 있는 문제가 너무 적을 때만 예외로 1개). 모두 익숙하면 2개, 헷갈리는 개념이 1개뿐이면 1개를 연다(진도가 너무 느리다는 지적 반영). */
   const unstable=CURR.filter(k=>seen(k)&&!INFO.has(k)&&strength(k)<LEARNED).length;
-  const seenK=CURR.filter(k=>seen(k)&&!INFO.has(k)),solid=seenK.length&&seenK.every(k=>strength(k)>=4);
-  const cap=focus?(seen(focus)?0:1):(unstable===0?(solid&&pool.length>=12?2:1):(pool.length<6?1:0));
+  
+  const cap=focus?(seen(focus)?0:1):(unstable===0?(pool.length>=12?2:1):(unstable===1?1:(pool.length<6?1:0)));
   const newK=focus?(seen(focus)?[]:[focus]):CURR.filter(k=>!seen(k)).slice(0,cap);
   const target=(focus?8:10),N=Math.max(4,target-newK.length*4);
   const score=id=>avgS(kcsOf(id))+(recent.has(id)?0.8:0)+Math.random()*0.5;
