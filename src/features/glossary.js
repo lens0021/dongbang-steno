@@ -41,12 +41,28 @@ const info=w=>{const s=[...w].map(parse),b=[...w].map((c,i)=>hasJong(c)?i:-1).fi
   if(b.length!==1||b[0]===0||s[b[0]].fam==='ya')return null;return {w,ch:s[b[0]].ch,fam:s[b[0]].fam,kind:s[b[0]].kind}};
 const POOL=B.BW.map(info).filter(Boolean).filter(x=>KC[x.fam][x.kind]);
 const lab=(f,k)=>`${FN[f]} 글자 + ${KN[k]}받침`;
+/* 해설은 정답 기준: 정답 글자의 모음(반소원 유무)과 받침 이어쓰기 모양·자리만 설명한다(오답 설명 금지). */
+const RULE={
+ a:{n:'앞 글자 끝에서 안쪽으로 1mm쯤 들어가 연필을 떼고, 그 글자의 방향·길이대로 씁니다. 앞 글자와 떨어져 있는 것이 ㄴ받침의 표시예요. 예) 모든, 그간',
+    ng:'앞 글자의 <b>허리(가운데)</b>에서 연필을 떼고 띄어 씁니다. 예) 노동, 고궁',
+    l:'새 글자가 앞 글자의 <b>허리(가운데)를 가로질러 걸치게</b> 씁니다. 예) 그들, 수출',
+    s:'새 글자가 앞 글자의 <b>꼬리(끝)</b>에 걸치게 씁니다.',
+    m:'받침을 따로 그리지 않고 <b>자기 글자 그대로</b> 앞 글자 끝에서 <b>살짝 띄어</b> 씁니다. 예) 가감, 보람',
+    g:'앞 글자 끝에서 이어 쓸 글자의 <b>머리를 살짝 내밀어</b> 시작합니다. 예) 호박죽, 고독'},
+ ae:{n:'앞 글자 끝에서 <b>작은 원(소원)</b>을 그리며 그 글자의 방향·길이대로 씁니다. 예) 고된, 주된',
+    ng:'앞 글자 끝에서 ㄴ받침의 <b>2배 이상 큰 원</b>을 그리며 씁니다. 예) 교황, 비행장',
+    l:'새 글자가 앞 글자의 <b>머리(시작 쪽)</b>에 걸치게 씁니다. 예) 보낼, 부활',
+    s:'새 글자를 앞 글자의 <b>허리에 반소원 없이 붙여</b> 씁니다. 예) 하겠다, 헤맸다',
+    m:'자기 글자 그대로 앞 글자 끝에서 <b>살짝 띄어</b> 씁니다. 예) 보냄, 도마뱀',
+    g:'앞 글자 끝에서 이어 쓸 글자의 <b>머리를 내밀어</b> 씁니다. 모음 표시(반측 반소원)는 그대로 합니다. 예) 대책, 수확'}};
+const VOW={a:'받침이 붙은 글자(<b>%c</b>)의 머리에 <b>반소원이 없으므로</b> ㅏ모음 글자예요.',ae:'받침이 붙은 글자(<b>%c</b>)에는 시작할 때 <b>반측</b>에 반소원이 붙어 있으므로 ㅐ모음 글자예요.'};
+const gWhy=(w,x)=>`${w}에서 받침이 붙은 글자는 ${x.ch}이고, <b>${lab(x.fam,x.kind)}</b>입니다.<br>① ${VOW[x.fam].replace('%c',x.ch)}<br>② ${KN[x.kind]}받침: ${RULE[x.fam][x.kind]}`;
 function gp(w,id){
   const x=POOL.find(p=>p.w===w),fo=x.fam==='a'?'ae':'a',ko=Object.keys(KN).filter(k=>k!==x.kind)[Math.random()*5|0];
   const combos=[[x.fam,x.kind],[fo,x.kind],[x.fam,ko],[fo,ko]];
   return {id,prompt:B.bSVG(w,130),q:'이 속기 그림에서 받침이 붙은 글자는 어떤 용어에 해당할까요?',
    opts:shuf(combos).map(([f,k])=>({k:f+'|'+k,h:`<span style="font-size:16px;font-weight:600">${lab(f,k)}</span>`})),ans:x.fam+'|'+x.kind,
-   why:`${w}에서 받침이 붙은 글자는 ${x.ch}이고, <b>${lab(x.fam,x.kind)}</b>입니다. 모음 반소원이 반측에 있으면 ㅐ모음이에요.`+(window.BATCHIM&&B.bKcs?'':'')}}
+   why:gWhy(w,x)}}
 const types={gp:{kcs:w=>B.bKcs(w),build:gp,ids:()=>POOL.map(x=>'gp:'+x.w)}};
 const b=(window.FEATURES||[]).find(f=>f.name==='batchim');
 if(b&&b.questions)Object.keys(KC).forEach(f=>Object.keys(KC[f]).forEach(k=>{const c=KC[f][k],old=b.questions[c];if(!old)return;

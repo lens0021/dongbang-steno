@@ -133,14 +133,14 @@ const F={name:'ㅐ모음',
     build:(k,id)=>{const c=syl(k).c,L=4,o=shuf(CONS.filter(x=>x!==c&&grp(x).g!==grp(c).g))[0];
       const opts=shuf([{k:'ok',h:glyph(c,L,'ae')},{k:'x1',h:glyph(c,L,'hook')},{k:'x2',h:glyph(c,L,'plain')},{k:'x3',h:glyph(o,L,'ae')}]);
       return {id,prompt:`<span class="big">${k}</span>`,q:`「${k}」에 해당하는 모양을 고르세요${lenNote(L)}`,opts,ans:'ok',
-        why:`${k}은(는) ${c} 문자에 모음 ㅐ(4mm)를 쓰고, 시작할 때 <b>반측</b>에 반소원을 붙입니다. 정측에 붙이면 ㅑㅕ 모음이에요.`}}},
+        why:`${k}은(는) ${c} 문자에 모음 ㅐ(4mm)를 쓰고, 시작할 때 <b>반측</b>에 반소원을 붙입니다.`}}},
   /* 길이 고르기: 4·8·16mm 중 글자의 모음 길이에 맞는 모양 */
   elen:{kcs:(k)=>{const j=syl(k).jung;return ['c:'+syl(k).c,'e:hook',KC[AEMM[j]],'r:3']},
     ids:()=>letters([1,9,11,14,16]).map(l=>'elen:'+l),
     build:(k,id)=>{const s=syl(k),mm=AEMM[s.jung],c=s.c;
       const opts=shuf([4,8,16].map(m=>({k:m,h:glyph(c,m,'ae',1.6)})).concat([{k:'h',h:glyph(c,mm,'hook',1.6)}]));
       return {id,prompt:`<span class="big">${k}</span>`,q:`「${k}」에 해당하는 모양을 고르세요`,opts,ans:mm,
-        why:`${k}의 모음 ${mmName[mm]}는 ${mm}mm이고 반측에 반소원을 붙입니다. 정측에 붙인 모양은 ㅑ모음이에요.`}}},
+        why:`${k}의 모음 ${mmName[mm]}는 ${mm}mm이고 반측에 반소원을 붙입니다.`}}},
   /* 모양 → 글자 */
   esym:{kcs:(k)=>{const j=syl(k).jung;return ['c:'+syl(k).c,'e:hook',KC[AEMM[j]],'r:3']},
     ids:()=>letters([1,5,9,11,14,16]).map(l=>'esym:'+l),
@@ -154,7 +154,7 @@ const F={name:'ㅐ모음',
     build:(k,id)=>{const c=syl(k).c,L=4,o=shuf(CONS.filter(x=>x!==c&&grp(x).g!==grp(c).g))[0];
       const opts=shuf([{k:'ok',h:glyph(c,L,'ae')},{k:'x1',h:glyph(c,L,'hook')},{k:'x2',h:glyph(c,L,'plain')},{k:'x3',h:glyph(o,L,'ae')}]);
       return {id,prompt:`<span class="big">${k}</span>`,q:`「${k}」에 해당하는 모양을 고르세요${lenNote(L)}`,opts,ans:'ok',
-        why:`${k}의 ㅖ·ㅒ는 ㅔ·ㅐ와 같이 씁니다. ${c} 문자 4mm에 반측 반소원을 붙인 모양이에요. 정측에 붙이면 ㅑㅕ 모음입니다.`}}},
+        why:`${k}의 ㅖ·ㅒ는 ㅔ·ㅐ와 같이 씁니다. ${c} 문자 4mm에 반측 반소원을 붙인 모양이에요.`}}},
   /* ㅇ+ㅘㅚㅟㅝ 특별문자: 글자 → 모양 */
   espick:{kcs:(k)=>['c:이','e:hook','e:sp'],ids:()=>['와','외','위','워'].map(l=>'espick:'+l),
     build:(k,id)=>{const mm=isSp(k)&&AEMM[jn(syl(k).jung)]===8?8:4,other=mm===8?4:8;
@@ -166,7 +166,7 @@ const F={name:'ㅐ모음',
     build:(k,id)=>{const sh={'와':glyph('이',8,'ae',2),'위':glyph('이',4,'ae',2),'애':glyph('아',4,'ae',2)}[k];
       const G={'와':'와·외·왜·웨','위':'위·워','애':'애·에'};
       return {id,prompt:sh,q:'이 속기 글자는 무엇일까요?',opts:shuf(['와·외·왜·웨','위·워','애·에','이(의)']).map(w=>({k:w,h:chip(w)})),ans:G[k],
-        why:`${G[k]}: ${k==='애'?'아 문자에 반측 반소원':k==='와'?'8mm 세로선에 반측 반소원(특별문자)':'4mm 세로선에 반측 반소원(특별문자)'}입니다. 이(의)는 반소원이 없는 세로선이에요.`}}},
+        why:`${G[k]}: ${k==='애'?'아 문자에 반측 반소원':k==='와'?'8mm 세로선에 반측 반소원(특별문자)':'4mm 세로선에 반측 반소원(특별문자)'}입니다.`}}},
   /* 의·희 */
   euipick:{kcs:(k)=>['c:이','e:ui'],ids:()=>['의','희'].map(l=>'euipick:'+l),
     build:(k,id)=>{const hi=k==='희',ok=glyph('이',4,hi?'hook':'plain',1.6);
