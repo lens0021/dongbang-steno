@@ -180,11 +180,6 @@ const INTRO={
 const KORD=['n','ng','l','s','m','g'];
 const BJINFO={'b:1':['n',false,false],'b:2':['ng',false,false],'b:3':['l',false,false],'b:4':['l',true,false],'b:5':['s',false,false],'b:6':['s',true,false],'b:7':['m',false,false],'b:8':['g',false,false],'b:9':['g',true,false],
  'b:11':['n',false,true],'b:12':['ng',false,true],'b:13':['l',false,true],'b:14':['l',true,true],'b:15':['s',false,true],'b:16':['s',true,true],'b:17':['m',false,true],'b:18':['g',false,true],'b:19':['g',true,true]};
-function bkBuild(key,id){
-  const c='b:'+key,[kind,par,ae]=BJINFO[c],others=shuf(KORD.filter(k=>k!==kind)).slice(0,3),f=pickFront(kind,par,ae);
-  const ws=shuf([kind,...others]).map(k=>({k,h:`<span class="big" style="font-size:24px">${KNAME[k]}받침</span>`}));
-  return {id,prompt:demo(kind,par,ae,3,f),q:`이 이어쓰기에서 뒤 글자에 붙은 받침은 무엇일까요?${ae?' (ㅐ모음)':''}`,opts:ws,ans:kind,why:INTRO[c]().text};
-}
 function bjBuild(key,id){
   const c='b:'+key,[kind,par,ae]=BJINFO[c],others=shuf(KORD.filter(k=>k!==kind)).slice(0,3);
   const fr='구',ws=shuf([kind,...others]).map(k=>({k,h:demo(k,par,ae,2.2,fr)}));   /* 보기마다 앞 글자 길이가 다르면 걸치는 자리를 비교할 수 없으므로 모두 같은 앞 글자로 */
@@ -213,13 +208,12 @@ const BJKEYS=Object.keys(BJINFO).map(c=>c.slice(2));
 const BHKEYS=[];['n','ng','m','g'].forEach(k=>[0,1].forEach(e=>BHKEYS.push(k+'|'+e)));
 const types={
  bj:{kcs:k=>['b:'+k],build:bjBuild,ids:()=>BJKEYS.map(k=>'bj:'+k)},
- bk:{kcs:k=>['b:'+k],build:bkBuild,ids:()=>BJKEYS.map(k=>'bk:'+k)},
  bh:{kcs:k=>[HK[k.split('|')[0]]],build:bhBuild,ids:()=>BHKEYS.map(k=>'bh:'+k)},
  bsym:{kcs:k=>bKcs(k),build:(k,id)=>bwBuild('bsym',k,id),ids:()=>BW.map(w=>'bsym:'+w)},
  bpick:{kcs:k=>bKcs(k),build:(k,id)=>bwBuild('bpick',k,id),ids:()=>BW.map(w=>'bpick:'+w)}
 };
 const intro={};CURR.forEach(c=>intro[c]=INTRO[c]);
-const questions={};BJKEYS.forEach(k=>questions['b:'+k]=()=>['bj:'+k,'bk:'+k]);
+const questions={};BJKEYS.forEach(k=>questions['b:'+k]=()=>['bj:'+k]);
 ['n','ng'].forEach(k=>{});
 questions['b:20']=()=>['bh:n|0','bh:n|1','bh:ng|0','bh:ng|1'];
 questions['b:21']=()=>['bh:m|0','bh:m|1'];
