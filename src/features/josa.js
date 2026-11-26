@@ -105,6 +105,9 @@ function dSVG(d,h=90,S){
   const size=S?`width:${(b.w*S).toFixed(0)}px;height:${(b.h*S).toFixed(0)}px;max-width:100%`:`width:100%;max-width:${Math.max(110,Math.min(300,b.w*2.2))}px;height:${h}px`;
   return `<svg viewBox="${fx(b.x0)} ${fx(b.y0)} ${fx(b.w)} ${fx(b.h)}" style="${size}" aria-hidden="true"><path d="${d}" fill="none" stroke="var(--stroke)" stroke-width="${S?(3.4/S).toFixed(2):2.6}" stroke-linecap="round" stroke-linejoin="round"/></svg>`}
 const jSVG=(w,h,S)=>dSVG(dJ(w),h,S);
+/* 모양을 읽어 단어를 맞히는 문제는 길이 비교가 아니므로 실제 길이보다 크게(최대 3.5배, 높이 150px·너비 300px 안) 그려 겹친 획이 보이게 한다. 선 굵기는 화면 px 그대로라 확대할수록 획이 또렷하다 */
+function jBig(w){const d=dJ(w),b=boxOf(d),S=Math.max(RS(),Math.min(150/b.h,300/b.w,RS()*3.5));
+  return `<svg viewBox="${fx(b.x0)} ${fx(b.y0)} ${fx(b.w)} ${fx(b.h)}" style="width:${(b.w*S).toFixed(0)}px;height:${(b.h*S).toFixed(0)}px;max-width:100%" aria-hidden="true"><path d="${d}" fill="none" stroke="var(--stroke)" stroke-width="${(3/S).toFixed(2)}" stroke-linecap="round" stroke-linejoin="round"/></svg>`}
 /* 표시만 보여 주는 그림: 8mm 가로 선 끝에 표시를 붙인다(정측은 위쪽) */
 const LINE='M0 0L24 0';
 /* 표시가 작아(2mm) 보기 어려우므로 설명 그림은 실제 길이 배율(RS)의 약 2.4배로 확대해 그린다 */
@@ -136,7 +139,7 @@ function opts4(w){
   if(out.length<4){pickDistractors(w,JW,3,x=>kcsJ(x).filter(c=>!/^a:s/.test(c)),dJ).forEach(x=>add(optOf(x)))}
   return shuf2(out)}
 const jwBuild=(t,w,id)=>{const os=opts4(w);
-  if(t==='jsym')return {id,prompt:jSVG(w,130),q:'이 속기 단어는 무엇일까요?',opts:os.map(o=>({k:o.w,h:chip(o.w)})),ans:w,why:why(w)};
+  if(t==='jsym')return {id,prompt:jBig(w),q:'이 속기 단어는 무엇일까요?',opts:os.map(o=>({k:o.w,h:chip(o.w)})),ans:w,why:why(w)};
   const bx=os.map(o=>boxOf(o.d)),sc=Math.min(RS(),150/Math.max(...bx.map(b=>b.w)),80/Math.max(...bx.map(b=>b.h)));
   return {id,prompt:`<span class="big" style="font-size:44px">${w}</span>`,q:`「${w}」을(를) 쓴 모양을 고르세요`,opts:os.map(o=>({k:o.w,h:dSVG(o.d,0,sc)})),ans:w,why:why(w)}};
 const markBuild=(t,k,id)=>{
