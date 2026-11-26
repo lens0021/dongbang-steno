@@ -25,6 +25,8 @@ const CNAME={'b:1':'ㄴ받침','b:2':'ㅇ받침','b:3':'ㄹ받침: 원칙(허리
 
 /* ---------- 그리기 ---------- */
 const fx=n=>n.toFixed(1);
+/* 받침이 앞에 올 때 ㅇ 머리 원의 반지름. 교재 112쪽(승계를·성패를 등) 그림에서 ㅇ 고리 지름은 약 5~6단위(ㄴ 고리의 1.5배 안팎)라 3.5(지름 7)로 둔다. 이전 5.5는 교재의 두 배라 뒤 글자 획이 고리를 가로질렀다 */
+const NGR=3.5;
 const SIDE={};
 /* 직선·곡선의 정측(교재 도해에서 반소원이 붙는 쪽의 기준): 직선은 jeong(), 곡선은 안쪽 */
 function jside(it){const g=it.g,a=g.a*Math.PI/180;if(it.b)return [-Math.sign(it.b)*Math.sin(a),-Math.sign(it.b)*Math.cos(a)];return jeong(g.a)}
@@ -71,7 +73,7 @@ function bPath(word){
       let s=jside(it);if(sy.ae)s=[-s[0],-s[1]];
       if(loop==='g'&&it.b)s=[-s[0],-s[1]];
       if(loop==='n')circle(2.3,s);
-      else if(loop==='ng')circle(5.5,s);
+      else if(loop==='ng')circle(NGR,s);
       else if(loop==='m'){const ang=Math.atan2(v[1],v[0])*180/Math.PI,r=2.6,T=[x+s[0]*2*r,y+s[1]*2*r],sw=(v[0]*s[1]-v[1]*s[0])>0?0:1;
         d+=`L${fx(x-v[0]*3.5+s[0]*1.2)} ${fx(y-v[1]*3.5+s[1]*1.2)}M${fx(x)} ${fx(y)}`;
         d+=`A7 ${r} ${fx(ang)} 0 ${sw} ${fx(T[0])} ${fx(T[1])}A7 ${r} ${fx(ang)} 0 ${sw} ${fx(x)} ${fx(y)}`;pts.push(T,[x+v[0]*7,y+v[1]*7],[x-v[0]*7,y-v[1]*7])}
