@@ -199,7 +199,20 @@ function practiceIds(k,n=4){
   return out}
 /* 진도 속도: 빠른 진도는 새 개념을 더 빨리 열고 반복(첫 연습·세션 길이)을 줄이며, 느린 진도는 더 단단히 익힌 뒤 열고 반복을 늘린다 */
 const PACES={fast:{label:'빠른 진도',prac:2,target:8,need:LEARNED},slow:{label:'느린 진도',prac:6,target:12,need:4}};
+/* 전영역 문제: 새 개념은 열지 않고, 이미 배운(문제가 가능한) 모든 영역에서 영역을 번갈아 섞어 낸다. 영역 안에서는 약한 개념의 문제를 먼저 고른다. */
+function makeAllSession(){
+  const area=id=>{const t=id.split(':')[0];for(const f of FEATURES){if(f.types&&f.types[t])return 'f'+FEATURES.indexOf(f)}return 'core'};
+  const by={};candidates().filter(eligible).forEach(id=>(by[area(id)]=by[area(id)]||[]).push(id));
+  const recent=new Set(S.recent||[]),sc=id=>avgS(kcsOf(id))+(recent.has(id)?0.8:0)+Math.random()*1.5;
+  const names=shuf(Object.keys(by));names.forEach(a=>by[a].sort((x,y)=>sc(x)-sc(y)));
+  const picked=[],sigSeen=new Set(),N=12;
+  for(let guard=0;picked.length<N&&guard<N*4&&names.some(a=>by[a].length);guard++){
+    for(const a of names){if(picked.length>=N)break;
+      while(by[a].length){const id=by[a].shift(),sk=sigKey(id);if(sk&&sigSeen.has(sk))continue;if(sk)sigSeen.add(sk);picked.push(id);break}}}
+  return shuf(picked.map(itemQ));
+}
 function makeSession(focus,pace){
+  if(pace==='all')return makeAllSession();
   const P=PACES[pace]||PACES.fast;
   const recent=new Set(S.recent||[]);
   let pool=candidates().filter(eligible);
@@ -246,6 +259,7 @@ function home(){
   app.innerHTML=`${topbar('<b>동방속기</b>')}
   <div class="hero"><h1>동방속기 연습장</h1><p>외운 것과 헷갈리는 것을 섞어 풀어요. 배운 문자로 쓸 수 있는 단어는 저절로 열립니다.</p></div>
   <div class="paces"><button class="go" id="adp-fast">빠른 진도<small>반복 적게, 새 개념 빨리</small></button><button class="go alt" id="adp-slow">느린 진도<small>반복 많이, 단단하게</small></button></div>
+  <button class="go alt" id="adp-all" style="margin-bottom:8px">전영역 문제<small style="display:block;font-size:12px;font-weight:500">배운 모든 영역을 섞어서 (새 개념 없음)</small></button>
   <p class="sub" style="text-align:center;margin:-4px 0 12px">${sc===0?'':'맞춤 학습 계속하기 · '}마지막으로 고른 속도: ${(PACES[S.pace]||PACES.fast).label}</p>
   <div class="card"><h3>익힌 개념 ${lc} / ${total}</h3><div class="bar" style="height:12px"><i style="width:${lc/total*100}%"></i></div>
    <p class="sub">배운 개념 ${sc}개 · 정답률 ${tot?Math.round((tot-wr)/tot*100):0}% (${tot}회)${hard.length?` · 자주 틀림: ${hard.map(k=>kcName(k)).join(', ')}`:''}</p></div>
@@ -264,7 +278,7 @@ function home(){
    <div style="margin:12px 0 6px"><span id="calbar" style="display:block;height:10px;border-radius:5px;background:var(--stroke);width:${(54*PXMM).toFixed(0)}px"></span></div>
    <input id="calsl" type="range" min="3" max="9" step="0.05" value="${PXMM}" style="width:100%"><p class="sub"><span id="calv">54mm</span> · <button class="link" id="calreset" style="margin:0">기본값으로</button></p></details>
   <p class="src">내용 출처: 「동방속기 기초편」(이동근, 크라운출판사) 제1장. 문자와 단어 그림은 책의 도해(방향 화살표, 4·8·16mm 길이)를 바탕으로 다시 그린 것이라 손글씨 곡선과는 다릅니다.</p>`;
-  app.querySelector('#adp-fast').onclick=()=>start(undefined,'fast');app.querySelector('#adp-slow').onclick=()=>start(undefined,'slow');
+  app.querySelector('#adp-fast').onclick=()=>start(undefined,'fast');app.querySelector('#adp-slow').onclick=()=>start(undefined,'slow');app.querySelector('#adp-all').onclick=()=>start(undefined,'all');
   {const sl=app.querySelector('#calsl'),bar=app.querySelector('#calbar'),sm=app.querySelector('#calib summary small');
    const cr=app.querySelector('#calref'),cv=app.querySelector('#calv');
    const ap=v=>{setPxmm(v);const w=bar.parentElement.clientWidth||300,mm=54*v<=w?54:27;bar.style.width=(mm*v).toFixed(0)+'px';cr.textContent=mm===54?'카드 짧은 변(54mm)':'카드 짧은 변의 절반(27mm)';cv.textContent=mm+'mm';sm.textContent=v.toFixed(2)+'px = 1mm'};
@@ -284,8 +298,9 @@ function showConcept(kc){
 }
 let R=null;
 function start(focus,pace){
-  if(pace){S.pace=pace}else pace=S.pace||'fast';
+  if(pace&&pace!=='all'){S.pace=pace}else if(!pace)pace=S.pace||'fast';
   const qs=makeSession(focus,pace);
+  if(!qs.length){const n=app.querySelector('#adp-all');if(n)n.querySelector('small').textContent='아직 풀 수 있는 문제가 없어요. 진도 학습을 먼저 해 보세요';return}
   S.recent=qs.filter(q=>q.id).map(q=>q.id);save();
   R={pace,focus:focus||null,qs,i:0,hearts:5,right:0,xp:0,sel:null,checked:false,step:0};
   R.total=qs.filter(q=>!q.intro).length;
