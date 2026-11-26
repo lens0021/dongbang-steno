@@ -182,10 +182,10 @@ function sigKey(id){const [t,w]=[id.split(':')[0],id.slice(id.indexOf(':')+1)];
     return g?t.replace(/^(.*)(sym|pick)$/,'$1')+'|'+g():null}catch(e){return null}}
 /* 같은 문제를 4번 되풀이하지 않도록: 그 개념의 고유 문제가 4개 미만이면, 이미 익힌 다른 개념과 합쳐 만든 문제(단어 등)로 채운다.
    고르는 순서는 문제 종류(앞 글자 접두어)를 번갈아 가며 다양하게 한다. */
-function practiceIds(k){
+function practiceIds(k,n=4){
   const own=shuf(kcQuestions(k).filter(id=>kcsOf(id).every(x=>x===k||seen(x))));
-  const out=[...own].slice(0,4);
-  if(out.length<4){
+  const out=[...own].slice(0,n);
+  if(out.length<n){
     const strict=id=>kcsOf(id).every(x=>x===k||learned(x)),loose=id=>kcsOf(id).every(x=>x===k||seen(x));
     for(const ok of [strict,loose]){
       const sigs=new Set(out.map(sigKey).filter(Boolean)),extra=shuf(candidates().filter(id=>!out.includes(id)&&kcsOf(id).includes(k)&&ok(id))).filter(id=>{const sk=sigKey(id);if(!sk)return true;if(sigs.has(sk))return false;sigs.add(sk);return true});
@@ -193,21 +193,24 @@ function practiceIds(k){
       const used=new Set(out.map(id=>id.split(':')[0]));
       /* 아직 안 쓴 문제 종류를 먼저, 그다음 종류를 번갈아 */
       const types=Object.keys(byT).sort((a,b)=>(used.has(a)-used.has(b)));
-      while(out.length<4&&types.some(t=>byT[t].length)){for(const t of types){if(out.length>=4)break;if(byT[t].length)out.push(byT[t].shift())}}
-      if(out.length>=4)break}}
-  while(out.length&&out.length<4)out.push(out[out.length%Math.max(1,own.length||out.length)]);
+      while(out.length<n&&types.some(t=>byT[t].length)){for(const t of types){if(out.length>=n)break;if(byT[t].length)out.push(byT[t].shift())}}
+      if(out.length>=n)break}}
+  while(out.length&&out.length<n)out.push(out[out.length%Math.max(1,own.length||out.length)]);
   return out}
-function makeSession(focus){
+/* 진도 속도: 빠른 진도는 새 개념을 더 빨리 열고 반복(첫 연습·세션 길이)을 줄이며, 느린 진도는 더 단단히 익힌 뒤 열고 반복을 늘린다 */
+const PACES={fast:{label:'빠른 진도',prac:2,target:8,need:LEARNED},slow:{label:'느린 진도',prac:6,target:12,need:4}};
+function makeSession(focus,pace){
+  const P=PACES[pace]||PACES.fast;
   const recent=new Set(S.recent||[]);
   let pool=candidates().filter(eligible);
   if(focus)pool=pool.filter(id=>kcsOf(id).includes(focus));
   /* 진도 속도: 먼저 본 개념(읽기 전용 카드 제외)이 모두 익숙해져야(LEARNED 이상) 새 개념을 연다.
      익숙하지 않은 개념이 있으면 복습만 하는 세션이 된다(풀 수 있는 문제가 너무 적을 때만 예외로 1개). 모두 익숙하면 2개, 헷갈리는 개념이 1개뿐이면 1개를 연다(진도가 너무 느리다는 지적 반영). */
-  const unstable=CURR.filter(k=>seen(k)&&!INFO.has(k)&&strength(k)<LEARNED).length;
+  const unstable=CURR.filter(k=>seen(k)&&!INFO.has(k)&&strength(k)<P.need).length;
   
-  const cap=focus?(seen(focus)?0:1):(unstable===0?(pool.length>=12?2:1):(unstable===1?1:(pool.length<6?1:0)));
+  const cap=focus?(seen(focus)?0:1):pace==='slow'?(unstable===0?1:(pool.length<6?1:0)):(unstable===0?(pool.length>=12?3:1):(unstable<=2?1:(pool.length<6?1:0)));
   const newK=focus?(seen(focus)?[]:[focus]):CURR.filter(k=>!seen(k)).slice(0,cap);
-  const target=(focus?8:10),N=Math.max(4,target-newK.length*4);
+  const target=focus?Math.min(8,P.target):P.target,N=Math.max(4,target-newK.length*P.prac);
   const score=id=>avgS(kcsOf(id))+(recent.has(id)?0.8:0)+Math.random()*0.5;
   const hard=pool.filter(id=>avgS(kcsOf(id))<2.2).sort((a,b)=>score(a)-score(b));
   const mid=shuf(pool.filter(id=>{const a=avgS(kcsOf(id));return a>=2.2&&a<3.6}));
@@ -218,7 +221,7 @@ function makeSession(focus){
   take(hard,nh);take(mid,nm);take(easy,N-nh-nm);
   take(hard,N-picked.length);take(mid,N-picked.length);take(easy,N-picked.length);
   take(shuf(pool),N-picked.length,true);
-  const pr=newK.map(k=>practiceIds(k)),prSet=new Set(pr.flat()),prSig=new Set([...prSet].map(sigKey).filter(Boolean));
+  const pr=newK.map(k=>practiceIds(k,P.prac)),prSet=new Set(pr.flat()),prSig=new Set([...prSet].map(sigKey).filter(Boolean));
   const qs=picked.filter(id=>!prSet.has(id)&&!prSig.has(sigKey(id))).map(itemQ);
   const first=qs.findIndex(q=>avgS(q.kcs)>=3.6),lead=first>=0?qs.splice(first,1):[];
   const intro=newK.flatMap((k,i)=>[introQ(k),...pr[i].map(itemQ)]);
@@ -242,7 +245,8 @@ function home(){
   const rules=CURR.filter(k=>k[0]==='r');
   app.innerHTML=`${topbar('<b>동방속기</b>')}
   <div class="hero"><h1>동방속기 연습장</h1><p>외운 것과 헷갈리는 것을 섞어 풀어요. 배운 문자로 쓸 수 있는 단어는 저절로 열립니다.</p></div>
-  <button class="go" id="adp">${sc===0?'맞춤 학습 시작':'맞춤 학습 계속하기'}</button>
+  <div class="paces"><button class="go" id="adp-fast">빠른 진도<small>반복 적게, 새 개념 빨리</small></button><button class="go alt" id="adp-slow">느린 진도<small>반복 많이, 단단하게</small></button></div>
+  <p class="sub" style="text-align:center;margin:-4px 0 12px">${sc===0?'':'맞춤 학습 계속하기 · '}마지막으로 고른 속도: ${(PACES[S.pace]||PACES.fast).label}</p>
   <div class="card"><h3>익힌 개념 ${lc} / ${total}</h3><div class="bar" style="height:12px"><i style="width:${lc/total*100}%"></i></div>
    <p class="sub">배운 개념 ${sc}개 · 정답률 ${tot?Math.round((tot-wr)/tot*100):0}% (${tot}회)${hard.length?` · 자주 틀림: ${hard.map(k=>kcName(k)).join(', ')}`:''}</p></div>
   <div class="card"><h3>기본 문자</h3><p class="sub">칸을 누르면 설명을 다시 보고 그 문자만 연습할 수 있어요.</p>
@@ -260,7 +264,7 @@ function home(){
    <div style="margin:12px 0 6px"><span id="calbar" style="display:block;height:10px;border-radius:5px;background:var(--stroke);width:${(54*PXMM).toFixed(0)}px"></span></div>
    <input id="calsl" type="range" min="3" max="9" step="0.05" value="${PXMM}" style="width:100%"><p class="sub"><span id="calv">54mm</span> · <button class="link" id="calreset" style="margin:0">기본값으로</button></p></details>
   <p class="src">내용 출처: 「동방속기 기초편」(이동근, 크라운출판사) 제1장. 문자와 단어 그림은 책의 도해(방향 화살표, 4·8·16mm 길이)를 바탕으로 다시 그린 것이라 손글씨 곡선과는 다릅니다.</p>`;
-  app.querySelector('#adp').onclick=()=>start();
+  app.querySelector('#adp-fast').onclick=()=>start(undefined,'fast');app.querySelector('#adp-slow').onclick=()=>start(undefined,'slow');
   {const sl=app.querySelector('#calsl'),bar=app.querySelector('#calbar'),sm=app.querySelector('#calib summary small');
    const cr=app.querySelector('#calref'),cv=app.querySelector('#calv');
    const ap=v=>{setPxmm(v);const w=bar.parentElement.clientWidth||300,mm=54*v<=w?54:27;bar.style.width=(mm*v).toFixed(0)+'px';cr.textContent=mm===54?'카드 짧은 변(54mm)':'카드 짧은 변의 절반(27mm)';cv.textContent=mm+'mm';sm.textContent=v.toFixed(2)+'px = 1mm'};
@@ -279,10 +283,11 @@ function showConcept(kc){
   window.scrollTo(0,0);
 }
 let R=null;
-function start(focus){
-  const qs=makeSession(focus);
+function start(focus,pace){
+  if(pace){S.pace=pace}else pace=S.pace||'fast';
+  const qs=makeSession(focus,pace);
   S.recent=qs.filter(q=>q.id).map(q=>q.id);save();
-  R={focus:focus||null,qs,i:0,hearts:5,right:0,xp:0,sel:null,checked:false,step:0};
+  R={pace,focus:focus||null,qs,i:0,hearts:5,right:0,xp:0,sel:null,checked:false,step:0};
   R.total=qs.filter(q=>!q.intro).length;
   render();
 }
@@ -343,7 +348,7 @@ function finish(win){
 </div>
   <div class="fb"><div class="in"><button class="go big" id="again">${win?'한 번 더':'다시 도전'}</button><button class="link" id="h" style="margin:0;padding:8px">대시보드로</button></div></div>`;
   /* 끝난 뒤 가장 자주 하는 일은 바로 이어 하기라서, 엄지가 닿는 화면 아래 고정 영역에 큰 주 버튼으로 두고 대시보드는 보조로 둔다 */
-  app.querySelector('#again').onclick=()=>start(R.focus||undefined);
+  app.querySelector('#again').onclick=()=>start(R.focus||undefined,R.pace);
   app.querySelector('#h').onclick=home;
   window.scrollTo(0,0);
 }
