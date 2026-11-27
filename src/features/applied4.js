@@ -26,20 +26,27 @@ const G={
  chi1:{n:'밝힌다 치더라도',d:P('M8 12C12 15 12 21 8 24M5 27L46 13'),w:'「)」 아래 끝에서 긴 사선이 오른쪽 위로 시작함'},
  chi2:{n:'밝히지 않는다 치더라도',d:P('M8 16C12 19 12 25 8 28M10 22L48 11'),w:'「)」 가운데에서 긴 사선이 오른쪽 위로 시작함'},
  son1:{n:'없다손 치더라도',d:P('M9 12C3 14 3 24 9 26C11 26 12 24 11 22M8 26L50 14'),w:'「(」 아래에 작은 고리가 있고 긴 사선이 그 아래 끝에서 시작함'},
+ bo1:{n:'~는 것보다',d:P('M8 6C13 13 17 21 23 20C27 19 25 13 22 17C25 30 34 36 46 33'),w:'오른쪽 아래로 내려오다 작은 고리를 한 번 말고 보다 그릇(╲◡)으로 이어짐'},
+ bo2:{n:'~다는 것보다',d:P('M4 26Q14 10 22 16M14 12L18 22C22 32 32 36 46 34'),w:'위로 볼록한 호와 짧은 가로지르는 획 뒤에 보다 그릇이 이어짐'},
+ bo3:{n:'~(는)다기보다',d:P('M4 24Q14 8 26 14C28 30 36 36 48 34'),w:'길게 위로 볼록한 호에서 곧바로 보다 그릇이 이어짐'},
+ bo4:{n:'~기보다',d:P('M6 14H20C22 30 32 36 46 34'),w:'짧은 가로 획 뒤에 보다 그릇이 이어짐'},
+ bo5:{n:'~던 것보다',d:P('M6 14Q12 6 18 14L24 12M18 14L26 24C30 32 38 36 48 34'),w:'작은 위로 볼록한 호 뒤에 꺾인 획을 거쳐 보다 그릇이 이어짐'},
+ bo6:{n:'~은 것보다',d:P('M4 10C8 6 14 10 10 14C14 18 20 16 24 20M20 22C24 32 34 36 46 34'),w:'둥글게 말린 S 꼴 획 뒤에 보다 그릇이 이어짐'},
  son2:{n:'없지 않다손 치더라도',d:P('M9 10C3 14 3 24 9 28M3 20L48 10'),w:'「(」를 긴 사선이 가운데에서 꿰뚫음'}
 };
 const CS={
  m5:['gat0','gat1','gat3','gat4','gat5'],
  m6:['ji0','ji1','ji2','eon0','eon1','eon2'],
- m7:['chi1','chi2','son1','son2']
+ m7:['chi1','chi2','son1','son2'],
+ m8:['bo1','bo2','bo3','bo4','bo5','bo6']
 };
-const NAMES={m5:'어미 ~ㄹ 것 같으면',m6:'어미 ~ㄹ지라도·~ㄹ지언정',m7:'어미 ~치더라도·~손 치더라도'};
+const NAMES={m5:'어미 ~ㄹ 것 같으면',m6:'어미 ~ㄹ지라도·~ㄹ지언정',m7:'어미 ~치더라도·~손 치더라도',m8:'~보다 (는·다는·기·던·은 것보다)'};
 const KC=Object.keys(CS).map(c=>'p:'+c);
 const cof=k=>Object.keys(CS).find(c=>CS[c].includes(k));
 const sh=k=>sv(G[k].d);
 const why=k=>`${G[k].n}: ${G[k].w}입니다.`;
 const pick=k=>{const pool=CS[cof(k)].filter(x=>x!==k);return shuf([k,...shuf(pool).slice(0,3)])};
-const intro=(c,t)=>()=>({prompt:row(CS[c].map(k=>lab(sh(k),G[k].n))),text:t+'<br>'+CS[c].map(k=>`${G[k].n}: ${G[k].w}`).join('<br>')+'<br><small>그림은 교재 손글씨를 보고 어림해 그린 약식입니다. 교재 287·290쪽과 비교해 보세요.</small>'});
+const intro=(c,t)=>()=>({prompt:row(CS[c].map(k=>lab(sh(k),G[k].n))),text:t+'<br>'+CS[c].map(k=>`${G[k].n}: ${G[k].w}`).join('<br>')+'<br><small>그림은 교재 손글씨를 보고 어림해 그린 약식입니다. 교재 287·290·301쪽과 비교해 보세요.</small>'});
 const F={
  name:'응용편 (어미 2)',
  curr:KC,info:[],
@@ -47,6 +54,7 @@ const F={
  intro:{
   'p:m5':intro('m5','<b>~ㄹ 것 같으면(같다)</b>: 「나」 위치에서 시작하는 길이 2cm 이상의 가로선입니다. 앞에 붙는 작은 표시로 앞말을 구별합니다.'),
   'p:m6':intro('m6','<b>~ㄹ지라도·~ㄹ지언정</b>: ~지라도는 긴 세로선, ~지언정은 긴 호(◡로 시작)입니다. 앞말이 「~다고 할」이면 위 표시가 선에서 떨어지고, 「~지 않을」이면 표시가 선과 겹칩니다.'),
+  'p:m8':intro('m8','<b>~보다</b>: 끝은 항상 보다 그릇(왼쪽 위에서 내려와 오른쪽으로 올라가는 호)이고, 앞에 붙는 획으로 앞말(는 것·다는 것·기·던·은 것)을 구별합니다.'),
   'p:m7':intro('m7','<b>~치더라도·~손 치더라도</b>: 차줄(오른쪽 위로 오르는 선) 2cm 이상으로 씁니다. 앞에 「)」가 있으면 ~치더라도, 「(」가 있으면 ~손 치더라도입니다.')
  },
  questions:Object.fromEntries(Object.keys(CS).map(c=>['p:'+c,()=>CS[c].flatMap(k=>['pP:'+k,'pS:'+k])])),
@@ -54,7 +62,7 @@ const F={
   pP:{kcs:k=>['p:'+cof(k)],ids:()=>Object.keys(G).map(k=>'pP:'+k),build:(k,id)=>({id,prompt:sh(k),q:'이 약기는 어떤 말일까요?',one:true,opts:pick(k).map(x=>opt(x,G[x].n)),ans:k,why:why(k)})},
   pS:{kcs:k=>['p:'+cof(k)],ids:()=>Object.keys(G).map(k=>'pS:'+k),build:(k,id)=>({id,prompt:`<span class="big" style="font-size:28px">${G[k].n}</span>`,q:'어떤 약기로 쓸까요?',opts:pick(k).map(x=>opt(x,sh(x))),ans:k,why:why(k)})}
  },
- section:{title:'응용편 (제4장 287~290쪽 · 어미 ~ㄹ 것 같으면·~지라도·~치더라도)',kcs:KC}
+ section:{title:'응용편 (제4장 287~301쪽 · 어미 ~ㄹ 것 같으면·~지라도·~치더라도·~보다)',kcs:KC}
 };
 (window.FEATURES=window.FEATURES||[]).push(F);
 })();
