@@ -43,21 +43,38 @@ const MARK={
  hayeo:{n:'하여',w:'점',d:(x,y)=>dot(x,y)},
  haeseo:{n:'해서',w:'s자',d:(x,y)=>`<path d="M${f1(x+1.3)} ${f1(y-3.5)}C${f1(x-2.4)} ${f1(y-3.5)} ${f1(x-2.4)} ${f1(y-.4)} ${f1(x)} ${f1(y)}C${f1(x+2.4)} ${f1(y+.4)} ${f1(x+2.4)} ${f1(y+3.5)} ${f1(x-1.3)} ${f1(y+3.5)}"/>`},
  hae:{n:'해',w:'「<」',d:(x,y)=>`<path d="M${f1(x+2.5)} ${f1(y-3)}L${f1(x-1.5)} ${f1(y)}L${f1(x+2.5)} ${f1(y+3)}"/>`},
- han:{n:'한',w:'짧은 하줄(↘)',d:(x,y)=>`<path d="M${f1(x-2)} ${f1(y-3)}L${f1(x+2)} ${f1(y+3)}"/>`}
+ han:{n:'한',w:'짧은 하줄(↘)',d:(x,y)=>`<path d="M${f1(x-2)} ${f1(y-3)}L${f1(x+2)} ${f1(y+3)}"/>`},
+ neun:{n:'하여는',w:'작은 원(○)',d:(x,y)=>`<circle cx="${f1(x)}" cy="${f1(y)}" r="2" />`},
+ do:{n:'하여도',w:'짧은 사선(/)',d:(x,y)=>`<path d="M${f1(x-1.5)} ${f1(y+3)}L${f1(x+1.5)} ${f1(y-3)}"/>`}
 };
-const EK=Object.keys(EPOS),MK=Object.keys(MARK);
+const EK=Object.keys(EPOS),MK=['hayeo','haeseo','hae','han'],MK3=['hayeo','neun','do'];
 const PH={dae:'대',ui:'의',gwan:'관'};
 const phrase=(p,m)=>`에 ${PH[p]}${{hayeo:'하여',haeseo:'해서',hae:'해',han:'한'}[m]}`;
-const phrase2=(p,m)=>({hayeo:`에 ${PH[p]}하여`,haeseo:`에 ${PH[p]}해서`,hae:`에 ${PH[p]}해`,han:`에 ${PH[p]}한`})[m];
+const phrase2=(p,m)=>({hayeo:`에 ${PH[p]}하여`,haeseo:`에 ${PH[p]}해서`,hae:`에 ${PH[p]}해`,han:`에 ${PH[p]}한`,neun:`에 ${PH[p]}하여는`,do:`에 ${PH[p]}하여도`})[m];
 const eShape=(p,m)=>sv('<path d="M6 34H84"/>'+HOOK+MARK[m].d(...EPOS[p].p),110,60);
 const eWhy=(p,m)=>`${phrase2(p,m)}: 선 끝의 「에」 갈고리에서 ${EPOS[p].w}에 ${MARK[m].w}이(가) 있습니다. ${PH[p]}=${EPOS[p].s}, ${MARK[m].n}=${MARK[m].w}.`;
 const opt=(k,h)=>({k,h});
+/* 「~에」 어쩌구 (2): 갈고리 둘레에 붙는 짧은 획 (교재 26쪽 표) */
+const G={
+ uimyeon:{n:'에 의하면',d:'<path d="M80 27L82.5 22"/>',w:'정측(위쪽)에 아주 짧은 사선(/) 하나'},
+ gwanhan:{n:'에 관한 한',d:'<path d="M78.5 38L81.5 44M82 38L85 44"/>',w:'반측(아래쪽)에 짧은 하줄(↘) 두 개'},
+ geolchyeo:{n:'에 걸쳐',d:'<path d="M81 28.5V41"/>',w:'갈고리 바로 앞에서 선을 위아래로 가르는 세로선(이)'},
+ geolchin:{n:'에 걸친',d:'<path d="M81 28.5V41"/><circle cx="81" cy="26.5" r="2"/>',w:'세로선(이)을 가르고 그 윗머리에 작은 원'},
+ jinaji:{n:'에 지나지 않는',d:'<path d="M89.5 34H95"/>',w:'갈고리 오른쪽(선 끝)에 짧은 가로선(가)'},
+ uigeo:{n:'에 의거하여',d:'<path d="M78 25H84"/>',w:'정측(위쪽)에 짧은 가로선(가)'},
+ bulgwa:{n:'에 불과한',d:'<path d="M78 43H84"/>',w:'반측(아래쪽)에 짧은 가로선(가)'},
+ ttara:{n:'에 따라',d:'<path d="M80 40L87 27"/>',w:'갈고리를 위아래로 가르는 사선(/)'},
+ uihada:{n:'에 의하다',d:'<path d="M81 21V27"/>',w:'정측(위쪽)에 짧은 세로선(이)'}
+};
+const GK=Object.keys(G);
+const gShape=k=>sv('<path d="M6 34H84"/>'+HOOK+G[k].d,110,60);
+const gWhy=k=>`${G[k].n}: 선 끝 「에」 갈고리에 ${G[k].w}을(를) 붙입니다.`;
 
 const F={
  name:'응용편',
- curr:['p:def','p:term','p:conj','p:e1','p:e2','p:e3'],
+ curr:['p:def','p:term','p:conj','p:e1','p:e2','p:e3','p:e4','p:e5'],
  info:['p:def'],
- names:{'p:def':'약기법의 정의와 용어','p:term':'상선·하선','p:conj':'접속사 약기(그리고·그리하여·그리하다)','p:e1':'~에 대·의·관 위치','p:e2':'~하여·해서·해·한 약부','p:e3':'~에 대·의·관 + 하여·해서·해·한'},
+ names:{'p:def':'약기법의 정의와 용어','p:term':'상선·하선','p:conj':'접속사 약기(그리고·그리하여·그리하다)','p:e1':'~에 대·의·관 위치','p:e2':'~하여·해서·해·한 약부','p:e3':'~에 대·의·관 + 하여·해서·해·한','p:e4':'~하여는·하여도 약부','p:e5':'~에 어쩌구(2) 의하면·걸쳐·따라 …'},
  intro:{
   'p:def':()=>({prompt:'<div class="txt">약자 · 약부 · 중선 · 상선 · 하선 · 최장선</div>',
    text:'<b>약기법의 정의와 용어</b><br>약자 = 속기문자를 그대로 줄이거나 더 길게 써서 글자 수를 줄이는 약기법.<br>약부 = 일반 부호 모양을 속기에 응용하는 약기법.<br>약기가 만들어지는 말 = ① 너무 자주 나와 기본문자로 쓰기 귀찮은 말 ② 기본문자만으로는 번문에 문제가 있는 말 ③ 이어쓰기에 불편하거나 규칙적인 모양이 되는 말. 빈도가 드문 말은 문법 규칙이 있어도 약기를 만들지 않고 기본문자로 씁니다.<br>약기법의 형태 = 품사(조사·동사·형용사) 약기법, 상선 약기법(앞문자 끝에서 올려 씀), 하선 약기법(내려 씀), 중간 약기법(중간자 생략), 최장선 약기법, 부호 약기법.<br>용어: <b>중선</b>=문자의 중심선(보통 필기하는 선), <b>상선</b>=앞문자 끝에서 차줄로 4mm 가량 떨어진 위치, <b>하선</b>=앞문자 끝에서 하줄로 4mm 가량 떨어진 위치, <b>최장선</b>=길이 20~25mm 이상의 문자, <b>어쩌구</b>=「어쩌구 저쩌구 여러 가지 말로 변한다」를 줄인 말, <b>같이 쓴다</b>=혼동될 염려가 없는 말을 골라 두 가지 이상 같이 쓰는 것.<br>기본문자가 먼저이고 약기법은 이를 돕는 것입니다. 약기가 생각나지 않으면 기본문자로 쓰세요.'}),
@@ -71,13 +88,20 @@ const F={
    text:'<b>「~하여·해서·해·한」 약부</b><br>위치(대·의·관)에 붙이는 약부의 모양이 끝맺음을 정합니다.<br>하여 = 점 · 해서 = s자 · 해 = 「<」 · 한 = 짧은 하줄(↘).<br>위치 규칙은 그대로이고, 약부만 바뀝니다. 예) 에 대해서 = 갈고리 끝 오른쪽에 s자.'}),
   'p:e3':()=>({prompt:row(EK.map(p=>lab(eShape(p,'haeseo'),phrase2(p,'haeseo')))),
    text:'<b>위치 + 약부 합치기</b><br>위치로 <b>대·의·관</b>을, 약부 모양으로 <b>하여·해서·해·한</b>을 읽습니다. 두 가지를 모두 보고 한 구절로 읽어 보세요.<br>예) 정측(위)에 「<」 = 에 의해 · 반측(아래)에 짧은 ↘ = 에 관한.'})
+ ,
+  'p:e4':()=>({prompt:row(MK3.map(m=>lab(eShape('dae',m),phrase2('dae',m)))),
+   text:'<b>~하여는 · ~하여도</b><br>위치(대·의·관)는 그대로이고, 약부가 바뀝니다.<br>하여 = 점 · <b>하여는 = 작은 원(○)</b> · <b>하여도 = 짧은 사선(/)</b>.<br>예) 에 의하여는 = 정측(위)에 작은 원 · 에 관하여도 = 반측(아래)에 짧은 사선.<br><small>~해선(에 대해선·의해선·관해선)은 s자 꼴이 더 복잡한 약부라 이 앱에서는 다루지 않았습니다. 교재 21쪽을 보세요.</small>'}),
+  'p:e5':()=>({prompt:row(GK.slice(0,6).map(k=>lab(gShape(k),G[k].n))),
+   text:'<b>「~에」 어쩌구 (2)</b><br>'+GK.map(k=>`${G[k].n}: ${G[k].w}`).join('<br>')+'<br><small>에 의하면은·에 이르기까지·에 관련(해서)·에 따른은 모양이 복잡해 여기서는 다루지 않았습니다. 교재 26쪽을 보세요.</small>'})
  },
  questions:{
   'p:term':()=>[...shuf(Object.keys(TPOS)).map(k=>'pTq:'+k),'pTr:sang','pTr:ha'],
   'p:conj':()=>[...shuf(CK).flatMap(k=>['pCq:'+k,'pCr:'+k])],
   'p:e1':()=>shuf(EK).flatMap(p=>['pAq:'+p,'pAr:'+p]),
   'p:e2':()=>shuf(MK).flatMap(m=>['pBq:'+m,'pBr:'+m]),
-  'p:e3':()=>shuf(EK.flatMap(p=>MK.map(m=>p+'.'+m))).slice(0,8).flatMap(k=>['pEq:'+k])
+  'p:e3':()=>[],
+  'p:e4':()=>shuf(EK.flatMap(p=>MK3.map(m=>p+'.'+m))).slice(0,8).flatMap((k,i)=>[(i%2?'pFr:':'pFq:')+k]),
+  'p:e5':()=>shuf(GK).flatMap(k=>['pGq:'+k,'pGr:'+k])
  },
  types:{
   pTq:{kcs:()=>['p:term'],ids:()=>Object.keys(TPOS).map(k=>'pTq:'+k),build:(k,id)=>({id,prompt:tShape(k),q:'점은 앞문자 끝에서 어느 자리에 있나요?',one:true,opts:shuf(Object.keys(TPOS).map(x=>opt(x,TPOS[x].n))),ans:k,
@@ -98,9 +122,18 @@ const F={
   pEr:{kcs:()=>['p:e1','p:e2'],ids:()=>EK.flatMap(p=>MK.map(m=>'pEr:'+p+'.'+m)),build:(k,id)=>{const [p,m]=k.split('.');
     const wrong=[...EK.filter(x=>x!==p).map(x=>[x,m]),...MK.filter(x=>x!==m).map(x=>[p,x])];
     const pick=shuf(wrong).slice(0,3);
-    return {id,prompt:`<span class="big" style="font-size:28px">${phrase2(p,m)}</span>`,q:'어떤 약기로 쓸까요?',opts:shuf([[p,m],...pick].map(([a,b])=>opt(a+'.'+b,eShape(a,b)))),ans:k,why:eWhy(p,m)}}}
+    return {id,prompt:`<span class="big" style="font-size:28px">${phrase2(p,m)}</span>`,q:'어떤 약기로 쓸까요?',opts:shuf([[p,m],...pick].map(([a,b])=>opt(a+'.'+b,eShape(a,b)))),ans:k,why:eWhy(p,m)}}},
+  /* 하여·하여는·하여도 × 대·의·관 */
+  pFq:{kcs:()=>['p:e1','p:e4'],ids:()=>EK.flatMap(p=>MK3.map(m=>'pFq:'+p+'.'+m)),build:(k,id)=>{const [p,m]=k.split('.');
+    const wrong=[...EK.filter(x=>x!==p).map(x=>[x,m]),...MK3.filter(x=>x!==m).map(x=>[p,x])];
+    return {id,prompt:eShape(p,m),q:'이 약기는 어떤 말일까요?',one:true,opts:shuf([[p,m],...shuf(wrong).slice(0,3)].map(([a,b])=>opt(a+'.'+b,phrase2(a,b)))),ans:k,why:eWhy(p,m)}}},
+  pFr:{kcs:()=>['p:e1','p:e4'],ids:()=>EK.flatMap(p=>MK3.map(m=>'pFr:'+p+'.'+m)),build:(k,id)=>{const [p,m]=k.split('.');
+    const wrong=[...EK.filter(x=>x!==p).map(x=>[x,m]),...MK3.filter(x=>x!==m).map(x=>[p,x])];
+    return {id,prompt:`<span class="big" style="font-size:28px">${phrase2(p,m)}</span>`,q:'어떤 약기로 쓸까요?',opts:shuf([[p,m],...shuf(wrong).slice(0,3)].map(([a,b])=>opt(a+'.'+b,eShape(a,b)))),ans:k,why:eWhy(p,m)}}},
+  pGq:{kcs:()=>['p:e1','p:e5'],ids:()=>GK.map(k=>'pGq:'+k),build:(k,id)=>({id,prompt:gShape(k),q:'이 약기는 어떤 말일까요?',one:true,opts:shuf([k,...shuf(GK.filter(x=>x!==k)).slice(0,3)].map(x=>opt(x,G[x].n))),ans:k,why:gWhy(k)})},
+  pGr:{kcs:()=>['p:e1','p:e5'],ids:()=>GK.map(k=>'pGr:'+k),build:(k,id)=>({id,prompt:`<span class="big" style="font-size:28px">${G[k].n}</span>`,q:'어떤 약기로 쓸까요?',opts:shuf([k,...shuf(GK.filter(x=>x!==k)).slice(0,3)].map(x=>opt(x,gShape(x)))),ans:k,why:gWhy(k)})}
  },
- section:{title:'응용편 (제1장 기본 약기법 11~20쪽)',kcs:['p:def','p:term','p:conj','p:e1','p:e2','p:e3']}
+ section:{title:'응용편 (제1장 기본 약기법 11~26쪽)',kcs:['p:def','p:term','p:conj','p:e1','p:e2','p:e3','p:e4','p:e5']}
 };
 F.questions['p:e3']=()=>shuf(EK.flatMap(p=>MK.map(m=>p+'.'+m))).slice(0,8).flatMap((k,i)=>[(i%2?'pEr:':'pEq:')+k]);
 (window.FEATURES=window.FEATURES||[]).push(F);
