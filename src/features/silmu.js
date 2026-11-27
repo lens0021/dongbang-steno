@@ -54,14 +54,29 @@ const RK=Object.keys(REL);
 const TXT=[
  {k:'s:meas',q:'킬로(k) 단위 약기의 길이는?',o:['4mm','8mm','16mm','2mm'],a:0,w:'킬로(k)는 4mm 길이로 씁니다.'},
  {k:'s:meas',q:'약기법보다 기본문자가 더 편한 경우에는?',o:['기본문자로 쓴다','반드시 약기법을 쓴다','쓰지 않고 생략한다','점으로 대신한다'],a:0,w:'약기법보다 기본문자가 더 편한 경우에는 기본문자로 씁니다. 약기법은 절대적인 것이 아닙니다.'},
+ {k:'s:sang',q:'실무편 1장 3절 상선응용약자는 어디에 쓰나요?',o:['상선(위쪽 선)','중선','하선','기준선 한가운데'],a:0,w:'상선응용약자는 상선, 곧 위쪽 선에 씁니다(교재 13쪽 3절 제목의 「위치: 상선」).'},
  {k:'s:rel',q:'「~합니다」 같은 특별어미는 어떻게 쓰나요?',o:['앞 글자 끝에서 하줄(↘)로 떼어 쓴다','앞 글자 위에 겹쳐 쓴다','앞 글자 머리에 쓴다','점 두 개로 쓴다'],a:0,w:'특별어미는 앞 글자 끝에서 하줄(↘)로 떼어 씁니다. 조사 다음에 나올 때 활용하면 편리합니다.'}
 ];
 
+/* 상선응용약자(실무편 13쪽, 일부): 위치는 상선. 교재 약부를 보고 다시 그린 약식 모양. */
+const SANG={
+ '구태의연하게':{d:'<path d="M8 30H58"/><circle cx="62" cy="32" r="1.6" fill="var(--stroke)"/>'},
+ '구태의연한':{d:'<path d="M8 22H48L60 36"/>'},
+ '구호대책':{d:'<path d="M8 30H68M46 14Q36 10 38 30L30 52"/>'},
+ '나도 너도':{d:'<path d="M10 28Q22 44 36 30M44 38L50 24M52 38L58 24"/>'},
+ '더더구나':{d:'<path d="M28 42L36 18M42 42L50 18"/>'},
+ '더군다나':{d:'<path d="M44 14L34 46L41 40"/>'},
+ '더더군다나':{d:'<path d="M22 18L28 40M32 18L38 40M46 16L38 48"/>'},
+ '오직':{d:'<path d="M56 22Q42 38 22 40M22 40L30 32"/>'},
+ '한동안':{d:'<path d="M40 16Q26 10 26 22Q28 30 38 28Q42 40 28 52"/>'}
+};
+const SK=Object.keys(SANG);
+
 const F={
  name:'실무편 1장 보충약기법',
- curr:['s:su1','s:su2','s:meas','s:rel'],
+ curr:['s:su1','s:su2','s:meas','s:rel','s:sang'],
  info:[],
- names:{'s:su1':'수·몇 + 백천만억','s:su2':'수·몇 + 십·만 고리','s:meas':'도량형 약기','s:rel':'~가지고·특별어미'},
+ names:{'s:su1':'수·몇 + 백천만억','s:su2':'수·몇 + 십·만 고리','s:meas':'도량형 약기','s:rel':'~가지고·특별어미','s:sang':'상선응용약자(1)'},
  intro:{
   's:su1':()=>({prompt:`<div style="display:flex;flex-wrap:wrap;justify-content:center">${['수백','수천','수만','수억','몇백','몇천'].map(w=>`<span style="display:inline-flex;flex-direction:column;align-items:center;margin:2px 6px">${GL(w[0],w.slice(1))}<small style="color:var(--mute);font-size:11px">${w}</small></span>`).join('')}</div>`,
    text:'<b>수사 약기 (실무편 1장 1절)</b><br>「수」는 ∧, 「몇」은 V로 씁니다. 그 뒤에 단위를 이어 붙입니다.<br>백 = 가로선 · 천 = 오른쪽 위로 뻗는 선 · 만 = 위로 볼록한 호 · 억 = 오른쪽 위로 휘어 오르는 곡선.<br>예) 수백 = ∧ + 가로선, 몇천 = V + 오른쪽 위 선.<br><small>그림은 교재의 약부를 보고 직접 다시 그린 약식 모양입니다.</small>'}),
@@ -71,13 +86,16 @@ const F={
   's:meas':()=>({prompt:`<div style="display:flex;flex-wrap:wrap;justify-content:center">${MK.map(k=>((h,t)=>`<span style="display:inline-flex;flex-direction:column;align-items:center;margin:2px 6px">${h}<small style="color:var(--mute);font-size:11px">${t}</small></span>`)(svg(MEAS[k].d),k)).join('')}</div>`,
    text:'<b>도량형 약기 (실무편 1장 1-4)</b><br>킬로(k)는 4mm 길이의 「)」로 씁니다. 길이·넓이·무게·농도 등 단위마다 정해진 약부가 있습니다.<br>참고: 약기법보다 기본문자가 더 편한 경우에는 기본문자로 씁니다. 약기법은 절대적인 것이 아닙니다.<br><small>그림은 교재를 보고 다시 그린 약식 모양이라 필체는 다릅니다. kg·km·kw·kcal·cal·t·평 등은 교재 12쪽에서 확인하세요.</small>'}),
   's:rel':()=>({prompt:`<div style="display:flex;flex-wrap:wrap;justify-content:center">${RK.map(k=>((h,t)=>`<span style="display:inline-flex;flex-direction:column;align-items:center;margin:2px 6px">${h}<small style="color:var(--mute);font-size:11px">${t}</small></span>`)(svg(REL[k].d),k)).join('')}</div>`,
-   text:'<b>관계조사 약기법 (실무편 1장 2절)</b><br>~가지고 = 「L」. 특별어미는 앞 글자 끝에서 하줄(↘)로 떼어 씁니다: ~합니다 = 긴 ↘ 사선, ~합니다마는 = 사선 끝에 작은 고리.'})
+   text:'<b>관계조사 약기법 (실무편 1장 2절)</b><br>~가지고 = 「L」. 특별어미는 앞 글자 끝에서 하줄(↘)로 떼어 씁니다: ~합니다 = 긴 ↘ 사선, ~합니다마는 = 사선 끝에 작은 고리.'}),
+  's:sang':()=>({prompt:`<div style="display:flex;flex-wrap:wrap;justify-content:center">${SK.map(k=>((h,t)=>`<span style="display:inline-flex;flex-direction:column;align-items:center;margin:2px 6px">${h}<small style="color:var(--mute);font-size:11px">${t}</small></span>`)(svg(SANG[k].d),k)).join('')}</div>`,
+   text:'<b>상선응용약자 (실무편 1장 3절)</b><br>자주 나오는 말을 한 글자 모양으로 줄인 약자로, 상선(위쪽 선)에 씁니다. 모양을 직접 외워야 하는 약자라 그림과 말을 짝지어 익히세요.<br><small>그림은 교재를 보고 다시 그린 약식 모양입니다. 결단코·구호대책 등 복잡한 약자는 교재 13쪽에서 확인하세요.</small>'})
  },
  questions:{
   's:su1':()=>shuf(poolOf('1')).slice(0,6).flatMap((w,i)=>[(i%2?'sP:':'sM:')+w]),
   's:su2':()=>shuf(poolOf('2')).slice(0,6).flatMap((w,i)=>[(i%2?'sP:':'sM:')+w]),
   's:meas':()=>[...shuf(MK).slice(0,5).flatMap((k,i)=>[(i%2?'sQ:':'sU:')+k]),...TXT.map((t,i)=>({t,i})).filter(x=>x.t.k==='s:meas').map(x=>'sT:'+x.i)],
-  's:rel':()=>[...shuf(RK).flatMap(k=>['sR:'+k,'sS:'+k]),'sT:2']
+  's:sang':()=>[...shuf(SK).slice(0,6).flatMap((k,i)=>[(i%2?'sY:':'sX:')+k]),'sT:2'],
+  's:rel':()=>[...shuf(RK).flatMap(k=>['sR:'+k,'sS:'+k]),'sT:3']
  },
  types:{
   sM:{kcs:k=>[kcOf(k)],ids:()=>[...poolOf('1'),...poolOf('2')].map(w=>'sM:'+w),build:(k,id)=>{
@@ -102,9 +120,11 @@ const F={
   sQ:{kcs:()=>['s:meas'],ids:()=>MK.map(k=>'sQ:'+k),build:(k,id)=>({id,prompt:`<span class="big" style="font-size:32px">${k}</span>`,q:'어떤 약기로 쓸까요?',opts:shuf(shuf(MK.filter(x=>x!==k)).slice(0,3).concat(k)).map(x=>({k:x,h:svg(MEAS[x].d)})),ans:k,why:`「${k}」의 약기는 그림의 모양입니다.`})},
   sR:{kcs:()=>['s:rel'],ids:()=>RK.map(k=>'sR:'+k),build:(k,id)=>({id,prompt:svg(REL[k].d).replace('<svg ','<svg style="width:140px;height:105px" '),q:'이 약기는 무엇일까요?',one:true,opts:shuf(RK.map(x=>({k:x,h:x}))),ans:k,why:`${k}: ${REL[k].w}`})},
   sS:{kcs:()=>['s:rel'],ids:()=>RK.map(k=>'sS:'+k),build:(k,id)=>({id,prompt:`<span class="big" style="font-size:30px">${k}</span>`,q:'어떤 약기로 쓸까요?',opts:shuf(RK.map(x=>({k:x,h:svg(REL[x].d)}))),ans:k,why:`${k}: ${REL[k].w}`})},
-  sT:{kcs:k=>[TXT[+k].k],ids:()=>TXT.map((_,i)=>'sT:'+i),build:(k,id)=>{const t=TXT[+k];return {id,prompt:`<div class="txt">${t.q}</div>`,q:'책의 내용을 떠올려 보세요',one:true,opts:shuf(t.o.map(x=>({k:x,h:x}))),ans:t.o[t.a],why:t.w}}}
+  sT:{kcs:k=>[TXT[+k].k],ids:()=>TXT.map((_,i)=>'sT:'+i),build:(k,id)=>{const t=TXT[+k];return {id,prompt:`<div class="txt">${t.q}</div>`,q:'책의 내용을 떠올려 보세요',one:true,opts:shuf(t.o.map(x=>({k:x,h:x}))),ans:t.o[t.a],why:t.w}}},
+  sX:{kcs:()=>['s:sang'],ids:()=>SK.map(k=>'sX:'+k),build:(k,id)=>({id,prompt:svg(SANG[k].d).replace('<svg ','<svg style="width:140px;height:105px" '),q:'이 상선응용약자는 무엇일까요?',one:true,opts:shuf(shuf(SK.filter(x=>x!==k)).slice(0,3).concat(k)).map(x=>({k:x,h:x})),ans:k,why:`그림의 모양이 「${k}」의 약자입니다.`})},
+  sY:{kcs:()=>['s:sang'],ids:()=>SK.map(k=>'sY:'+k),build:(k,id)=>({id,prompt:`<span class="big" style="font-size:28px">${k}</span>`,q:'어떤 약자로 쓸까요?',opts:shuf(shuf(SK.filter(x=>x!==k)).slice(0,3).concat(k)).map(x=>({k:x,h:svg(SANG[x].d)})),ans:k,why:`「${k}」의 약자는 그림의 모양입니다.`})}
  },
- section:{title:'실무편 1장 보충약기법',kcs:['s:su1','s:su2','s:meas','s:rel']}
+ section:{title:'실무편 1장 보충약기법',kcs:['s:su1','s:su2','s:meas','s:rel','s:sang']}
 };
 (window.FEATURES=window.FEATURES||[]).push(F);
 })();
