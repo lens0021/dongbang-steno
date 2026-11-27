@@ -22,8 +22,8 @@ const ST={
  da:{v:'안된다',fam:'s',d:'M10 32L16 18',E:[10,32],t:[-.42,.91],w:'짧은 사선(/)'},
  du:{v:'둔다',  fam:'s',d:'M8 48L22 14',E:[8,48],t:[-.38,.92],w:'긴 사선(/, 「다」의 2배 남짓)'},
  /* 기본형 (2): 그 밖의 12개 */
- ra:{v:'밝힌다',fam:'x',d:'M10 14Q15 22 9 30',E:[9,30],t:[-.5,.85],w:'짧은 「)」꼴 곡선'},
- ro:{v:'나온다',fam:'x',d:'M10 8Q18 24 9 40',E:[9,40],t:[-.5,.85],w:'긴 「)」꼴 곡선(「라」의 2배)'},
+ ra:{v:'밝힌다',fam:'x',d:'M13 14Q12 24 7 30',E:[7,30],t:[-.5,.85],w:'짧게 비스듬히 휜 곡선(丿)'},
+ ro:{v:'나온다',fam:'x',d:'M15 8Q14 28 7 40',E:[7,40],t:[-.5,.85],w:'길게 비스듬히 휜 곡선(「라」의 2배)'},
  ma:{v:'했다',  fam:'x',d:'M8 28Q14 22 20 28',E:[20,28],t:[.7,.7],w:'작은 아치(⌒)'},
  mo:{v:'나아간다',fam:'x',d:'M8 28Q20 18 32 28',E:[32,28],t:[.75,.66],w:'가운데 크기 아치(「마」의 2배)'},
  meu:{v:'믿는다',fam:'x',d:'M8 30Q32 12 56 30',E:[56,30],t:[.8,.6],w:'큰 아치(「마」의 4배)'},
@@ -33,12 +33,24 @@ const ST={
  sa:{v:'시킨다',fam:'x',d:'M13 14Q7 20 8 28',E:[8,28],t:[0,1],w:'작은 「(」꼴 곡선'},
  su:{v:'받는다',fam:'x',d:'M18 8Q8 16 9 34',E:[9,34],t:[0,1],w:'긴 「(」꼴 곡선(「사」의 2배)'},
  a:{v:'안다',  fam:'x',d:'M8 24Q11 31 15 28Q17 27 19 23',E:[19,23],t:[.5,-.85],w:'작게 내려갔다 위로 오르는 곡선'},
- o:{v:'온다',  fam:'x',d:'M8 28Q15 36 24 31Q31 27 35 20',E:[35,20],t:[.6,-.8],w:'길게 내려갔다 위로 오르는 곡선(「아」의 2배)'}
+ o:{v:'온다',  fam:'x',d:'M8 28Q15 36 24 31Q31 27 35 20',E:[35,20],t:[.6,-.8],w:'길게 내려갔다 위로 오르는 곡선(「아」의 2배)'},
+ /* 기본형 (3): 마지막 10개 */
+ ja:{v:'잡는다',fam:'x',d:'M8 28Q12 23 18 22',E:[18,22],t:[.95,-.3],w:'짧게 오르는 곡선'},
+ ju:{v:'준다',  fam:'x',d:'M8 34Q18 20 32 16',E:[32,16],t:[.9,-.4],w:'길게 오르는 곡선(「자」의 2배)'},
+ cha:{v:'드린다',fam:'x',d:'M8 28L18 24',E:[18,24],t:[.93,-.37],w:'짧은 오름선(↗)'},
+ cho:{v:'오른다',fam:'x',d:'M8 34L42 22',E:[42,22],t:[.94,-.34],w:'긴 오름선(↗, 「차」의 3~4배)'},
+ ka:{v:'아니다',fam:'x',d:'M9 16Q13 22 9 28',E:[9,28],t:[-.4,.9],w:'짧은 「)」꼴 곡선(세워 쓴 것)'},
+ ko:{v:'판다',  fam:'x',d:'M9 10Q17 22 9 36',E:[9,36],t:[-.4,.9],w:'긴 「)」꼴 곡선(「카」의 2배 남짓)'},
+ pa:{v:'없다',  fam:'x',d:'M13 14Q6 22 13 30',E:[13,30],t:[.4,.9],w:'짧은 「(」꼴 곡선(세워 쓴 것)'},
+ po:{v:'아니하',fam:'x',d:'M13 8Q4 22 13 38',E:[13,38],t:[.4,.9],w:'긴 「(」꼴 곡선(「파」의 2배 남짓)'},
+ ha:{v:'한다',  fam:'x',d:'M8 20L16 30',E:[16,30],t:[.62,.78],w:'짧은 내림선(\\)'},
+ i:{v:'있다',   fam:'x',d:'M10 14V30',E:[10,30],t:[0,1],w:'짧은 세로선(|)'}
 };
 const SK=['ga','go','geu','na','no','neu','da','du'];
 const HK=['ra','ro','ma','mo','meu','ba','beo','bo','sa','su','a','o'];
-const ALL=SK.concat(HK);
-const SYL={ga:'가',go:'고',geu:'그',na:'나',no:'노',neu:'느',da:'다',du:'두',ra:'라',ro:'로',ma:'마',mo:'모',meu:'므',ba:'바',beo:'버',bo:'보',sa:'사',su:'수',a:'아',o:'오'};
+const KK=['ja','ju','cha','cho','ka','ko','pa','po','ha','i'];
+const ALL=SK.concat(HK).concat(KK);
+const SYL={ja:'자',ju:'주',cha:'차',cho:'초',ka:'카',ko:'코',pa:'파',po:'포',ha:'하',i:'이',ga:'가',go:'고',geu:'그',na:'나',no:'노',neu:'느',da:'다',du:'두',ra:'라',ro:'로',ma:'마',mo:'모',meu:'므',ba:'바',beo:'버',bo:'보',sa:'사',su:'수',a:'아',o:'오'};
 /* 「~가지고」 앞의 말 */
 const GJ={ga:'가',go:'일으켜',geu:'나가',na:'지켜',no:'되어',neu:'몰라',da:'안되어',du:'두어',ra:'밝혀',ro:'나와',mo:'나아가',meu:'믿어',ba:'바라',beo:'버려',bo:'보아',sa:'시켜',su:'받아',a:'알아',o:'와'};
 /* 어미 변화 글(기본형 → ㅂ니다형, 는형, 다는형, 는 것) */
@@ -54,13 +66,27 @@ const EN={
  gm:{n:'~는 것입니다',w:'끝에 고리와 길게 늘어진 꼬리'},
  dg:{n:'~다는 것이다',w:'끝을 가로지르는 길쭉한 획'},
  dm:{n:'~다는 것입니다',w:'끝을 가로지르는 아주 긴 획(아래로 길게 내려감)'},
+ gi:{n:'~기 전에',w:'끝에서 아래로 8mm 내려와 끝이 말려 올라가는 갈고리(「이」 8mm)'},
+ gd:{n:'~기 전에도',w:'~기 전에 갈고리에 작은 고리가 하나 더 있음'},
+ do:{n:'~도',w:'끝에 붙은 짧은 꼬리(,)'},
+ tj:{n:'~든지',w:'끝 아래쪽에 작은 「V」'},
+ tg:{n:'~든가',w:'끝 아래쪽에 작은 「<」'},
+ dj:{n:'~다든지',w:'끝 오른쪽에 작은 「V」'},
+ dk:{n:'~다든가',w:'끝 오른쪽에 작은 「<」'},
  gj:{n:'~가지고',w:'끝에 「ㄴ」꼴 짧은 갈고리(내려갔다 오른쪽으로 꺾음)'}
 };
-const text=(s,e)=>{if(e==='gj')return GJ[s]+' 가지고';if(e==='base')return ST[s].v;const F=FORM[s];return {base:ST[s].v,mn:F[0],nn:F[1],dn:F[2],ge:F[3]+'이다',gm:F[3]+'입니다',dg:F[2]+' 것이다',dm:F[2]+' 것입니다'}[e]};
+const text=(s,e)=>{if(e==='gj')return GJ[s]+' 가지고';if(e==='base')return ST[s].v;const F=FORM[s];
+ const st=F[1].replace(/는$/,'');
+ if(e==='gi')return st+'기 전에';if(e==='gd')return st+'기 전에도';if(e==='do')return GJ[s]+'도';
+ if(e==='tj')return st+'든지';if(e==='tg')return st+'든가';if(e==='dj')return ST[s].v+'든지';if(e==='dk')return ST[s].v+'든가';return {base:ST[s].v,mn:F[0],nn:F[1],dn:F[2],ge:F[3]+'이다',gm:F[3]+'입니다',dg:F[2]+' 것이다',dm:F[2]+' 것입니다'}[e]};
 const P=(x,y)=>f1(x)+' '+f1(y);
 /* 끝 장식 */
 function deco(s,e){
  if(e==='base')return '';
+ const S0=ST[s],[x1,y1]=S0.E;
+ if(e==='gi'||e==='gd'){const jx=x1+.5,top=y1,bot=y1+22;return `<path d="M${P(jx,top)}L${P(jx,bot)}Q${P(jx,bot+6)} ${P(jx-5,bot+2)}"/>`+(e==='gd'?`<circle cx="${f1(jx-1)}" cy="${f1(bot-4)}" r="1.9"/>`:'')}
+ if(e==='do'){return S0.fam==='s'?`<path d="M${P(x1-.5,y1+3)}L${P(x1+1.8,y1+6.5)}"/>`:`<path d="M${P(x1+2.5,y1+1.8)}L${P(x1+5.8,y1-2)}"/>`}
+ if(e==='tj'||e==='dj'||e==='tg'||e==='dk'){const afterE=e==='dj'||e==='dk',cx=afterE?x1+5:x1-.5,cy=afterE?y1+2:y1+7;return e==='tj'||e==='dj'?`<path d="M${P(cx-3,cy-4)}L${P(cx,cy)}L${P(cx+3,cy-4)}"/>`:`<path d="M${P(cx+3,cy-3)}L${P(cx-1,cy)}L${P(cx+3,cy+3)}"/>`}
  if(e==='gj'){const [x0,y0]=ST[s].E;return `<path d="M${P(x0+1.5,y0-1)}L${P(x0+1.5,y0+6)}L${P(x0+9,y0+6)}"/>`}
  const S=ST[s],[x,y]=S.E,[tx,ty]=S.t,nx=-ty,ny=tx;   /* n = t를 시계 방향으로 90° */
  const circ=(cx,cy,r)=>`<circle cx="${f1(cx)}" cy="${f1(cy)}" r="${r}"/>`;
@@ -85,7 +111,7 @@ function deco(s,e){
  const [lo,hi]=e==='dn'?[-4,4]:e==='dg'?[-7,7]:[-3,13];
  return `<path d="M${P(cx+ux*lo,cy+uy*lo)}L${P(cx+ux*hi,cy+uy*hi)}"/>`;
 }
-const shape=(s,e)=>sv(`<path d="${ST[s].d}"/>`+deco(s,e));
+const shape=(s,e)=>sv(`<path d="${ST[s].d}"/>`+deco(s,e),96,e==='gi'||e==='gd'?84:56);
 const stemShape=s=>sv(`<path d="${ST[s].d}"/>`);
 const LSHAPE=sv('<path d="M18 20V30H28"/>',48,48);
 const whyS=s=>`${ST[s].v}: ${ST[s].w}이므로 「${ST[s].v}」입니다. (${SYL[s]})`;
@@ -93,18 +119,21 @@ const whySE=(s,e)=>`${text(s,e)}: ${ST[s].w}(${ST[s].v})에 ${EN[e].w}이 붙어
 
 /* ---------- 개념 ---------- */
 const ES={m:['base','mn'],n:['base','mn','nn'],d:['base','mn','nn','dn'],g:['base','mn','nn','dn','ge','gm'],dg:['base','mn','nn','dn','ge','gm','dg','dm']};
-const NEW={m:['mn'],n:['nn'],d:['dn'],g:['ge','gm'],dg:['dg','dm']};
+ES.gi=['base','gi','gd'];ES.do=['base','do'];ES.tj=['base','tj','tg'];ES.dj=['base','tj','tg','dj','dk'];
+const NEW={gi:['gi','gd'],do:['do'],tj:['tj','tg'],dj:['dj','dk'],m:['mn'],n:['nn'],d:['dn'],g:['ge','gm'],dg:['dg','dm']};
 const SPOOL={b1:['ga','go','geu'],b2:['ga','go','geu','na','no','neu'],b3:SK};
 const BNEW={b1:['ga','go','geu'],b2:['na','no','neu'],b3:['da','du']};
-const KC=['vb:b1','vb:b2','vb:b3','vb:m','vb:n','vb:d','vb:g','vb:dg','vb:h1','vb:h2','vb:h3','vb:gj'];
-const HG={h1:['ra','ro','ma','mo','meu'],h2:['ba','beo','bo'],h3:['sa','su','a','o']};
-const STC={};[['b1',BNEW.b1],['b2',BNEW.b2],['b3',BNEW.b3],['h1',HG.h1],['h2',HG.h2],['h3',HG.h3]].forEach(([c,a])=>a.forEach(x=>STC[x]=c));
-const STK={b1:['vb:b1'],b2:['vb:b1','vb:b2'],b3:['vb:b1','vb:b2','vb:b3'],h1:['vb:h1'],h2:['vb:h1','vb:h2'],h3:['vb:h1','vb:h2','vb:h3']};
+const KC=['vb:b1','vb:b2','vb:b3','vb:m','vb:n','vb:d','vb:g','vb:dg','vb:h1','vb:h2','vb:h3','vb:gj','vb:k1','vb:k2','vb:gi','vb:do','vb:tj','vb:dj'];
+const HG={h1:['ra','ro','ma','mo','meu'],h2:['ba','beo','bo'],h3:['sa','su','a','o'],k1:['ja','ju','cha','cho'],k2:['ka','ko','pa','po','ha','i']};
+const STC={};[['b1',BNEW.b1],['b2',BNEW.b2],['b3',BNEW.b3],['h1',HG.h1],['h2',HG.h2],['h3',HG.h3],['k1',HG.k1],['k2',HG.k2]].forEach(([c,a])=>a.forEach(x=>STC[x]=c));
+const STK={b1:['vb:b1'],b2:['vb:b1','vb:b2'],b3:['vb:b1','vb:b2','vb:b3'],h1:['vb:h1'],h2:['vb:h1','vb:h2'],h3:['vb:h1','vb:h2','vb:h3'],k1:['vb:k1'],k2:['vb:k1','vb:k2']};
 /* 기본형 문제의 보기 후보: 그 개념까지 배운 기본형 (위 8개 또는 12개 + 8개) */
-const poolOfStem=k=>{const c=STC[k];if(c[0]==='b')return SPOOL[c];const g=c==='h1'?HG.h1:c==='h2'?HG.h1.concat(HG.h2):HK;return g};
-const GJS=ALL.filter(x=>x!=='ma');
+const poolOfStem=k=>{const c=STC[k];if(c[0]==='b')return SPOOL[c];return c==='h1'?HG.h1:c==='h2'?HG.h1.concat(HG.h2):c==='h3'?HK:c==='k1'?HK.concat(HG.k1):ALL};
+const GJS=SK.concat(HK).filter(x=>x!=='ma');
 const ckey=c=>'vb:'+c;
-const kcsOf=k=>{if(k.startsWith('gj'))return ['vb:gj'];const c=k.split('|')[0];return c.startsWith('b')?(c==='b1'?['vb:b1']:c==='b2'?['vb:b1','vb:b2']:['vb:b1','vb:b2','vb:b3']):[...KC.slice(0,3),...['m','n','d','g','dg'].slice(0,['m','n','d','g','dg'].indexOf(c)+1).map(ckey)]};
+const kcsOf=k=>{if(k.startsWith('gj'))return ['vb:gj'];const c=k.split('|')[0],ord=['m','n','d','g','dg'];
+ if(ord.includes(c))return [...KC.slice(0,3),...ord.slice(0,ord.indexOf(c)+1).map(ckey)];
+ return [...KC.slice(0,3),ckey(c)]};
 /* 오답: 같은 어미 다른 기본형 / 같은 기본형 다른 어미를 섞는다 */
 function choices(c,s,e){
  const sp=SK,es=ES[c];
@@ -122,7 +151,7 @@ const F={
  name:'응용편 (동사 기본형·어미)',
  curr:KC,
  info:[],
- names:{'vb:b1':'동사 기본형: 가·고·그 (가로선 1:2:4)','vb:b2':'동사 기본형: 나·노·느 (호 1:2:4)','vb:b3':'동사 기본형: 다·두 (사선)','vb:m':'동사 + ~ㅂ니다','vb:n':'동사 + ~는','vb:d':'동사 + ~다는','vb:g':'동사 + ~는 것이다·~는 것입니다','vb:dg':'동사 + ~다는 것이다·~다는 것입니다','vb:h1':'동사 기본형: 라·로 · 마·모·므','vb:h2':'동사 기본형: 바·버·보','vb:h3':'동사 기본형: 사·수 · 아·오','vb:gj':'동사 + ~가지고'},
+ names:{'vb:b1':'동사 기본형: 가·고·그 (가로선 1:2:4)','vb:b2':'동사 기본형: 나·노·느 (호 1:2:4)','vb:b3':'동사 기본형: 다·두 (사선)','vb:m':'동사 + ~ㅂ니다','vb:n':'동사 + ~는','vb:d':'동사 + ~다는','vb:g':'동사 + ~는 것이다·~는 것입니다','vb:dg':'동사 + ~다는 것이다·~다는 것입니다','vb:h1':'동사 기본형: 라·로 · 마·모·므','vb:h2':'동사 기본형: 바·버·보','vb:h3':'동사 기본형: 사·수 · 아·오','vb:gj':'동사 + ~가지고','vb:k1':'동사 기본형: 자·주·차·초','vb:k2':'동사 기본형: 카·코·파·포·하·이','vb:gi':'동사 + ~기 전에','vb:do':'동사 + ~도','vb:tj':'동사 + ~든지·~든가','vb:dj':'동사 + ~다든지·~다든가'},
  intro:{
   'vb:b1':()=>({prompt:row(BNEW.b1.map(s=>lab(stemShape(s),ST[s].v+' = '+({ga:'가',go:'고',geu:'그'})[s]))),
    text:'<b>동사 약기법: 기본(현재)형</b><br>동사 약기법은 동방속기의 꽃입니다. 어렵게 따지지 말고 <b>기본형을 완전히 외우는 것</b>이 출발점입니다.<br>가로선의 길이로 정합니다: 간다 = 4mm 선(가) · 일으킨다 = 8mm 선(고) · 나간다 = 16mm 선(그). 길이는 1:2:4입니다.<br>앞문자 끝에서 하선(아래쪽)으로 4mm 가량 띄어 씁니다.'}),
@@ -149,8 +178,27 @@ const F={
    text:'<b>기본형 (2): 사·수, 아·오</b><br>시킨다 = 작은 「(」(사) · 받(는)다 = 긴 「(」(수) · 안다 = 작게 내려갔다 오르는 곡선(아) · 온다 = 길게 내려갔다 오르는 곡선(오).<br>짧은 것 : 긴 것 = 1:2입니다.'}),
   'vb:gj':()=>({prompt:row([lab(LSHAPE,'가지고')].concat(['ga','ro','bo'].map(s=>lab(shape(s,'gj'),text(s,'gj'))))),
    text:'<b>동사 + ~가지고</b><br>「가지고」는 짧은 「ㄴ」꼴 갈고리입니다. 앞말의 기본형 끝에 붙입니다. 앞말은 「~아/어」 꼴로 바뀐 말입니다.<br>간다 → 가 가지고 · 나온다 → 나와 가지고 · 본다 → 보아 가지고 · 지킨다 → 지켜 가지고.<br><small>「해 가지고」「그래 가지고」 등 특별한 꼴은 교재 62쪽을 보세요. 「되어/돼」, 「보아/봐」처럼 소리로 가르기 어려운 것은 같이 봅니다.</small>'})
+,
+  'vb:k1':()=>({prompt:row(HG.k1.map(s=>lab(stemShape(s),ST[s].v+' = '+SYL[s]))),
+   text:'<b>기본형 (3): 자·주·차·초 (마지막 10개 중)</b><br>이것으로 30개를 모두 배웁니다. 「철저히 암기하라! 많아야 30개이다.」<br>잡(는)다 = 짧게 오르는 곡선(자) · 준다 = 긴 오르는 곡선(주) · 드린다·들이다 = 짧은 오름선(차) · 오른다 = 긴 오름선(초).'}),
+  'vb:k2':()=>({prompt:row(HG.k2.map(s=>lab(stemShape(s),ST[s].v+' = '+SYL[s]))),
+   text:'<b>기본형 (3): 카·코·파·포·하·이</b><br>아니다·않(는)다 = 짧은 「)」(카) · 판다 = 긴 「)」(코) · 없다 = 짧은 「(」(파) · 아니(하) = 긴 「(」(포) · 한다 = 짧은 내림선(하) · 있다 = 짧은 세로선(이).<br>「라·로」의 「)」는 비스듬히, 「카·코」의 「)」는 세워서 씁니다. 「사·수」의 「(」는 비스듬히, 「파·포」의 「(」는 세워서 씁니다.'}),
+  'vb:gi':()=>({prompt:row(['ga','na','da'].flatMap(s=>[lab(shape(s,'gi'),text(s,'gi'))]).concat([lab(shape('ga','gd'),text('ga','gd'))])),
+   text:'<b>동사 + ~기 전에</b><br>기본형 끝에서 아래로 8mm(「이」) 내려와 끝을 말아 올리면 「~기 전에」입니다. 끝에서 길이가 4mm인 「가」의 2배입니다.<br>갈고리에 작은 고리를 하나 더 달면 「~기 전에도」입니다.<br>가기 전에 · 지키기 전에 · 안되기 전에 · 가기 전에도.<br><small>「가기도 전에」처럼 「도」가 가운데 들어가는 꼴은 교재 67~68쪽을 보세요.</small>'}),
+  'vb:do':()=>({prompt:row(['ga','na','da'].map(s=>lab(shape(s,'do'),text(s,'do')))),
+   text:'<b>동사 + ~도 (~아도, ~어도)</b><br>기본형의 끝에 짧은 꼬리(,)를 붙이면 「~도」입니다. 앞말은 「~아/~어」로 바뀐 말입니다.<br>가도 · 지켜도 · 안되어도.<br><small>~게(보게, 드리게), ~게끔(하게끔), ~서(가서, 나와서), ~(으)므로(시키므로), ~(으)로써(밝힘으로써)는 모양이 복잡해 교재 68~69쪽을 보세요.</small>'}),
+  'vb:tj':()=>({prompt:row(['ga','na','ga','na'].map((s,i)=>{const e=i<2?'tj':'tg';return lab(shape(s,e),text(s,e))})),
+   text:'<b>동사 + ~든지 · ~든가</b><br>기본형 끝 아래쪽에 작은 「V」를 붙이면 「~든지」, 작은 「<」를 붙이면 「~든가」입니다(「가든지」「가든가」).<br>가든지 · 지키든지 · 가든가 · 지키든가.'}),
+  'vb:dj':()=>({prompt:row(['ga','no','ga','no'].map((s,i)=>{const e=i<2?'dj':'dk';return lab(shape(s,e),text(s,e))})),
+   text:'<b>동사 + ~다든지 · ~다든가</b><br>「~다든지」는 기본형 끝의 오른쪽에 작은 「V」, 「~다든가」는 작은 「<」를 붙입니다(「간다든지」「간다든가」). 「~든지」는 끝의 아래쪽, 「~다든지」는 끝의 오른쪽에 붙는 것으로 구별합니다.<br>간다든지 · 된다든지 · 간다든가 · 된다든가.'})
  },
  questions:{
+  'vb:k1':()=>HG.k1.flatMap(s=>['vbA:'+s,'vbB:'+s]),
+  'vb:k2':()=>HG.k2.flatMap(s=>['vbA:'+s,'vbB:'+s]),
+  'vb:gi':()=>shuf(combosOf('gi')).slice(0,12).map((k,i)=>(i%2?'vbD:':'vbC:')+k),
+  'vb:do':()=>shuf(combosOf('do')).slice(0,8).map((k,i)=>(i%2?'vbD:':'vbC:')+k),
+  'vb:tj':()=>shuf(combosOf('tj')).slice(0,12).map((k,i)=>(i%2?'vbD:':'vbC:')+k),
+  'vb:dj':()=>shuf(combosOf('dj')).slice(0,12).map((k,i)=>(i%2?'vbD:':'vbC:')+k),
   'vb:h1':()=>HG.h1.flatMap(s=>['vbA:'+s,'vbB:'+s]),
   'vb:h2':()=>HG.h2.flatMap(s=>['vbA:'+s,'vbB:'+s]),
   'vb:h3':()=>HG.h3.flatMap(s=>['vbA:'+s,'vbB:'+s]),
@@ -189,7 +237,7 @@ const F={
   vbF:{kcs:()=>['vb:gj'],ids:()=>GJS.map(s=>'vbF:'+s),build:(k,id)=>{
     const o=gjOpts(k);return {id,prompt:`<span class="big" style="font-size:28px">${text(k,'gj')}</span>`,q:'어떤 약기로 쓸까요?',opts:shuf(o.map(([a,b])=>opt(a+'.'+b,shape(a,b)))),ans:k+'.gj',why:whySE(k,'gj')}}}
  },
- section:{title:'응용편 (제2장 동사 약기법 53~63쪽 · 기본형 20개·어미·가지고)',kcs:KC}
+ section:{title:'응용편 (제2장 동사 약기법 53~73쪽 · 기본형 30개와 어미)',kcs:KC}
 };
 (window.FEATURES=window.FEATURES||[]).push(F);
 })();
