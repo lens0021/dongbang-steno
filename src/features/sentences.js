@@ -38,7 +38,7 @@ function sentSVG(s,maxPx,sc){sc=Math.min(sc||1e9,RS());const L=lines(s,maxPx/sc)
   return `<div style="display:flex;flex-direction:column;align-items:flex-start;gap:6px;max-width:100%">${L.map(l=>lineSVG(l,sc)).join('')}</div>`}
 const maxLineW=s=>Math.max(...lines(s,1e9).map(l=>l.reduce((a,w,i)=>a+wLay(w).w+(i?GAP:0),0)));
 const kcsS=s=>['s:1',...new Set(wordsOf(s).flatMap(w=>kcsW(w,engine(w))))];
-const why=s=>`${s} = ${wordsOf(s).join(' / ')}. 문장도 띄어 쓰는 곳마다 펜을 떼고 옆에 따로 씁니다.`;
+const why=s=>{const ws=wordsOf(s);return `<b>끊어진 덩어리가 ${ws.length}개</b>이고, 앞에서부터 ${ws.map(w=>`「${w}」`).join(' → ')} 순서로 한 단어씩 이어 쓴 것입니다. 문장도 띄어 쓰는 곳마다 펜을 떼고 옆에 따로 쓰므로 덩어리 수가 단어 수와 같아요.`};
 const shared=(a,b)=>{const x=new Set(wordsOf(a));return wordsOf(b).filter(w=>x.has(w)).length};
 /* 오답은 정답과 단어를 가장 많이 공유하는 문장 위주로 골라, 앞뒤만 훑어서는 못 풀고 모양을 하나하나 읽어야 한다 */
 function others(s){const sig=x=>wordsOf(x).map(w=>wLay(w).d).join('|');

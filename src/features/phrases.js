@@ -11,7 +11,7 @@ function phraseSVG(ph,h=90,S){const L=phraseLayout(ph.split(' '));S=Math.min(S||
   const size=S?`width:${(L.w*S).toFixed(0)}px;height:${(L.h*S).toFixed(0)}px;max-width:100%`:`width:100%;max-width:300px;height:${h}px`;
   return `<svg viewBox="0 ${L.y0.toFixed(1)} ${L.w.toFixed(1)} ${L.h.toFixed(1)}" style="${size}" aria-hidden="true"><g fill="none" stroke="var(--stroke)" stroke-width="${S?penW(S).toFixed(2):2.6}" stroke-linecap="round" stroke-linejoin="round">${L.parts.map(p=>`<path transform="translate(${p.tx.toFixed(1)} 0)" d="${p.d}"/>`).join('')}</g></svg>`}
 const kcsP=p=>['p:1',...new Set(p.split(' ').flatMap(wordKcs))];
-const why=p=>`${p} = ${p.split(' ').join(' / ')}. 띄어쓰는 곳에서는 펜을 떼고 옆에 따로 씁니다.`;
+const why=p=>{const ws=p.split(' ');return `<span style="display:flex;align-items:flex-start;gap:10px"><span style="width:96px;flex:none;border:1px solid var(--line);border-radius:10px;background:var(--card);padding:4px">${phraseSVG(p,44)}</span><span>그림에서 <b>끊어진 덩어리가 ${ws.length}개</b>이고, 덩어리마다 한 단어를 이어 쓴 것입니다: ${ws.map(w=>`「${w}」`).join(' + ')}. 띄어쓰는 자리에서 펜을 떼고 옆에 따로 쓰기 때문에 덩어리 수와 단어 수가 같아요.</span></span>`};
 const others=p=>pickDistractors(p,PHR,3,x=>kcsP(x).slice(1),x=>phraseLayout(x.split(' ')).parts);
 window.phraseSVG=phraseSVG;
 (window.WORDSIG=window.WORDSIG||{}).p=x=>phraseLayout(x.split(' ')).parts;

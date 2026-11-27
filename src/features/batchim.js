@@ -138,9 +138,19 @@ function bKcs(w){const set=new Set(),cs=[...w].map(BSYL);if(hasDD(w))set.add('r:
     if(s.kind&&!s.ae&&isHook(s)&&!s.sp)set.add('b:24');
     else if(i>0&&!cs[i-1].kind&&needsOffset(cs[i-1],s))set.add('r:11')});
   return [...set]}
-const bWhy=w=>{const cs=[...w].map(BSYL);const parts=[];
-  cs.forEach((s,i)=>{if(!s.kind)return;const c=i===0?(s.kind==='m'?'b:21':s.kind==='g'?'b:22':'b:20'):conceptOf(s.kind,grp(cs[i-1].c).g.id===grp(s.c).g.id,s.ae);parts.push(`${[...w][i]}: ${CNAME[c]}`)});
-  return w+' → '+parts.join(', ')};
+/* 정답 해설: 단어를 글자별로 풀어 "어느 획이 어느 글자인지"를 그림 기준으로 말한다. 받침이 있는 글자는 그 받침을 어떻게 썼는지(교재 규칙)까지 적는다 */
+const bLetter=(ch,s)=>{const g=grp(s.c).g,arrow=DIR[g.id][2];
+  if(s.spc)return `${ch}: 세로선(↓) ${s.mm}mm`+(s.ae?' + 반측 반소원':'');
+  if(s.sp)return `${ch}: 세로선(↓) 4mm`+(s.sp==='hi'?' + 머리 갈고리':'');
+  return `${ch}: ${s.c} 문자(${arrow}) ${s.mm}mm`+(s.ae?' + 반측 반소원':isHook(s)?' + 정측 반소원':'')};
+const bRule=c=>{const t=(INTRO[c]().text.split('<br>')[1]||'').split(' 예)')[0].replace(/<[^>]+>/g,'').replace(/\s*그림은 규칙대로.*$/,'');
+  return t};
+const bWhy=w=>{const chs=[...w],cs=chs.map(BSYL);
+  const lines=cs.map((s,i)=>{let t=bLetter(chs[i],s);
+    if(s.kind){const c=i===0?(s.kind==='m'?'b:21':s.kind==='g'?'b:22':'b:20'):conceptOf(s.kind,grp(cs[i-1].c).g.id===grp(s.c).g.id,s.ae);
+      t+=`<br>&nbsp;&nbsp;↳ <b>${i===0?KNAME[s.kind]+'받침(맨 앞)':CNAME[c]}</b>${i?` (앞 글자 「${chs[i-1]}」)`:''} — ${bRule(c)}`}
+    return t});
+  return `<span style="display:flex;align-items:flex-start;gap:10px"><span style="width:96px;flex:none;border:1px solid var(--line);border-radius:10px;background:var(--card);padding:4px">${bSVG(w,44)}</span><span><b>${w}</b>의 그림을 글자별로 보면<br>${lines.join('<br>')}</span></span>`};
 
 /* ---------- 설명 카드 ---------- */
 const demo=(k,par,ae,S=0,front)=>bSVG(demoWord(k,par,ae,front),0,S);
@@ -226,5 +236,5 @@ questions['b:22']=()=>['bh:g|0','bh:g|1'];
 window.FEATURES.push({name:'batchim',curr:CURR,info:['b:10','b:23','b:24'],names:CNAME,intro,questions,types,
   section:{title:'받침 이어쓰기',kcs:CURR},
   wordKcs:()=>{}});
-window.BATCHIM={bPath,bSVG,BW,bKcs,demoWord,headWord};
+window.BATCHIM={bWhy,bPath,bSVG,BW,bKcs,demoWord,headWord};
 })();
