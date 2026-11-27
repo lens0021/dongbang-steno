@@ -146,7 +146,7 @@ const F={name:'ㅐ모음',
     ids:()=>letters([1,5,9,11,14,16]).map(l=>'esym:'+l),
     build:(k,id)=>{const s=syl(k),mm=AEMM[s.jung],c=s.c,other=[4,8,16].filter(m=>m!==mm)[0];
       const opts=shuf([k,compose(c,PLAIN[mm]),compose(c,HOOK[mm]),compose(c,AEREP[other])]);
-      return {id,prompt:glyph(c,mm,'ae',2),q:'이 속기 글자는 무엇일까요?',opts:opts.map(w=>({k:w,h:chip(w)})),ans:k,
+      return {id,prompt:glyph(c,mm,'ae'),ref:lenRef(0),q:'이 속기 글자는 무엇일까요?',opts:opts.map(w=>({k:w,h:chip(w)})),ans:k,
         why:`${k}은(는) ${c} 문자에 ${mm}mm 길이로 쓰고 반측에 반소원이 붙어 있습니다.`}}},
   /* ㅖㅒ: ㅔㅐ와 같은 모양을 고른다 */
   eye:{kcs:(k)=>['c:'+syl(k).c,'e:hook','e:ye','r:3'],

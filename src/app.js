@@ -90,7 +90,7 @@ function itemQ0(id){{const ft=featType(id.split(':')[0]);if(ft)return ft.build(i
   const [vmm,vj]=VOWS[Math.floor(Math.random()*VOWS.length)],L=LEN[vmm],sy=o=>REV[o.c]?compose(o.c,vj):o.c,vn={4:'ㅏㅓ 4mm',8:'ㅗㅜ 8mm',16:'ㅡ 16mm'}[vmm];
   const lines=o=>`${o.b===0?'곧은 선':'굽은 선'}(${o.g.deg}) × ${vn}`;
   if(t==='sym')
-    return {id,prompt:svMM(it,vmm),q:'이 속기 글자는 무엇일까요?',opts:shuf([it,...shuf(mine.filter(m=>m.c!==it.c)),...shuf(others).slice(0,1)]).map(o=>({k:o.c,h:`<span class="big">${sy(o)}</span>`})),ans:it.c,why:`${sy(it)}은(는) ${it.c} 문자(${g.deg} 방향)에 모음 ${vn} 길이로 씁니다.`};
+    return {id,prompt:svMM(it,vmm),ref:lenRef(0),q:'이 속기 글자는 무엇일까요?',opts:shuf([it,...shuf(mine.filter(m=>m.c!==it.c)),...shuf(others).slice(0,1)]).map(o=>({k:o.c,h:`<span class="big">${sy(o)}</span>`})),ans:it.c,why:`${sy(it)}은(는) ${it.c} 문자(${g.deg} 방향)에 모음 ${vn} 길이로 씁니다.`};
   if(t==='pick'){const pool=shuf([...shuf(mine.filter(m=>m.c!==it.c)),...shuf(others).slice(0,2)]).slice(0,3);
     return {id,prompt:`<span class="big">${sy(it)}</span>`,q:`「${sy(it)}」에 해당하는 모양을 고르세요${lenNote(vmm)}`,opts:shuf([it,...pool]).map(o=>({k:o.c,h:svMM(o,vmm)})),ans:it.c,why:`${sy(it)}은(는) ${lines(it)}으로 씁니다.`}}
 }
