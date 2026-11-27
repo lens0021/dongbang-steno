@@ -73,13 +73,30 @@ const EN={
  tg:{n:'~든가',w:'끝 아래쪽에 작은 「<」'},
  dj:{n:'~다든지',w:'끝 오른쪽에 작은 「V」'},
  dk:{n:'~다든가',w:'끝 오른쪽에 작은 「<」'},
+ p1:{n:'~(으)니',w:'정측(선의 위·왼쪽) 앞쪽의 점'},
+ p2:{n:'~(으)나',w:'정측 가운데의 점'},
+ p3:{n:'~고',w:'정측 끝쪽의 점'},
+ p4:{n:'~는데',w:'반측(선의 아래·오른쪽) 끝쪽의 점'},
+ p5:{n:'~지',w:'반측 가운데의 점'},
+ p6:{n:'~(으)며',w:'반측 앞쪽의 점'},
  gj:{n:'~가지고',w:'끝에 「ㄴ」꼴 짧은 갈고리(내려갔다 오른쪽으로 꺾음)'}
 };
 const text=(s,e)=>{if(e==='gj')return GJ[s]+' 가지고';if(e==='base')return ST[s].v;const F=FORM[s];
  const st=F[1].replace(/는$/,'');
  if(e==='gi')return st+'기 전에';if(e==='gd')return st+'기 전에도';if(e==='do')return GJ[s]+'도';
+ const PX={p1:'니',p2:'나',p3:'고',p4:'는데',p5:'지',p6:'며'};if(PX[e])return st+PX[e];
  if(e==='tj')return st+'든지';if(e==='tg')return st+'든가';if(e==='dj')return ST[s].v+'든지';if(e==='dk')return ST[s].v+'든가';return {base:ST[s].v,mn:F[0],nn:F[1],dn:F[2],ge:F[3]+'이다',gm:F[3]+'입니다',dg:F[2]+' 것이다',dm:F[2]+' 것입니다'}[e]};
 const P=(x,y)=>f1(x)+' '+f1(y);
+/* 위치 변화: 선의 정측(위·왼쪽)·반측(아래·오른쪽) 앞·가운데·끝쪽의 점. 사선은 위에서 아래로 쓰는 것으로 본다. */
+function posDot(s,e){
+ const S=ST[s],n=(S.d.match(/-?\d*\.?\d+/g)||[]).map(Number);let a,b,c=null;
+ if(S.d.includes('H')){a=[n[0],n[1]];b=[n[2],n[1]]}else if(S.d.includes('Q')){a=[n[0],n[1]];c=[n[2],n[3]];b=[n[4],n[5]]}else{a=[n[0],n[1]];b=[n[2],n[3]]}
+ if(S.fam==='s'&&a[1]>b[1]){const t=a;a=b;b=t}
+ const k={p1:[.1,1],p2:[.5,1],p3:[.9,1],p4:[.9,-1],p5:[.5,-1],p6:[.1,-1]}[e],t=k[0],u=1-t;
+ const px=c?u*u*a[0]+2*u*t*c[0]+t*t*b[0]:a[0]+(b[0]-a[0])*t,py=c?u*u*a[1]+2*u*t*c[1]+t*t*b[1]:a[1]+(b[1]-a[1])*t;
+ const nx=S.fam==='s'?-.95:0,ny=S.fam==='s'?-.3:-1;
+ return `<circle cx="${f1(px+nx*k[1]*3.8)}" cy="${f1(py+ny*k[1]*3.8)}" r="1.15" fill="var(--stroke)" stroke="none"/>`;
+}
 /* 끝 장식 */
 function deco(s,e){
  if(e==='base')return '';
@@ -87,6 +104,7 @@ function deco(s,e){
  if(e==='gi'||e==='gd'){const jx=x1+.5,top=y1,bot=y1+22;return `<path d="M${P(jx,top)}L${P(jx,bot)}Q${P(jx,bot+6)} ${P(jx-5,bot+2)}"/>`+(e==='gd'?`<circle cx="${f1(jx-1)}" cy="${f1(bot-4)}" r="1.9"/>`:'')}
  if(e==='do'){return S0.fam==='s'?`<path d="M${P(x1-.5,y1+3)}L${P(x1+1.8,y1+6.5)}"/>`:`<path d="M${P(x1+2.5,y1+1.8)}L${P(x1+5.8,y1-2)}"/>`}
  if(e==='tj'||e==='dj'||e==='tg'||e==='dk'){const afterE=e==='dj'||e==='dk',cx=afterE?x1+5:x1-.5,cy=afterE?y1+2:y1+7;return e==='tj'||e==='dj'?`<path d="M${P(cx-3,cy-4)}L${P(cx,cy)}L${P(cx+3,cy-4)}"/>`:`<path d="M${P(cx+3,cy-3)}L${P(cx-1,cy)}L${P(cx+3,cy+3)}"/>`}
+ if(/^p[1-6]$/.test(e))return posDot(s,e);
  if(e==='gj'){const [x0,y0]=ST[s].E;return `<path d="M${P(x0+1.5,y0-1)}L${P(x0+1.5,y0+6)}L${P(x0+9,y0+6)}"/>`}
  const S=ST[s],[x,y]=S.E,[tx,ty]=S.t,nx=-ty,ny=tx;   /* n = t를 시계 방향으로 90° */
  const circ=(cx,cy,r)=>`<circle cx="${f1(cx)}" cy="${f1(cy)}" r="${r}"/>`;
@@ -120,10 +138,11 @@ const whySE=(s,e)=>`${text(s,e)}: ${ST[s].w}(${ST[s].v})에 ${EN[e].w}이 붙어
 /* ---------- 개념 ---------- */
 const ES={m:['base','mn'],n:['base','mn','nn'],d:['base','mn','nn','dn'],g:['base','mn','nn','dn','ge','gm'],dg:['base','mn','nn','dn','ge','gm','dg','dm']};
 ES.gi=['base','gi','gd'];ES.do=['base','do'];ES.tj=['base','tj','tg'];ES.dj=['base','tj','tg','dj','dk'];
-const NEW={gi:['gi','gd'],do:['do'],tj:['tj','tg'],dj:['dj','dk'],m:['mn'],n:['nn'],d:['dn'],g:['ge','gm'],dg:['dg','dm']};
+ES.q1=['base','p1','p2','p3'];ES.q2=['base','p4','p5','p6'];ES.q3=['base','p1','p2','p3','p4','p5','p6'];
+const NEW={q1:['p1','p2','p3'],q2:['p4','p5','p6'],q3:['p1','p2','p3','p4','p5','p6'],gi:['gi','gd'],do:['do'],tj:['tj','tg'],dj:['dj','dk'],m:['mn'],n:['nn'],d:['dn'],g:['ge','gm'],dg:['dg','dm']};
 const SPOOL={b1:['ga','go','geu'],b2:['ga','go','geu','na','no','neu'],b3:SK};
 const BNEW={b1:['ga','go','geu'],b2:['na','no','neu'],b3:['da','du']};
-const KC=['vb:b1','vb:b2','vb:b3','vb:m','vb:n','vb:d','vb:g','vb:dg','vb:h1','vb:h2','vb:h3','vb:gj','vb:k1','vb:k2','vb:gi','vb:do','vb:tj','vb:dj'];
+const KC=['vb:b1','vb:b2','vb:b3','vb:m','vb:n','vb:d','vb:g','vb:dg','vb:h1','vb:h2','vb:h3','vb:gj','vb:k1','vb:k2','vb:gi','vb:do','vb:tj','vb:dj','vb:q1','vb:q2','vb:q3'];
 const HG={h1:['ra','ro','ma','mo','meu'],h2:['ba','beo','bo'],h3:['sa','su','a','o'],k1:['ja','ju','cha','cho'],k2:['ka','ko','pa','po','ha','i']};
 const STC={};[['b1',BNEW.b1],['b2',BNEW.b2],['b3',BNEW.b3],['h1',HG.h1],['h2',HG.h2],['h3',HG.h3],['k1',HG.k1],['k2',HG.k2]].forEach(([c,a])=>a.forEach(x=>STC[x]=c));
 const STK={b1:['vb:b1'],b2:['vb:b1','vb:b2'],b3:['vb:b1','vb:b2','vb:b3'],h1:['vb:h1'],h2:['vb:h1','vb:h2'],h3:['vb:h1','vb:h2','vb:h3'],k1:['vb:k1'],k2:['vb:k1','vb:k2']};
@@ -151,7 +170,7 @@ const F={
  name:'응용편 (동사 기본형·어미)',
  curr:KC,
  info:[],
- names:{'vb:b1':'동사 기본형: 가·고·그 (가로선 1:2:4)','vb:b2':'동사 기본형: 나·노·느 (호 1:2:4)','vb:b3':'동사 기본형: 다·두 (사선)','vb:m':'동사 + ~ㅂ니다','vb:n':'동사 + ~는','vb:d':'동사 + ~다는','vb:g':'동사 + ~는 것이다·~는 것입니다','vb:dg':'동사 + ~다는 것이다·~다는 것입니다','vb:h1':'동사 기본형: 라·로 · 마·모·므','vb:h2':'동사 기본형: 바·버·보','vb:h3':'동사 기본형: 사·수 · 아·오','vb:gj':'동사 + ~가지고','vb:k1':'동사 기본형: 자·주·차·초','vb:k2':'동사 기본형: 카·코·파·포·하·이','vb:gi':'동사 + ~기 전에','vb:do':'동사 + ~도','vb:tj':'동사 + ~든지·~든가','vb:dj':'동사 + ~다든지·~다든가'},
+ names:{'vb:b1':'동사 기본형: 가·고·그 (가로선 1:2:4)','vb:b2':'동사 기본형: 나·노·느 (호 1:2:4)','vb:b3':'동사 기본형: 다·두 (사선)','vb:m':'동사 + ~ㅂ니다','vb:n':'동사 + ~는','vb:d':'동사 + ~다는','vb:g':'동사 + ~는 것이다·~는 것입니다','vb:dg':'동사 + ~다는 것이다·~다는 것입니다','vb:h1':'동사 기본형: 라·로 · 마·모·므','vb:h2':'동사 기본형: 바·버·보','vb:h3':'동사 기본형: 사·수 · 아·오','vb:gj':'동사 + ~가지고','vb:k1':'동사 기본형: 자·주·차·초','vb:k2':'동사 기본형: 카·코·파·포·하·이','vb:gi':'동사 + ~기 전에','vb:do':'동사 + ~도','vb:tj':'동사 + ~든지·~든가','vb:dj':'동사 + ~다든지·~다든가','vb:q1':'동사 위치 변화 (1): 니·나·고 (정측의 점)','vb:q2':'동사 위치 변화 (1): 는데·지·며 (반측의 점)','vb:q3':'동사 위치 변화 (1): 여섯 자리 모두'},
  intro:{
   'vb:b1':()=>({prompt:row(BNEW.b1.map(s=>lab(stemShape(s),ST[s].v+' = '+({ga:'가',go:'고',geu:'그'})[s]))),
    text:'<b>동사 약기법: 기본(현재)형</b><br>동사 약기법은 동방속기의 꽃입니다. 어렵게 따지지 말고 <b>기본형을 완전히 외우는 것</b>이 출발점입니다.<br>가로선의 길이로 정합니다: 간다 = 4mm 선(가) · 일으킨다 = 8mm 선(고) · 나간다 = 16mm 선(그). 길이는 1:2:4입니다.<br>앞문자 끝에서 하선(아래쪽)으로 4mm 가량 띄어 씁니다.'}),
@@ -191,12 +210,21 @@ const F={
    text:'<b>동사 + ~든지 · ~든가</b><br>기본형 끝 아래쪽에 작은 「V」를 붙이면 「~든지」, 작은 「<」를 붙이면 「~든가」입니다(「가든지」「가든가」).<br>가든지 · 지키든지 · 가든가 · 지키든가.'}),
   'vb:dj':()=>({prompt:row(['ga','no','ga','no'].map((s,i)=>{const e=i<2?'dj':'dk';return lab(shape(s,e),text(s,e))})),
    text:'<b>동사 + ~다든지 · ~다든가</b><br>「~다든지」는 기본형 끝의 오른쪽에 작은 「V」, 「~다든가」는 작은 「<」를 붙입니다(「간다든지」「간다든가」). 「~든지」는 끝의 아래쪽, 「~다든지」는 끝의 오른쪽에 붙는 것으로 구별합니다.<br>간다든지 · 된다든지 · 간다든가 · 된다든가.'})
+ ,'vb:q1':()=>({prompt:row(['p1','p2','p3'].map(e=>lab(shape('ga',e),text('ga',e)))),
+   text:'<b>위치(어미) 변화 (1): 니·나·고 · 는데·지·며</b><br>동사 응용의 가장 중요한 기초입니다. 암기할 것은 「니, 나, 고, 는데, 지, 며」 한 줄뿐입니다.<br>기본형 선의 <b>정측(위쪽)</b>에 점을 앞에서부터 찍으면 1 니 · 2 나 · 3 고, <b>반측(아래쪽)</b>에 점을 뒤에서부터 찍으면 4 는데 · 5 지 · 6 며입니다. 큰 한 바퀴를 돌듯 외우세요.<br>니 = (으)니 · 나 = (으)나 · 는데 = 인데 · 며 = (으)며. 말이 되게 읽어 보고 「~으」를 넣어도 말이 되면 같이 씁니다.<br>이 카드에서는 위쪽 세 자리(니·나·고)부터 봅니다.'}),
+  'vb:q2':()=>({prompt:row(['p4','p5','p6'].map(e=>lab(shape('ga',e),text('ga',e)))),
+   text:'<b>반측의 점: 는데·지·며</b><br>선 아래쪽에서 뒤(끝)쪽 점 = 는데(인데) · 가운데 점 = 지 · 앞쪽 점 = 며.<br>사선·세로선은 위에서 아래로 쓰는 것으로 보아, 왼쪽이 정측(니·나·고: 위에서 아래로), 오른쪽이 반측(는데·지·며: 아래에서 위로)입니다.<br>두니(왼쪽 위) · 두나(왼쪽 가운데) · 두고(왼쪽 아래) · 두는데(오른쪽 아래) · 두지(오른쪽 가운데) · 두며(오른쪽 위).'}),
+  'vb:q3':()=>({prompt:row(['p1','p2','p3','p6','p5','p4'].map(e=>lab(shape('na',e),text('na',e)))),
+   text:'<b>여섯 자리 모두 섞어 보기</b><br>점이 선의 위쪽인지 아래쪽인지, 앞·가운데·끝 중 어디인지를 보고 읽습니다. 지킨다 → 지키니·지키나·지키고·지키는데·지키지·지키며.<br><small>「~(으)니」 어쩌구 외에 「~는 것이다」 어쩌구 + 위치 변화(교재 96쪽 이후)는 아직 다루지 않았습니다.</small>'})
  },
  questions:{
   'vb:k1':()=>HG.k1.flatMap(s=>['vbA:'+s,'vbB:'+s]),
   'vb:k2':()=>HG.k2.flatMap(s=>['vbA:'+s,'vbB:'+s]),
   'vb:gi':()=>shuf(combosOf('gi')).slice(0,12).map((k,i)=>(i%2?'vbD:':'vbC:')+k),
   'vb:do':()=>shuf(combosOf('do')).slice(0,8).map((k,i)=>(i%2?'vbD:':'vbC:')+k),
+  'vb:q1':()=>shuf(combosOf('q1')).slice(0,12).map((k,i)=>(i%2?'vbD:':'vbC:')+k),
+  'vb:q2':()=>shuf(combosOf('q2')).slice(0,12).map((k,i)=>(i%2?'vbD:':'vbC:')+k),
+  'vb:q3':()=>shuf(combosOf('q3')).slice(0,16).map((k,i)=>(i%2?'vbD:':'vbC:')+k),
   'vb:tj':()=>shuf(combosOf('tj')).slice(0,12).map((k,i)=>(i%2?'vbD:':'vbC:')+k),
   'vb:dj':()=>shuf(combosOf('dj')).slice(0,12).map((k,i)=>(i%2?'vbD:':'vbC:')+k),
   'vb:h1':()=>HG.h1.flatMap(s=>['vbA:'+s,'vbB:'+s]),
@@ -237,7 +265,7 @@ const F={
   vbF:{kcs:()=>['vb:gj'],ids:()=>GJS.map(s=>'vbF:'+s),build:(k,id)=>{
     const o=gjOpts(k);return {id,prompt:`<span class="big" style="font-size:28px">${text(k,'gj')}</span>`,q:'어떤 약기로 쓸까요?',opts:shuf(o.map(([a,b])=>opt(a+'.'+b,shape(a,b)))),ans:k+'.gj',why:whySE(k,'gj')}}}
  },
- section:{title:'응용편 (제2장 동사 약기법 53~73쪽 · 기본형 30개와 어미)',kcs:KC}
+ section:{title:'응용편 (제2장 동사 약기법 53~97쪽 · 기본형 30개·어미·위치 변화)',kcs:KC}
 };
 (window.FEATURES=window.FEATURES||[]).push(F);
 })();
